@@ -5,6 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Zap, TrendingDown, Gauge, Activity, Cpu, Server, Layers, Thermometer, CheckCircle2, Users, Download, Calendar, Cloud } from "lucide-react";
 import { useInView } from "react-intersection-observer";
+import { useState, useEffect } from "react";
 import heroChipset from "@/assets/hero-chipset.jpg";
 import serverRack from "@/assets/server-rack.jpg";
 import chipsetCrossSection from "@/assets/chipset-cross-section.jpg";
@@ -15,6 +16,18 @@ const Index = () => {
   const { ref: chipsetRef, inView: chipsetInView } = useInView({ triggerOnce: true, threshold: 0.2 });
   const { ref: serverRef, inView: serverInView } = useInView({ triggerOnce: true, threshold: 0.2 });
   const { ref: dataCenterRef, inView: dataCenterInView } = useInView({ triggerOnce: true, threshold: 0.2 });
+  const { ref: statsRef, inView: statsInView } = useInView({ triggerOnce: true, threshold: 0.3 });
+  
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,6 +38,9 @@ const Index = () => {
             src={heroChipset} 
             alt="Silicon photonic chipset with glowing light paths" 
             className="w-full h-full object-cover opacity-40"
+            style={{
+              transform: `translateY(${scrollY * 0.5}px)`
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
         </div>
@@ -64,7 +80,7 @@ const Index = () => {
       </section>
 
       {/* Key Statistics Section */}
-      <section className="py-24 container mx-auto px-4">
+      <section ref={statsRef} className="py-24 container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { icon: Zap, stat: "2-3x", label: "Performance per Watt" },
@@ -72,7 +88,15 @@ const Index = () => {
             { icon: Gauge, stat: "40%", label: "Lower Power per Token" },
             { icon: Activity, stat: "85%", label: "System Utilization" },
           ].map((item, i) => (
-            <Card key={i} className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
+            <Card 
+              key={i} 
+              className={`group hover:shadow-lg hover:shadow-primary/20 transition-all duration-500 border-2 hover:border-primary/50 ${
+                statsInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+              style={{
+                transitionDelay: statsInView ? `${i * 150}ms` : '0ms'
+              }}
+            >
               <CardContent className="pt-6">
                 <item.icon className="h-12 w-12 text-primary mb-4 group-hover:scale-110 transition-transform" />
                 <div className="text-4xl font-bold mb-2 text-primary">{item.stat}</div>
