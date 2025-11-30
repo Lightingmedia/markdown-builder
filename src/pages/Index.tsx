@@ -31,7 +31,7 @@ const Index = () => {
         </div>
         
         <div className="relative z-10 container mx-auto px-4 py-32 text-center">
-          <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm">
+          <Badge variant="default" className="mb-6 px-4 py-2 text-sm">
             Next-Generation Infrastructure
           </Badge>
           <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
