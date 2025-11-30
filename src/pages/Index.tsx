@@ -13,16 +13,8 @@ import logo from "@/assets/lightrail-logo.png";
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header/Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <img src={logo} alt="LightRail AI Logo" className="h-10 w-10" />
-          <span className="text-2xl font-bold text-primary">LightRail AI</span>
-        </div>
-      </header>
-
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
             src={heroChipset} 
@@ -30,6 +22,12 @@ const Index = () => {
             className="w-full h-full object-cover opacity-40"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
+        </div>
+        
+        {/* Logo in upper left */}
+        <div className="absolute top-8 left-8 z-20 flex items-center gap-3">
+          <img src={logo} alt="LightRail AI Logo" className="h-12 w-12" />
+          <span className="text-3xl font-bold text-primary">LightRail AI</span>
         </div>
         
         <div className="relative z-10 container mx-auto px-4 py-32 text-center">
