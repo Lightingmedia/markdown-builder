@@ -8,12 +8,21 @@ import heroChipset from "@/assets/hero-chipset.jpg";
 import serverRack from "@/assets/server-rack.jpg";
 import chipsetCrossSection from "@/assets/chipset-cross-section.jpg";
 import dataCenter from "@/assets/data-center.jpg";
+import logo from "@/assets/lightrail-logo.png";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      {/* Header/Navigation */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
+          <img src={logo} alt="LightRail AI Logo" className="h-10 w-10" />
+          <span className="text-2xl font-bold text-primary">LightRail AI</span>
+        </div>
+      </header>
+
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
         <div className="absolute inset-0 z-0">
           <img 
             src={heroChipset} 
@@ -28,13 +37,15 @@ const Index = () => {
             Next-Generation Infrastructure
           </Badge>
           <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
-            <span className="text-primary">LightRail AI</span>
+            Photonic Computing
+            <br />
+            <span className="text-primary">Infrastructure for AI</span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
             Traditional AI data centers consume massive amounts of electricity and water for cooling—
             a single ChatGPT query uses enough energy to power a home for hours and requires bottles of water. 
             <span className="block mt-4 text-primary font-semibold">
-              LightRail AI's photonic computing eliminates these issues with 100x energy efficiency and zero water usage.
+              Our photonic computing eliminates these issues with 100x energy efficiency and zero water usage.
             </span>
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
