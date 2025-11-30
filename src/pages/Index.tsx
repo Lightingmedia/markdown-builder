@@ -39,7 +39,7 @@ const Index = () => {
             <br />
             <span className="text-primary">Infrastructure for AI</span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
             Traditional AI data centers consume massive amounts of electricity and water for cooling—
             a single ChatGPT query uses enough energy to power a home for hours and requires bottles of water. 
             <span className="block mt-4 text-primary font-semibold">
