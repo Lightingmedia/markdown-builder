@@ -95,7 +95,7 @@ const Index = () => {
               <img 
                 src={chipsetCrossSection} 
                 alt="Detailed cross-section of silicon photonic chipset architecture" 
-                className="w-full rounded-lg shadow-2xl shadow-primary/10"
+                className="w-full rounded-lg shadow-2xl shadow-primary/10 animate-fade-in hover-scale"
               />
             </div>
 
