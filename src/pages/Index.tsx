@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Zap, TrendingDown, Gauge, Activity, Cpu, Server, Layers, Thermometer, CheckCircle2, Users, Download, Calendar, Cloud } from "lucide-react";
+import { useInView } from "react-intersection-observer";
 import heroChipset from "@/assets/hero-chipset.jpg";
 import serverRack from "@/assets/server-rack.jpg";
 import chipsetCrossSection from "@/assets/chipset-cross-section.jpg";
@@ -11,6 +12,10 @@ import dataCenter from "@/assets/data-center.jpg";
 import logo from "@/assets/lightrail-logo.png";
 
 const Index = () => {
+  const { ref: chipsetRef, inView: chipsetInView } = useInView({ triggerOnce: true, threshold: 0.2 });
+  const { ref: serverRef, inView: serverInView } = useInView({ triggerOnce: true, threshold: 0.2 });
+  const { ref: dataCenterRef, inView: dataCenterInView } = useInView({ triggerOnce: true, threshold: 0.2 });
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -91,11 +96,13 @@ const Index = () => {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="relative">
+            <div ref={chipsetRef} className="relative">
               <img 
                 src={chipsetCrossSection} 
                 alt="Detailed cross-section of silicon photonic chipset architecture" 
-                className="w-full rounded-lg shadow-2xl shadow-primary/10 animate-fade-in hover-scale"
+                className={`w-full rounded-lg shadow-2xl shadow-primary/10 hover-scale transition-all duration-700 ${
+                  chipsetInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                }`}
               />
             </div>
 
@@ -180,11 +187,13 @@ const Index = () => {
               ))}
             </div>
 
-            <div className="relative order-1 lg:order-2">
+            <div ref={serverRef} className="relative order-1 lg:order-2">
               <img 
                 src={serverRack} 
                 alt="Full-stack TPU server rack with photonic interconnects" 
-                className="w-full rounded-lg shadow-2xl shadow-secondary/10"
+                className={`w-full rounded-lg shadow-2xl shadow-secondary/10 hover-scale transition-all duration-700 ${
+                  serverInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                }`}
               />
             </div>
           </div>
@@ -477,8 +486,14 @@ const Index = () => {
 
       {/* Contact CTA Section */}
       <section className="py-24 bg-muted/30 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <img src={dataCenter} alt="Data center infrastructure" className="w-full h-full object-cover" />
+        <div ref={dataCenterRef} className="absolute inset-0 opacity-20">
+          <img 
+            src={dataCenter} 
+            alt="Data center infrastructure" 
+            className={`w-full h-full object-cover transition-all duration-1000 ${
+              dataCenterInView ? 'opacity-20 scale-100' : 'opacity-0 scale-110'
+            }`} 
+          />
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
