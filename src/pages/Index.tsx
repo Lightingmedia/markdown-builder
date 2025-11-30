@@ -28,12 +28,14 @@ const Index = () => {
             Next-Generation Infrastructure
           </Badge>
           <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
-            Photonic Computing
-            <br />
-            <span className="text-primary">Infrastructure for AI</span>
+            <span className="text-primary">LightRail AI</span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Next-Generation Chipsets & Server Racks
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+            Traditional AI data centers consume massive amounts of electricity and water for cooling—
+            a single ChatGPT query uses enough energy to power a home for hours and requires bottles of water. 
+            <span className="block mt-4 text-primary font-semibold">
+              LightRail AI's photonic computing eliminates these issues with 100x energy efficiency and zero water usage.
+            </span>
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Button size="lg" className="group">
