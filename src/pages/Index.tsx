@@ -11,37 +11,52 @@ import serverRack from "@/assets/server-rack.jpg";
 import chipsetCrossSection from "@/assets/chipset-cross-section.jpg";
 import dataCenter from "@/assets/data-center.jpg";
 import logo from "@/assets/lightrail-logo.png";
-
 const Index = () => {
-  const { ref: chipsetRef, inView: chipsetInView } = useInView({ triggerOnce: true, threshold: 0.2 });
-  const { ref: serverRef, inView: serverInView } = useInView({ triggerOnce: true, threshold: 0.2 });
-  const { ref: dataCenterRef, inView: dataCenterInView } = useInView({ triggerOnce: true, threshold: 0.2 });
-  const { ref: statsRef, inView: statsInView } = useInView({ triggerOnce: true, threshold: 0.3 });
-  
+  const {
+    ref: chipsetRef,
+    inView: chipsetInView
+  } = useInView({
+    triggerOnce: true,
+    threshold: 0.2
+  });
+  const {
+    ref: serverRef,
+    inView: serverInView
+  } = useInView({
+    triggerOnce: true,
+    threshold: 0.2
+  });
+  const {
+    ref: dataCenterRef,
+    inView: dataCenterInView
+  } = useInView({
+    triggerOnce: true,
+    threshold: 0.2
+  });
+  const {
+    ref: statsRef,
+    inView: statsInView
+  } = useInView({
+    triggerOnce: true,
+    threshold: 0.3
+  });
   const [scrollY, setScrollY] = useState(0);
-
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
     };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, {
+      passive: true
+    });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img 
-            src={heroChipset} 
-            alt="Silicon photonic chipset with glowing light paths" 
-            className="w-full h-full object-cover opacity-40"
-            style={{
-              transform: `translateY(${scrollY * 0.5}px)`
-            }}
-          />
+          <img src={heroChipset} alt="Silicon photonic chipset with glowing light paths" className="w-full h-full object-cover opacity-40" style={{
+          transform: `translateY(${scrollY * 0.5}px)`
+        }} />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
         </div>
         
@@ -82,28 +97,31 @@ const Index = () => {
       {/* Key Statistics Section */}
       <section ref={statsRef} className="py-24 container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { icon: Zap, stat: "2-3x", label: "Performance per Watt" },
-            { icon: TrendingDown, stat: "60%", label: "CO₂ Reduction" },
-            { icon: Gauge, stat: "40%", label: "Lower Power per Token" },
-            { icon: Activity, stat: "85%", label: "System Utilization" },
-          ].map((item, i) => (
-            <Card 
-              key={i} 
-              className={`group hover:shadow-lg hover:shadow-primary/20 transition-all duration-500 border-2 hover:border-primary/50 ${
-                statsInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
-              style={{
-                transitionDelay: statsInView ? `${i * 150}ms` : '0ms'
-              }}
-            >
+          {[{
+          icon: Zap,
+          stat: "2-3x",
+          label: "Performance per Watt"
+        }, {
+          icon: TrendingDown,
+          stat: "60%",
+          label: "CO₂ Reduction"
+        }, {
+          icon: Gauge,
+          stat: "40%",
+          label: "Lower Power per Token"
+        }, {
+          icon: Activity,
+          stat: "85%",
+          label: "System Utilization"
+        }].map((item, i) => <Card key={i} className={`group hover:shadow-lg hover:shadow-primary/20 transition-all duration-500 border-2 hover:border-primary/50 ${statsInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{
+          transitionDelay: statsInView ? `${i * 150}ms` : '0ms'
+        }}>
               <CardContent className="pt-6">
                 <item.icon className="h-12 w-12 text-primary mb-4 group-hover:scale-110 transition-transform" />
                 <div className="text-4xl font-bold mb-2 text-primary">{item.stat}</div>
                 <div className="text-sm text-muted-foreground">{item.label}</div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </section>
 
@@ -121,34 +139,23 @@ const Index = () => {
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div ref={chipsetRef} className="relative">
-              <img 
-                src={chipsetCrossSection} 
-                alt="Detailed cross-section of silicon photonic chipset architecture" 
-                className={`w-full rounded-lg shadow-2xl shadow-primary/10 hover-scale transition-all duration-700 ${
-                  chipsetInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                }`}
-              />
+              <img src={chipsetCrossSection} alt="Detailed cross-section of silicon photonic chipset architecture" className="" />
             </div>
 
             <div className="space-y-6">
-              {[
-                {
-                  icon: Cpu,
-                  title: "Photonic Linear Algebra Engine",
-                  description: "Hardware-accelerated matrix operations using light, delivering unprecedented computational efficiency for AI workloads."
-                },
-                {
-                  icon: Layers,
-                  title: "Integrated Photonic Mesh",
-                  description: "Revolutionary interconnect technology reducing latency and power consumption while increasing bandwidth by orders of magnitude."
-                },
-                {
-                  icon: Thermometer,
-                  title: "Thermal Efficient Design",
-                  description: "Optical signal processing generates minimal heat compared to electronic alternatives, dramatically reducing cooling requirements."
-                }
-              ].map((feature, i) => (
-                <Card key={i} className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
+              {[{
+              icon: Cpu,
+              title: "Photonic Linear Algebra Engine",
+              description: "Hardware-accelerated matrix operations using light, delivering unprecedented computational efficiency for AI workloads."
+            }, {
+              icon: Layers,
+              title: "Integrated Photonic Mesh",
+              description: "Revolutionary interconnect technology reducing latency and power consumption while increasing bandwidth by orders of magnitude."
+            }, {
+              icon: Thermometer,
+              title: "Thermal Efficient Design",
+              description: "Optical signal processing generates minimal heat compared to electronic alternatives, dramatically reducing cooling requirements."
+            }].map((feature, i) => <Card key={i} className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3">
                       <feature.icon className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
@@ -158,8 +165,7 @@ const Index = () => {
                   <CardContent>
                     <CardDescription className="text-base">{feature.description}</CardDescription>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
         </div>
@@ -179,24 +185,19 @@ const Index = () => {
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 order-2 lg:order-1">
-              {[
-                {
-                  title: "Compact Rack",
-                  subtitle: "For edge deployment",
-                  specs: "2U Form Factor • 100 TFLOPS • 1.2kW Power"
-                },
-                {
-                  title: "Standard Rack",
-                  subtitle: "For enterprise data centers",
-                  specs: "42U Standard • 2.1 PFLOPS • 35kW Power"
-                },
-                {
-                  title: "Cluster Configuration",
-                  subtitle: "For hyperscale operations",
-                  specs: "Multi-Rack • 10+ PFLOPS • Modular Scaling"
-                }
-              ].map((config, i) => (
-                <Card key={i} className="group hover:shadow-lg hover:shadow-secondary/20 transition-all duration-300 border-2 hover:border-secondary/50">
+              {[{
+              title: "Compact Rack",
+              subtitle: "For edge deployment",
+              specs: "2U Form Factor • 100 TFLOPS • 1.2kW Power"
+            }, {
+              title: "Standard Rack",
+              subtitle: "For enterprise data centers",
+              specs: "42U Standard • 2.1 PFLOPS • 35kW Power"
+            }, {
+              title: "Cluster Configuration",
+              subtitle: "For hyperscale operations",
+              specs: "Multi-Rack • 10+ PFLOPS • Modular Scaling"
+            }].map((config, i) => <Card key={i} className="group hover:shadow-lg hover:shadow-secondary/20 transition-all duration-300 border-2 hover:border-secondary/50">
                   <CardHeader>
                     <CardTitle className="text-2xl">{config.title}</CardTitle>
                     <CardDescription className="text-base">{config.subtitle}</CardDescription>
@@ -207,18 +208,11 @@ const Index = () => {
                       Learn more <ArrowRight className="ml-1 h-4 w-4" />
                     </Button>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
 
             <div ref={serverRef} className="relative order-1 lg:order-2">
-              <img 
-                src={serverRack} 
-                alt="Full-stack TPU server rack with photonic interconnects" 
-                className={`w-full rounded-lg shadow-2xl shadow-secondary/10 hover-scale transition-all duration-700 ${
-                  serverInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                }`}
-              />
+              <img src={serverRack} alt="Full-stack TPU server rack with photonic interconnects" className={`w-full rounded-lg shadow-2xl shadow-secondary/10 hover-scale transition-all duration-700 ${serverInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} />
             </div>
           </div>
         </div>
@@ -237,22 +231,37 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {[
-              { metric: "Power Consumption", improvement: "60% Lower", icon: Zap },
-              { metric: "Thermal Output", improvement: "70% Reduction", icon: Thermometer },
-              { metric: "Performance/Watt", improvement: "3x Better", icon: Gauge },
-              { metric: "Scalability", improvement: "Linear Scaling", icon: TrendingDown },
-              { metric: "Cost per TFLOP", improvement: "45% Lower", icon: Activity },
-              { metric: "Latency", improvement: "50% Faster", icon: Cpu },
-            ].map((item, i) => (
-              <Card key={i} className="text-center hover:shadow-lg hover:shadow-primary/20 transition-all duration-300">
+            {[{
+            metric: "Power Consumption",
+            improvement: "60% Lower",
+            icon: Zap
+          }, {
+            metric: "Thermal Output",
+            improvement: "70% Reduction",
+            icon: Thermometer
+          }, {
+            metric: "Performance/Watt",
+            improvement: "3x Better",
+            icon: Gauge
+          }, {
+            metric: "Scalability",
+            improvement: "Linear Scaling",
+            icon: TrendingDown
+          }, {
+            metric: "Cost per TFLOP",
+            improvement: "45% Lower",
+            icon: Activity
+          }, {
+            metric: "Latency",
+            improvement: "50% Faster",
+            icon: Cpu
+          }].map((item, i) => <Card key={i} className="text-center hover:shadow-lg hover:shadow-primary/20 transition-all duration-300">
                 <CardContent className="pt-6">
                   <item.icon className="h-10 w-10 text-primary mx-auto mb-3" />
                   <div className="font-semibold text-lg mb-1">{item.metric}</div>
                   <div className="text-2xl font-bold text-primary">{item.improvement}</div>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -270,29 +279,23 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                title: "Large Language Models",
-                description: "Training and inference at unprecedented efficiency",
-                icon: Cpu
-              },
-              {
-                title: "Data Center Optimization",
-                description: "Upgrade existing infrastructure with photonic acceleration",
-                icon: Server
-              },
-              {
-                title: "Edge AI Deployment",
-                description: "Distributed computing with minimal power footprint",
-                icon: Activity
-              },
-              {
-                title: "Climate-Conscious Computing",
-                description: "Sustainable AI infrastructure for the future",
-                icon: TrendingDown
-              }
-            ].map((useCase, i) => (
-              <Card key={i} className="group hover:shadow-xl hover:shadow-secondary/20 transition-all duration-300 hover:-translate-y-1 border-2 hover:border-secondary/50">
+            {[{
+            title: "Large Language Models",
+            description: "Training and inference at unprecedented efficiency",
+            icon: Cpu
+          }, {
+            title: "Data Center Optimization",
+            description: "Upgrade existing infrastructure with photonic acceleration",
+            icon: Server
+          }, {
+            title: "Edge AI Deployment",
+            description: "Distributed computing with minimal power footprint",
+            icon: Activity
+          }, {
+            title: "Climate-Conscious Computing",
+            description: "Sustainable AI infrastructure for the future",
+            icon: TrendingDown
+          }].map((useCase, i) => <Card key={i} className="group hover:shadow-xl hover:shadow-secondary/20 transition-all duration-300 hover:-translate-y-1 border-2 hover:border-secondary/50">
                 <CardHeader>
                   <useCase.icon className="h-12 w-12 text-secondary mb-2 group-hover:scale-110 transition-transform" />
                   <CardTitle className="text-xl">{useCase.title}</CardTitle>
@@ -303,8 +306,7 @@ const Index = () => {
                     Learn More <ArrowRight className="ml-1 h-4 w-4" />
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -322,24 +324,19 @@ const Index = () => {
           </div>
 
           <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
-            {[
-              {
-                year: "2025",
-                title: "Fabric OS & Compiler",
-                description: "Software-first approach enabling integration with existing GPU infrastructure"
-              },
-              {
-                year: "2026",
-                title: "Photonic Interposer Blades",
-                description: "Hardware launch with drop-in compatible accelerator modules"
-              },
-              {
-                year: "2027",
-                title: "Full TPU Server Production",
-                description: "Complete rack-scale systems for hyperscale deployments"
-              }
-            ].map((phase, i) => (
-              <Card key={i} className="relative group hover:shadow-xl hover:shadow-primary/20 transition-all duration-300">
+            {[{
+            year: "2025",
+            title: "Fabric OS & Compiler",
+            description: "Software-first approach enabling integration with existing GPU infrastructure"
+          }, {
+            year: "2026",
+            title: "Photonic Interposer Blades",
+            description: "Hardware launch with drop-in compatible accelerator modules"
+          }, {
+            year: "2027",
+            title: "Full TPU Server Production",
+            description: "Complete rack-scale systems for hyperscale deployments"
+          }].map((phase, i) => <Card key={i} className="relative group hover:shadow-xl hover:shadow-primary/20 transition-all duration-300">
                 <div className="absolute -top-4 left-6">
                   <Badge variant="default" className="text-lg px-4 py-1">
                     {phase.year}
@@ -351,8 +348,7 @@ const Index = () => {
                 <CardContent>
                   <CardDescription className="text-base">{phase.description}</CardDescription>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -367,19 +363,10 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {[
-              "Mathematical optimization foundation",
-              "Proven photonic technology",
-              "Enterprise-grade reliability",
-              "Sustainability commitment",
-              "Expert support team",
-              "Seamless integration"
-            ].map((feature, i) => (
-              <div key={i} className="flex items-start gap-3 p-6 rounded-lg border-2 border-border hover:border-primary/50 transition-colors">
+            {["Mathematical optimization foundation", "Proven photonic technology", "Enterprise-grade reliability", "Sustainability commitment", "Expert support team", "Seamless integration"].map((feature, i) => <div key={i} className="flex items-start gap-3 p-6 rounded-lg border-2 border-border hover:border-primary/50 transition-colors">
                 <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
                 <span className="text-lg">{feature}</span>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -397,68 +384,41 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {[
-              {
-                title: "Software License",
-                subtitle: "Fabric OS & Compiler",
-                price: "Custom",
-                features: [
-                  "Fabric OS platform",
-                  "Compiler toolchain",
-                  "Integration support",
-                  "Quarterly updates"
-                ]
-              },
-              {
-                title: "Blade Solution",
-                subtitle: "Interposer + Accelerators",
-                price: "Contact Sales",
-                features: [
-                  "All software features",
-                  "Photonic interposer blades",
-                  "Installation support",
-                  "Priority support",
-                  "Performance optimization"
-                ],
-                featured: true
-              },
-              {
-                title: "Full System",
-                subtitle: "Complete TPU Servers",
-                price: "Enterprise",
-                features: [
-                  "Complete solution",
-                  "Full rack systems",
-                  "Dedicated support team",
-                  "Custom configurations",
-                  "On-site training"
-                ]
-              }
-            ].map((tier, i) => (
-              <Card key={i} className={`${tier.featured ? 'border-primary border-4 shadow-xl shadow-primary/20 scale-105' : 'border-2'} transition-all duration-300`}>
-                {tier.featured && (
-                  <div className="bg-primary text-primary-foreground text-center py-2 font-semibold">
+            {[{
+            title: "Software License",
+            subtitle: "Fabric OS & Compiler",
+            price: "Custom",
+            features: ["Fabric OS platform", "Compiler toolchain", "Integration support", "Quarterly updates"]
+          }, {
+            title: "Blade Solution",
+            subtitle: "Interposer + Accelerators",
+            price: "Contact Sales",
+            features: ["All software features", "Photonic interposer blades", "Installation support", "Priority support", "Performance optimization"],
+            featured: true
+          }, {
+            title: "Full System",
+            subtitle: "Complete TPU Servers",
+            price: "Enterprise",
+            features: ["Complete solution", "Full rack systems", "Dedicated support team", "Custom configurations", "On-site training"]
+          }].map((tier, i) => <Card key={i} className={`${tier.featured ? 'border-primary border-4 shadow-xl shadow-primary/20 scale-105' : 'border-2'} transition-all duration-300`}>
+                {tier.featured && <div className="bg-primary text-primary-foreground text-center py-2 font-semibold">
                     Most Popular
-                  </div>
-                )}
+                  </div>}
                 <CardHeader>
                   <CardTitle className="text-2xl">{tier.title}</CardTitle>
                   <CardDescription className="text-base">{tier.subtitle}</CardDescription>
                   <div className="text-3xl font-bold mt-4">{tier.price}</div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {tier.features.map((feature, j) => (
-                    <div key={j} className="flex items-center gap-2">
+                  {tier.features.map((feature, j) => <div key={j} className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                       <span className="text-sm">{feature}</span>
-                    </div>
-                  ))}
+                    </div>)}
                   <Button className="w-full mt-6" variant={tier.featured ? "default" : "outline"}>
                     Get Started
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -473,37 +433,29 @@ const Index = () => {
           </div>
 
           <Accordion type="single" collapsible className="space-y-4">
-            {[
-              {
-                q: "How does photonic computing differ from traditional GPUs?",
-                a: "Photonic computing uses light instead of electricity for data transmission and processing, resulting in dramatically lower power consumption, reduced heat generation, and higher bandwidth capabilities. Our silicon photonic chipsets integrate seamlessly with existing infrastructure while delivering 2-3x better performance per watt."
-              },
-              {
-                q: "What is the typical deployment timeline?",
-                a: "Deployment varies by solution tier. Software licenses can be deployed in weeks, blade solutions typically require 2-3 months including integration, and full rack systems are deployed over 3-6 months depending on configuration and site requirements."
-              },
-              {
-                q: "Is LightRail compatible with existing AI frameworks?",
-                a: "Yes, our Fabric OS and compiler support standard ML frameworks including TensorFlow, PyTorch, and JAX. We provide seamless integration with existing GPU workflows, allowing gradual migration to photonic acceleration."
-              },
-              {
-                q: "What kind of sustainability benefits can we expect?",
-                a: "LightRail systems deliver up to 60% CO₂ reduction compared to traditional GPU clusters through reduced power consumption and cooling requirements. This translates to significant operational cost savings and progress toward sustainability goals."
-              },
-              {
-                q: "What support and maintenance is included?",
-                a: "All tiers include our standard support package with quarterly software updates. Enterprise customers receive dedicated support teams, custom configurations, and on-site training. We offer 24/7 critical support for production deployments."
-              }
-            ].map((faq, i) => (
-              <AccordionItem key={i} value={`item-${i}`} className="border-2 border-border rounded-lg px-6">
+            {[{
+            q: "How does photonic computing differ from traditional GPUs?",
+            a: "Photonic computing uses light instead of electricity for data transmission and processing, resulting in dramatically lower power consumption, reduced heat generation, and higher bandwidth capabilities. Our silicon photonic chipsets integrate seamlessly with existing infrastructure while delivering 2-3x better performance per watt."
+          }, {
+            q: "What is the typical deployment timeline?",
+            a: "Deployment varies by solution tier. Software licenses can be deployed in weeks, blade solutions typically require 2-3 months including integration, and full rack systems are deployed over 3-6 months depending on configuration and site requirements."
+          }, {
+            q: "Is LightRail compatible with existing AI frameworks?",
+            a: "Yes, our Fabric OS and compiler support standard ML frameworks including TensorFlow, PyTorch, and JAX. We provide seamless integration with existing GPU workflows, allowing gradual migration to photonic acceleration."
+          }, {
+            q: "What kind of sustainability benefits can we expect?",
+            a: "LightRail systems deliver up to 60% CO₂ reduction compared to traditional GPU clusters through reduced power consumption and cooling requirements. This translates to significant operational cost savings and progress toward sustainability goals."
+          }, {
+            q: "What support and maintenance is included?",
+            a: "All tiers include our standard support package with quarterly software updates. Enterprise customers receive dedicated support teams, custom configurations, and on-site training. We offer 24/7 critical support for production deployments."
+          }].map((faq, i) => <AccordionItem key={i} value={`item-${i}`} className="border-2 border-border rounded-lg px-6">
                 <AccordionTrigger className="text-left text-lg font-semibold hover:no-underline">
                   {faq.q}
                 </AccordionTrigger>
                 <AccordionContent className="text-base text-muted-foreground">
                   {faq.a}
                 </AccordionContent>
-              </AccordionItem>
-            ))}
+              </AccordionItem>)}
           </Accordion>
         </div>
       </section>
@@ -511,13 +463,7 @@ const Index = () => {
       {/* Contact CTA Section */}
       <section className="py-24 bg-muted/30 relative overflow-hidden">
         <div ref={dataCenterRef} className="absolute inset-0 opacity-20">
-          <img 
-            src={dataCenter} 
-            alt="Data center infrastructure" 
-            className={`w-full h-full object-cover transition-all duration-1000 ${
-              dataCenterInView ? 'opacity-20 scale-100' : 'opacity-0 scale-110'
-            }`} 
-          />
+          <img src={dataCenter} alt="Data center infrastructure" className={`w-full h-full object-cover transition-all duration-1000 ${dataCenterInView ? 'opacity-20 scale-100' : 'opacity-0 scale-110'}`} />
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
@@ -615,8 +561,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
