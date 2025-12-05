@@ -11,6 +11,7 @@ import serverRack from "@/assets/server-rack.jpg";
 import chipsetCrossSection from "@/assets/chipset-cross-section.jpg";
 import dataCenter from "@/assets/data-center.jpg";
 import logo from "@/assets/lightrail-logo.png";
+import AnimatedBackground from "@/components/AnimatedBackground";
 const Index = () => {
   const {
     ref: chipsetRef,
@@ -60,10 +61,13 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
         </div>
         
+        {/* Animated particles overlay */}
+        <AnimatedBackground />
+        
         {/* Logo in upper left */}
         <div className="absolute top-8 left-8 z-20 flex items-center gap-3">
-          <img src={logo} alt="LightRail AI Logo" className="h-12 w-12" />
-          <span className="text-3xl font-bold text-primary">LightRail AI</span>
+          <img src={logo} alt="LightRail Logo" className="h-12 w-12" />
+          <span className="text-3xl font-bold text-primary">LightRail</span>
         </div>
         
         <div className="relative z-10 container mx-auto px-4 py-32 text-center">
@@ -358,7 +362,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Why Choose <span className="text-primary">LightRail AI</span>?
+              Why Choose <span className="text-primary">LightRail</span>?
             </h2>
           </div>
 
@@ -506,7 +510,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="font-bold text-xl mb-4 text-primary">LightRail AI</h3>
+              <h3 className="font-bold text-xl mb-4 text-primary">LightRail</h3>
               <p className="text-sm text-muted-foreground">
                 Next-generation photonic computing infrastructure for AI workloads.
               </p>
@@ -545,7 +549,7 @@ const Index = () => {
 
           <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © 2025 LightRail AI. All rights reserved.
+              © 2025 LightRail. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
