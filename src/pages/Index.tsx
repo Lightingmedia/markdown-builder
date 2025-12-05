@@ -145,22 +145,39 @@ const Index = () => {
             <div ref={chipsetRef} className="relative group overflow-hidden rounded-xl">
               {/* Animated light beams overlay */}
               <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-                <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse opacity-60" style={{ top: '20%', animation: 'slideRight 3s ease-in-out infinite' }} />
-                <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-50" style={{ top: '50%', animation: 'slideRight 4s ease-in-out infinite 0.5s' }} />
-                <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse opacity-40" style={{ top: '75%', animation: 'slideRight 3.5s ease-in-out infinite 1s' }} />
+                <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse opacity-60" style={{
+                top: '20%',
+                animation: 'slideRight 3s ease-in-out infinite'
+              }} />
+                <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-50" style={{
+                top: '50%',
+                animation: 'slideRight 4s ease-in-out infinite 0.5s'
+              }} />
+                <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse opacity-40" style={{
+                top: '75%',
+                animation: 'slideRight 3.5s ease-in-out infinite 1s'
+              }} />
                 {/* Vertical beams */}
-                <div className="absolute h-full w-0.5 bg-gradient-to-b from-transparent via-primary to-transparent opacity-50" style={{ left: '30%', animation: 'slideDown 4s ease-in-out infinite' }} />
-                <div className="absolute h-full w-1 bg-gradient-to-b from-transparent via-secondary to-transparent opacity-40" style={{ left: '70%', animation: 'slideDown 3s ease-in-out infinite 0.7s' }} />
+                <div className="absolute h-full w-0.5 bg-gradient-to-b from-transparent via-primary to-transparent opacity-50" style={{
+                left: '30%',
+                animation: 'slideDown 4s ease-in-out infinite'
+              }} />
+                <div className="absolute h-full w-1 bg-gradient-to-b from-transparent via-secondary to-transparent opacity-40" style={{
+                left: '70%',
+                animation: 'slideDown 3s ease-in-out infinite 0.7s'
+              }} />
                 {/* Glowing particles */}
-                <div className="absolute w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" style={{ animation: 'floatParticle1 5s ease-in-out infinite' }} />
-                <div className="absolute w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_8px_hsl(var(--secondary))]" style={{ animation: 'floatParticle2 4s ease-in-out infinite 1s' }} />
-                <div className="absolute w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_12px_hsl(var(--primary))]" style={{ animation: 'floatParticle3 6s ease-in-out infinite 2s' }} />
+                <div className="absolute w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" style={{
+                animation: 'floatParticle1 5s ease-in-out infinite'
+              }} />
+                <div className="absolute w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_8px_hsl(var(--secondary))]" style={{
+                animation: 'floatParticle2 4s ease-in-out infinite 1s'
+              }} />
+                <div className="absolute w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_12px_hsl(var(--primary))]" style={{
+                animation: 'floatParticle3 6s ease-in-out infinite 2s'
+              }} />
               </div>
-              <img 
-                alt="Detailed cross-section of silicon photonic chipset architecture" 
-                className="rounded-xl shadow-2xl shadow-primary/20 transition-transform duration-500 group-hover:scale-105" 
-                src={chipsetCrossSection} 
-              />
+              <img alt="Detailed cross-section of silicon photonic chipset architecture" className="rounded-xl shadow-2xl shadow-primary/20 transition-transform duration-500 group-hover:scale-105" src="/lovable-uploads/488a5334-de8c-4152-99cd-49b9736d7c34.png" />
               {/* Glow effect */}
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-secondary/10 rounded-xl pointer-events-none" />
             </div>
