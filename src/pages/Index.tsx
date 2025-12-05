@@ -139,7 +139,7 @@ const Index = () => {
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div ref={chipsetRef} className="relative">
-              <img src={chipsetCrossSection} alt="Detailed cross-section of silicon photonic chipset architecture" className="" />
+              <img alt="Detailed cross-section of silicon photonic chipset architecture" className="" src="/lovable-uploads/2ec96099-d1f9-43c7-b701-a122f6791356.png" />
             </div>
 
             <div className="space-y-6">
