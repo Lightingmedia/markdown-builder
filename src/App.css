@@ -23,6 +23,43 @@ html {
   animation: glow-pulse 3s ease-in-out infinite;
 }
 
+/* Chipset animation keyframes */
+@keyframes slideRight {
+  0% { transform: translateX(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes slideDown {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+@keyframes floatParticle1 {
+  0%, 100% { top: 10%; left: 20%; opacity: 0; }
+  25% { opacity: 1; }
+  50% { top: 80%; left: 60%; opacity: 1; }
+  75% { opacity: 0.5; }
+  100% { top: 10%; left: 20%; opacity: 0; }
+}
+
+@keyframes floatParticle2 {
+  0%, 100% { top: 80%; left: 80%; opacity: 0; }
+  25% { opacity: 1; }
+  50% { top: 20%; left: 30%; opacity: 1; }
+  75% { opacity: 0.5; }
+  100% { top: 80%; left: 80%; opacity: 0; }
+}
+
+@keyframes floatParticle3 {
+  0%, 100% { top: 50%; left: 10%; opacity: 0; }
+  25% { opacity: 0.8; }
+  50% { top: 30%; left: 90%; opacity: 1; }
+  75% { opacity: 0.5; }
+  100% { top: 50%; left: 10%; opacity: 0; }
+}
+
 /* Smooth transitions */
 * {
   transition-property: color, background-color, border-color, box-shadow, transform;
