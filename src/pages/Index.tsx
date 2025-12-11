@@ -309,6 +309,67 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Industry Validation Section */}
+      <section className="py-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <Badge variant="outline" className="mb-4 px-4 py-2">
+                Industry Insight
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                The <span className="text-primary">$8 Trillion Problem</span>
+              </h2>
+            </div>
+
+            <Card className="border-2 border-primary/30 bg-gradient-to-br from-card to-muted/50">
+              <CardContent className="pt-8 pb-8">
+                <blockquote className="text-xl md:text-2xl leading-relaxed mb-6 italic text-foreground/90">
+                  "To service $8 trillion at a 10% hurdle rate, the industry must generate $800 billion in net profit every year. The entire semiconductor sector does not make that. Microsoft, Google, and Nvidia combined do not make that."
+                </blockquote>
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="text-primary font-bold text-lg">AK</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-lg">Arvind Krishna</div>
+                    <div className="text-muted-foreground">CEO, IBM</div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6 pt-6 border-t border-border">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-destructive mb-1">$8T</div>
+                    <div className="text-sm text-muted-foreground">Required CapEx for 100 AI data centers</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-destructive mb-1">3-5 yrs</div>
+                    <div className="text-sm text-muted-foreground">GPU obsolescence cycle</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary mb-1">Unit Economics</div>
+                    <div className="text-sm text-muted-foreground">The real competitive advantage</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="mt-8 text-center">
+              <p className="text-lg text-muted-foreground mb-6">
+                The winners will not have the biggest clusters. They will have the best unit economics.
+                <span className="block mt-2 text-primary font-semibold">
+                  LightRail delivers 100x energy efficiency—solving the impossible equation.
+                </span>
+              </p>
+              <Button size="lg" onClick={() => setContactDialogOpen(true)}>
+                Learn How We Solve This
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Use Cases Section */}
       <section className="py-24">
         <div className="container mx-auto px-4">
