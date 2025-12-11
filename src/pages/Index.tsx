@@ -12,7 +12,10 @@ import chipsetCrossSection from "@/assets/chipset-cross-section.jpg";
 import dataCenter from "@/assets/data-center.jpg";
 import logo from "@/assets/lightrail-logo.png";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import ContactFormDialog from "@/components/ContactFormDialog";
+
 const Index = () => {
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const {
     ref: chipsetRef,
     inView: chipsetInView
@@ -87,11 +90,11 @@ const Index = () => {
             </span>
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Button size="lg" className="group">
-              Explore Solutions
+            <Button size="lg" className="group" onClick={() => setContactDialogOpen(true)}>
+              Get Started
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
-            <Button size="lg" variant="outline">
+            <Button size="lg" variant="outline" onClick={() => setContactDialogOpen(true)}>
               Request Demo
             </Button>
           </div>
@@ -454,7 +457,7 @@ const Index = () => {
                       <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                       <span className="text-sm">{feature}</span>
                     </div>)}
-                  <Button className="w-full mt-6" variant={tier.featured ? "default" : "outline"}>
+                  <Button className="w-full mt-6" variant={tier.featured ? "default" : "outline"} onClick={() => setContactDialogOpen(true)}>
                     Get Started
                   </Button>
                 </CardContent>
@@ -515,13 +518,13 @@ const Index = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button size="lg" className="text-lg">
+              <Button size="lg" className="text-lg" onClick={() => setContactDialogOpen(true)}>
                 <Calendar className="mr-2 h-5 w-5" />
                 Schedule a Demo
               </Button>
-              <Button size="lg" variant="outline" className="text-lg">
+              <Button size="lg" variant="outline" className="text-lg" onClick={() => setContactDialogOpen(true)}>
                 <Download className="mr-2 h-5 w-5" />
-                Download Whitepaper
+                Get Started
               </Button>
             </div>
 
@@ -601,6 +604,8 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      <ContactFormDialog open={contactDialogOpen} onOpenChange={setContactDialogOpen} />
     </div>;
 };
 export default Index;
