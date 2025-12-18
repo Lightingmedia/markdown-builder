@@ -14,7 +14,166 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      processed_metrics: {
+        Row: {
+          ai_energy_score: number | null
+          created_at: string
+          eco_efficiency_rating: string | null
+          id: string
+          identified_drivers: Json | null
+          predicted_consumption: number | null
+          telemetry_id: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_energy_score?: number | null
+          created_at?: string
+          eco_efficiency_rating?: string | null
+          id?: string
+          identified_drivers?: Json | null
+          predicted_consumption?: number | null
+          telemetry_id?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_energy_score?: number | null
+          created_at?: string
+          eco_efficiency_rating?: string | null
+          id?: string
+          identified_drivers?: Json | null
+          predicted_consumption?: number | null
+          telemetry_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processed_metrics_telemetry_id_fkey"
+            columns: ["telemetry_id"]
+            isOneToOne: false
+            referencedRelation: "raw_telemetry"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      raw_telemetry: {
+        Row: {
+          created_at: string
+          facility_id: string | null
+          gpu_wattage: number | null
+          humidity_pct: number | null
+          hvac_status: string | null
+          id: string
+          model_id: string | null
+          raw_payload: Json | null
+          temp_c: number | null
+          timestamp: string
+          tokens_generated: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          facility_id?: string | null
+          gpu_wattage?: number | null
+          humidity_pct?: number | null
+          hvac_status?: string | null
+          id?: string
+          model_id?: string | null
+          raw_payload?: Json | null
+          temp_c?: number | null
+          timestamp?: string
+          tokens_generated?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          facility_id?: string | null
+          gpu_wattage?: number | null
+          humidity_pct?: number | null
+          hvac_status?: string | null
+          id?: string
+          model_id?: string | null
+          raw_payload?: Json | null
+          temp_c?: number | null
+          timestamp?: string
+          tokens_generated?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recommendations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          impact_level: string | null
+          metric_id: string | null
+          requires_approval: boolean | null
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact_level?: string | null
+          metric_id?: string | null
+          requires_approval?: boolean | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact_level?: string | null
+          metric_id?: string | null
+          requires_approval?: boolean | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_metric_id_fkey"
+            columns: ["metric_id"]
+            isOneToOne: false
+            referencedRelation: "processed_metrics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
