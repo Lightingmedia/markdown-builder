@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Pricing from "./pages/Pricing";
+import BenchmarkPublic from "./pages/BenchmarkPublic";
 import FeoaAuth from "./pages/feoa/Auth";
 import FeoaLayout from "./components/feoa/FeoaLayout";
 import FeoaDashboard from "./pages/feoa/Dashboard";
@@ -14,6 +16,7 @@ import Reports from "./pages/feoa/Reports";
 import Settings from "./pages/feoa/Settings";
 import Notifications from "./pages/feoa/Notifications";
 import TrendAnalysis from "./pages/feoa/TrendAnalysis";
+import Benchmark from "./pages/feoa/Benchmark";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +28,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/benchmark" element={<BenchmarkPublic />} />
           
           {/* FEOA Routes */}
           <Route path="/monitor/auth" element={<FeoaAuth />} />
@@ -32,6 +37,7 @@ const App = () => (
             <Route index element={<FeoaDashboard />} />
             <Route path="energy-lab" element={<EnergyLab />} />
             <Route path="trends" element={<TrendAnalysis />} />
+            <Route path="benchmark" element={<Benchmark />} />
             <Route path="connectivity" element={<Connectivity />} />
             <Route path="reports" element={<Reports />} />
             <Route path="notifications" element={<Notifications />} />
