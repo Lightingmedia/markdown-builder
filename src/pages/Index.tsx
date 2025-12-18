@@ -10,13 +10,18 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import { ArrowRight, Zap, TrendingDown, Gauge, Activity, Cpu, Server, Layers, Thermometer, CheckCircle2, Users, Download, Calendar, Cloud, Quote } from "lucide-react";
 import { useInView } from "react-intersection-observer";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import heroChipset from "@/assets/hero-chipset.jpg";
 import serverRack from "@/assets/server-rack.jpg";
 import chipsetCrossSection from "@/assets/chipset-cross-section.jpg";
 import dataCenter from "@/assets/data-center.jpg";
+import logoTechscale from "@/assets/logo-techscale.png";
+import logoDataflow from "@/assets/logo-dataflow.png";
+import logoGreentech from "@/assets/logo-greentech.png";
+import logoNexus from "@/assets/logo-nexus.png";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import ContactFormDialog from "@/components/ContactFormDialog";
 import SEO from "@/components/SEO";
@@ -500,7 +505,17 @@ const Index = () => {
             </p>
           </div>
 
-          <Carousel className="max-w-5xl mx-auto" opts={{ loop: true }}>
+          <Carousel 
+            className="max-w-5xl mx-auto" 
+            opts={{ loop: true }}
+            plugins={[
+              Autoplay({
+                delay: 4000,
+                stopOnInteraction: false,
+                stopOnMouseEnter: true,
+              }),
+            ]}
+          >
             <CarouselContent>
               {[
                 {
@@ -508,28 +523,28 @@ const Index = () => {
                   name: "Sarah Chen",
                   role: "VP of Infrastructure",
                   company: "TechScale AI",
-                  logo: "TS"
+                  logo: logoTechscale
                 },
                 {
                   quote: "The transition from GPU clusters to LightRail was seamless. We saw immediate improvements in both performance and power consumption.",
                   name: "Marcus Thompson",
                   role: "CTO",
                   company: "DataFlow Systems",
-                  logo: "DF"
+                  logo: logoDataflow
                 },
                 {
                   quote: "Finally, AI infrastructure that aligns with our carbon neutrality goals. LightRail is the future of sustainable computing.",
                   name: "Emma Rodriguez",
                   role: "Chief Sustainability Officer",
                   company: "GreenTech Ventures",
-                  logo: "GT"
+                  logo: logoGreentech
                 },
                 {
                   quote: "The unit economics simply work. We've scaled our AI operations 3x while actually reducing our energy bill. That's unprecedented.",
                   name: "James Park",
                   role: "Director of Engineering",
                   company: "Nexus Computing",
-                  logo: "NC"
+                  logo: logoNexus
                 }
               ].map((testimonial, i) => (
                 <CarouselItem key={i} className="md:basis-1/2 lg:basis-1/2 pl-4">
@@ -540,8 +555,12 @@ const Index = () => {
                         "{testimonial.quote}"
                       </p>
                       <div className="flex items-center gap-4 pt-4 border-t border-border">
-                        <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
-                          <span className="text-primary font-bold">{testimonial.logo}</span>
+                        <div className="h-12 w-12 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                          <img 
+                            src={testimonial.logo} 
+                            alt={`${testimonial.company} logo`} 
+                            className="h-10 w-10 object-contain"
+                          />
                         </div>
                         <div>
                           <div className="font-semibold">{testimonial.name}</div>
