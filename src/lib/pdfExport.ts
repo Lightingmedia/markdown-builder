@@ -55,7 +55,7 @@ export function exportAITrainingCostsPDF(
   // Header
   doc.setFontSize(20);
   doc.setTextColor(16, 185, 129);
-  doc.text("LightRail", 14, 20);
+  doc.text("LightRail AI", 14, 20);
 
   doc.setFontSize(12);
   doc.setTextColor(100);
@@ -113,7 +113,7 @@ export function exportAITrainingCostsPDF(
     doc.setFontSize(8);
     doc.setTextColor(150);
     doc.text(
-      `Page ${i} of ${pageCount} | LightRail - Facility Energy Optimisation Agent`,
+      `Page ${i} of ${pageCount} | LightRail AI - Facility Energy Optimisation Agent`,
       14,
       doc.internal.pageSize.height - 10
     );
@@ -129,7 +129,7 @@ export function exportCustomReport(config: ReportConfig) {
   // Header
   doc.setFontSize(20);
   doc.setTextColor(16, 185, 129);
-  doc.text("LightRail", 14, yPos);
+  doc.text("LightRail AI", 14, yPos);
 
   yPos += 8;
   doc.setFontSize(14);
@@ -330,7 +330,7 @@ export function exportCustomReport(config: ReportConfig) {
     doc.setFontSize(8);
     doc.setTextColor(150);
     doc.text(
-      `Page ${i} of ${pageCount} | LightRail - Facility Energy Optimisation Agent`,
+      `Page ${i} of ${pageCount} | LightRail AI - Facility Energy Optimisation Agent`,
       14,
       doc.internal.pageSize.height - 10
     );

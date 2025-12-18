@@ -83,8 +83,8 @@ export default function FeoaLayout() {
         <Sidebar className="border-r border-border">
           <SidebarHeader className="p-4 border-b border-border">
             <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Cpu className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold">LightRail</span>
+              <img src="/lovable-uploads/488a5334-de8c-4152-99cd-49b9736d7c34.png" alt="LightRail AI Logo" className="h-6 w-6 rounded" />
+              <span className="text-xl font-bold">LightRail AI</span>
               <Home className="h-4 w-4 text-muted-foreground ml-auto" />
             </Link>
           </SidebarHeader>
