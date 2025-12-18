@@ -7,15 +7,33 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Multi-vendor accelerator telemetry payload (OpenTelemetry compatible)
 interface TelemetryPayload {
   timestamp?: string;
   facility_id?: string;
   temp_c?: number;
   humidity_pct?: number;
   hvac_status?: string;
-  gpu_wattage?: number;
   tokens_generated?: number;
   model_id?: string;
+  
+  // Accelerator vendor identification
+  accelerator_vendor?: "nvidia" | "google_tpu" | "amd";
+  
+  // NVIDIA GPU metrics (nvidia-smi / DCGM compatible)
+  gpu_wattage?: number;
+  nvidia_utilization?: number;  // GPU utilization %
+  nvidia_memory_gb?: number;    // Memory used in GB
+  
+  // Google TPU metrics (Cloud TPU Monitoring compatible)
+  tpu_wattage?: number;
+  tpu_utilization?: number;     // TPU utilization %
+  tpu_memory_gb?: number;       // HBM memory used in GB
+  
+  // AMD GPU metrics (ROCm SMI compatible)
+  amd_gpu_wattage?: number;
+  amd_utilization?: number;     // GPU utilization %
+  amd_memory_gb?: number;       // VRAM used in GB
 }
 
 interface AnomalyAlert {
@@ -24,28 +42,89 @@ interface AnomalyAlert {
   severity: "warning" | "critical";
   value: number;
   threshold: number;
+  vendor?: string;
 }
+
+// Vendor-specific power thresholds (watts)
+const POWER_THRESHOLDS = {
+  nvidia: { warning: 250, critical: 350 },      // e.g., A100 TDP ~400W
+  google_tpu: { warning: 200, critical: 280 },  // e.g., TPU v4 ~275W per chip
+  amd: { warning: 300, critical: 450 },         // e.g., MI300X TDP ~750W
+};
+
+// Vendor-specific utilization thresholds (%)
+const UTILIZATION_THRESHOLDS = {
+  warning_low: 20,   // Underutilized
+  warning_high: 95,  // Near saturation
+};
 
 function detectAnomalies(payload: TelemetryPayload): AnomalyAlert[] {
   const anomalies: AnomalyAlert[] = [];
+  const vendor = payload.accelerator_vendor || "nvidia";
 
-  // High GPU wattage anomaly
-  if (payload.gpu_wattage && payload.gpu_wattage > 300) {
+  // Get vendor-specific thresholds
+  const powerThreshold = POWER_THRESHOLDS[vendor] || POWER_THRESHOLDS.nvidia;
+
+  // Determine the wattage based on vendor
+  let wattage = 0;
+  let utilization: number | undefined;
+  
+  switch (vendor) {
+    case "google_tpu":
+      wattage = payload.tpu_wattage || 0;
+      utilization = payload.tpu_utilization;
+      break;
+    case "amd":
+      wattage = payload.amd_gpu_wattage || 0;
+      utilization = payload.amd_utilization;
+      break;
+    default: // nvidia
+      wattage = payload.gpu_wattage || 0;
+      utilization = payload.nvidia_utilization;
+  }
+
+  // Power consumption anomalies
+  if (wattage > powerThreshold.critical) {
     anomalies.push({
-      type: "GPU_WATTAGE_CRITICAL",
-      message: "GPU wattage exceeds critical threshold",
+      type: `${vendor.toUpperCase()}_POWER_CRITICAL`,
+      message: `${vendor.toUpperCase()} power consumption exceeds critical threshold`,
       severity: "critical",
-      value: payload.gpu_wattage,
-      threshold: 300,
+      value: wattage,
+      threshold: powerThreshold.critical,
+      vendor,
     });
-  } else if (payload.gpu_wattage && payload.gpu_wattage > 200) {
+  } else if (wattage > powerThreshold.warning) {
     anomalies.push({
-      type: "GPU_WATTAGE_HIGH",
-      message: "GPU wattage is above normal operating range",
+      type: `${vendor.toUpperCase()}_POWER_HIGH`,
+      message: `${vendor.toUpperCase()} power consumption above normal operating range`,
       severity: "warning",
-      value: payload.gpu_wattage,
-      threshold: 200,
+      value: wattage,
+      threshold: powerThreshold.warning,
+      vendor,
     });
+  }
+
+  // Utilization anomalies (if provided)
+  if (utilization !== undefined) {
+    if (utilization > UTILIZATION_THRESHOLDS.warning_high) {
+      anomalies.push({
+        type: `${vendor.toUpperCase()}_UTILIZATION_SATURATED`,
+        message: `${vendor.toUpperCase()} near saturation - potential bottleneck`,
+        severity: "warning",
+        value: utilization,
+        threshold: UTILIZATION_THRESHOLDS.warning_high,
+        vendor,
+      });
+    } else if (utilization < UTILIZATION_THRESHOLDS.warning_low && wattage > 50) {
+      anomalies.push({
+        type: `${vendor.toUpperCase()}_UTILIZATION_LOW`,
+        message: `${vendor.toUpperCase()} underutilized while consuming power - inefficiency detected`,
+        severity: "warning",
+        value: utilization,
+        threshold: UTILIZATION_THRESHOLDS.warning_low,
+        vendor,
+      });
+    }
   }
 
   // Temperature anomalies
@@ -100,6 +179,7 @@ async function sendAnomalyEmail(
 ) {
   const criticalCount = anomalies.filter((a) => a.severity === "critical").length;
   const warningCount = anomalies.filter((a) => a.severity === "warning").length;
+  const vendor = payload.accelerator_vendor || "nvidia";
 
   const subject = criticalCount > 0
     ? `🚨 CRITICAL: ${criticalCount} anomal${criticalCount > 1 ? "ies" : "y"} detected in facility telemetry`
@@ -120,6 +200,19 @@ async function sendAnomalyEmail(
     )
     .join("");
 
+  // Vendor-specific power display
+  let powerDisplay = "";
+  switch (vendor) {
+    case "google_tpu":
+      powerDisplay = `⚡ TPU: ${payload.tpu_wattage ?? "N/A"}W (${payload.tpu_utilization ?? "N/A"}% util)`;
+      break;
+    case "amd":
+      powerDisplay = `⚡ AMD GPU: ${payload.amd_gpu_wattage ?? "N/A"}W (${payload.amd_utilization ?? "N/A"}% util)`;
+      break;
+    default:
+      powerDisplay = `⚡ NVIDIA GPU: ${payload.gpu_wattage ?? "N/A"}W (${payload.nvidia_utilization ?? "N/A"}% util)`;
+  }
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -129,6 +222,7 @@ async function sendAnomalyEmail(
         .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 24px; }
         .header h1 { margin: 0; font-size: 24px; }
+        .vendor-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 16px; font-size: 12px; margin-top: 8px; }
         .content { padding: 24px; }
         table { width: 100%; border-collapse: collapse; margin: 16px 0; }
         th { background: #f3f4f6; padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; }
@@ -144,6 +238,7 @@ async function sendAnomalyEmail(
         <div class="header">
           <h1>⚡ LightRail FEOA Alert</h1>
           <p style="margin: 8px 0 0 0; opacity: 0.9;">Facility Energy Optimisation Agent</p>
+          <span class="vendor-badge">${vendor.toUpperCase()} Telemetry</span>
         </div>
         <div class="content">
           <p>Anomalies have been detected in your facility telemetry data:</p>
@@ -168,7 +263,7 @@ async function sendAnomalyEmail(
               <div class="telemetry-item">🌡️ Temperature: ${payload.temp_c ?? "N/A"}°C</div>
               <div class="telemetry-item">💧 Humidity: ${payload.humidity_pct ?? "N/A"}%</div>
               <div class="telemetry-item">❄️ HVAC: ${payload.hvac_status ?? "N/A"}</div>
-              <div class="telemetry-item">⚡ GPU: ${payload.gpu_wattage ?? "N/A"}W</div>
+              <div class="telemetry-item">${powerDisplay}</div>
               <div class="telemetry-item">🔤 Tokens: ${payload.tokens_generated ?? "N/A"}</div>
               <div class="telemetry-item">🤖 Model: ${payload.model_id ?? "N/A"}</div>
             </div>
@@ -254,7 +349,20 @@ serve(async (req) => {
     const anomalies = detectAnomalies(payload);
     console.log(`Detected ${anomalies.length} anomalies:`, anomalies);
 
-    // Store raw telemetry
+    // Determine vendor and normalize wattage for storage
+    const vendor = payload.accelerator_vendor || "nvidia";
+    let normalizedWattage = payload.gpu_wattage || 0;
+    
+    switch (vendor) {
+      case "google_tpu":
+        normalizedWattage = payload.tpu_wattage || 0;
+        break;
+      case "amd":
+        normalizedWattage = payload.amd_gpu_wattage || 0;
+        break;
+    }
+
+    // Store raw telemetry with multi-vendor support
     const { data: telemetryData, error: telemetryError } = await supabase
       .from("raw_telemetry")
       .insert({
@@ -268,6 +376,16 @@ serve(async (req) => {
         tokens_generated: payload.tokens_generated,
         model_id: payload.model_id,
         raw_payload: payload,
+        // Multi-vendor fields
+        accelerator_vendor: vendor,
+        tpu_wattage: payload.tpu_wattage,
+        tpu_utilization: payload.tpu_utilization,
+        tpu_memory_gb: payload.tpu_memory_gb,
+        amd_gpu_wattage: payload.amd_gpu_wattage,
+        amd_utilization: payload.amd_utilization,
+        amd_memory_gb: payload.amd_memory_gb,
+        nvidia_utilization: payload.nvidia_utilization,
+        nvidia_memory_gb: payload.nvidia_memory_gb,
       })
       .select()
       .single();
@@ -277,10 +395,9 @@ serve(async (req) => {
       throw telemetryError;
     }
 
-    // Calculate basic metrics
-    const gpuWattage = payload.gpu_wattage || 0;
+    // Calculate basic metrics using normalized wattage
     const tokensGenerated = payload.tokens_generated || 1;
-    const energyScore = tokensGenerated > 0 ? (gpuWattage / tokensGenerated) * 1000 : 0;
+    const energyScore = tokensGenerated > 0 ? (normalizedWattage / tokensGenerated) * 1000 : 0;
 
     // Determine efficiency rating
     let efficiencyRating = "A";
@@ -289,11 +406,21 @@ serve(async (req) => {
     else if (energyScore > 20) efficiencyRating = "C";
     else if (energyScore > 10) efficiencyRating = "B";
 
-    // Identify drivers
+    // Identify drivers (vendor-aware)
     const drivers: string[] = [];
-    if (gpuWattage > 150) drivers.push("High GPU wattage");
+    drivers.push(`Vendor: ${vendor.toUpperCase()}`);
+    
+    if (normalizedWattage > 150) drivers.push(`High ${vendor} wattage`);
     if (payload.hvac_status === "ON" && (payload.temp_c || 0) < 20) drivers.push("HVAC overcooling");
     if (tokensGenerated > 1000) drivers.push("High model verbosity");
+    
+    // Vendor-specific utilization drivers
+    const utilization = vendor === "google_tpu" ? payload.tpu_utilization 
+      : vendor === "amd" ? payload.amd_utilization 
+      : payload.nvidia_utilization;
+    
+    if (utilization && utilization < 20) drivers.push(`Low ${vendor} utilization`);
+    if (utilization && utilization > 95) drivers.push(`${vendor} near saturation`);
 
     // Store processed metrics
     const { error: metricsError } = await supabase.from("processed_metrics").insert({
@@ -302,7 +429,7 @@ serve(async (req) => {
       ai_energy_score: energyScore,
       eco_efficiency_rating: efficiencyRating,
       identified_drivers: drivers,
-      predicted_consumption: gpuWattage * 0.024,
+      predicted_consumption: normalizedWattage * 0.024,
     });
 
     if (metricsError) {
@@ -313,7 +440,7 @@ serve(async (req) => {
     if (efficiencyRating === "D" || efficiencyRating === "F") {
       await supabase.from("recommendations").insert({
         user_id: userId,
-        title: "Energy efficiency alert",
+        title: `${vendor.toUpperCase()} Energy efficiency alert`,
         description: `Current energy score of ${energyScore.toFixed(1)} Wh/1000 tokens indicates inefficiency. ${drivers.join(", ")}`,
         impact_level: efficiencyRating === "F" ? "high" : "medium",
         requires_approval: false,
@@ -339,6 +466,7 @@ serve(async (req) => {
 
     console.log("Telemetry processed successfully:", {
       telemetryId: telemetryData.id,
+      vendor,
       energyScore,
       efficiencyRating,
       anomaliesDetected: anomalies.length,
@@ -349,6 +477,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         telemetry_id: telemetryData.id,
+        vendor,
         energy_score: energyScore,
         efficiency_rating: efficiencyRating,
         drivers,

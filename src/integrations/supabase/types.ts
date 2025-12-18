@@ -84,6 +84,10 @@ export type Database = {
       }
       raw_telemetry: {
         Row: {
+          accelerator_vendor: string | null
+          amd_gpu_wattage: number | null
+          amd_memory_gb: number | null
+          amd_utilization: number | null
           created_at: string
           facility_id: string | null
           gpu_wattage: number | null
@@ -91,13 +95,22 @@ export type Database = {
           hvac_status: string | null
           id: string
           model_id: string | null
+          nvidia_memory_gb: number | null
+          nvidia_utilization: number | null
           raw_payload: Json | null
           temp_c: number | null
           timestamp: string
           tokens_generated: number | null
+          tpu_memory_gb: number | null
+          tpu_utilization: number | null
+          tpu_wattage: number | null
           user_id: string
         }
         Insert: {
+          accelerator_vendor?: string | null
+          amd_gpu_wattage?: number | null
+          amd_memory_gb?: number | null
+          amd_utilization?: number | null
           created_at?: string
           facility_id?: string | null
           gpu_wattage?: number | null
@@ -105,13 +118,22 @@ export type Database = {
           hvac_status?: string | null
           id?: string
           model_id?: string | null
+          nvidia_memory_gb?: number | null
+          nvidia_utilization?: number | null
           raw_payload?: Json | null
           temp_c?: number | null
           timestamp?: string
           tokens_generated?: number | null
+          tpu_memory_gb?: number | null
+          tpu_utilization?: number | null
+          tpu_wattage?: number | null
           user_id: string
         }
         Update: {
+          accelerator_vendor?: string | null
+          amd_gpu_wattage?: number | null
+          amd_memory_gb?: number | null
+          amd_utilization?: number | null
           created_at?: string
           facility_id?: string | null
           gpu_wattage?: number | null
@@ -119,10 +141,15 @@ export type Database = {
           hvac_status?: string | null
           id?: string
           model_id?: string | null
+          nvidia_memory_gb?: number | null
+          nvidia_utilization?: number | null
           raw_payload?: Json | null
           temp_c?: number | null
           timestamp?: string
           tokens_generated?: number | null
+          tpu_memory_gb?: number | null
+          tpu_utilization?: number | null
+          tpu_wattage?: number | null
           user_id?: string
         }
         Relationships: []
