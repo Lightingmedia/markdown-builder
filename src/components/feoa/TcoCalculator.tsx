@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, Server, Wrench, Snowflake, DollarSign, TrendingDown, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calculator, Server, Wrench, Snowflake, DollarSign, TrendingDown, Zap, Building2, Rocket, Globe } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 
 interface TcoInputs {
@@ -52,11 +53,80 @@ const lightRailMultipliers = {
   coolingInfrastructureCost: 0.1,
 };
 
+type ScenarioKey = "startup" | "enterprise" | "hyperscaler" | "custom";
+
+const scenarioPresets: Record<Exclude<ScenarioKey, "custom">, { name: string; description: string; icon: typeof Rocket; inputs: TcoInputs }> = {
+  startup: {
+    name: "Small Startup",
+    description: "10-50 GPUs, lean team",
+    icon: Rocket,
+    inputs: {
+      serverCount: 5,
+      gpuPerServer: 4,
+      gpuUnitCost: 25000,
+      serverLifespan: 4,
+      itStaffCost: 150000,
+      annualMaintenancePct: 12,
+      downtimeCostPerHour: 2000,
+      expectedDowntimeHours: 24,
+      powerPerGpu: 350,
+      pueRatio: 1.8,
+      electricityRate: 0.14,
+      coolingInfrastructureCost: 100000,
+    },
+  },
+  enterprise: {
+    name: "Enterprise",
+    description: "500-2000 GPUs, dedicated ops",
+    icon: Building2,
+    inputs: {
+      serverCount: 100,
+      gpuPerServer: 8,
+      gpuUnitCost: 30000,
+      serverLifespan: 5,
+      itStaffCost: 500000,
+      annualMaintenancePct: 15,
+      downtimeCostPerHour: 10000,
+      expectedDowntimeHours: 48,
+      powerPerGpu: 400,
+      pueRatio: 1.6,
+      electricityRate: 0.12,
+      coolingInfrastructureCost: 2000000,
+    },
+  },
+  hyperscaler: {
+    name: "Hyperscaler",
+    description: "10,000+ GPUs, global scale",
+    icon: Globe,
+    inputs: {
+      serverCount: 1000,
+      gpuPerServer: 8,
+      gpuUnitCost: 35000,
+      serverLifespan: 5,
+      itStaffCost: 2000000,
+      annualMaintenancePct: 18,
+      downtimeCostPerHour: 100000,
+      expectedDowntimeHours: 72,
+      powerPerGpu: 500,
+      pueRatio: 1.4,
+      electricityRate: 0.08,
+      coolingInfrastructureCost: 50000000,
+    },
+  },
+};
+
 export function TcoCalculator() {
-  const [inputs, setInputs] = useState<TcoInputs>(defaultTraditional);
+  const [inputs, setInputs] = useState<TcoInputs>(scenarioPresets.enterprise.inputs);
+  const [activeScenario, setActiveScenario] = useState<ScenarioKey>("enterprise");
 
   const updateInput = (key: keyof TcoInputs, value: number) => {
     setInputs(prev => ({ ...prev, [key]: value }));
+    setActiveScenario("custom");
+  };
+
+  const applyPreset = (key: Exclude<ScenarioKey, "custom">) => {
+    setInputs(scenarioPresets[key].inputs);
+    setActiveScenario(key);
   };
 
   const calculations = useMemo(() => {
@@ -188,6 +258,33 @@ export function TcoCalculator() {
           </TabsList>
 
           <TabsContent value="inputs" className="space-y-6">
+            {/* Scenario Presets */}
+            <div className="flex flex-wrap gap-3">
+              <span className="text-sm font-medium text-muted-foreground self-center">Scenario:</span>
+              {(Object.keys(scenarioPresets) as Exclude<ScenarioKey, "custom">[]).map((key) => {
+                const preset = scenarioPresets[key];
+                const Icon = preset.icon;
+                return (
+                  <Button
+                    key={key}
+                    variant={activeScenario === key ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => applyPreset(key)}
+                    className="gap-2"
+                  >
+                    <Icon className="h-4 w-4" />
+                    <div className="text-left">
+                      <div className="font-medium">{preset.name}</div>
+                      <div className="text-xs opacity-70">{preset.description}</div>
+                    </div>
+                  </Button>
+                );
+              })}
+              {activeScenario === "custom" && (
+                <Badge variant="secondary" className="self-center">Custom Configuration</Badge>
+              )}
+            </div>
+
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <Card className="bg-destructive/10 border-destructive/30">
