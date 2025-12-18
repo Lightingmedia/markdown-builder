@@ -3,17 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
-import { ArrowRight, Zap, TrendingDown, Gauge, Activity, Cpu, Server, Layers, Thermometer, CheckCircle2, Users, Download, Calendar, Cloud, Quote } from "lucide-react";
+import { ArrowRight, Zap, TrendingDown, Gauge, Activity, Cpu, Server, Layers, Thermometer, CheckCircle2, Users, Download, Calendar, Cloud } from "lucide-react";
 import { useInView } from "react-intersection-observer";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import heroChipset from "@/assets/hero-chipset.jpg";
 import serverRack from "@/assets/server-rack.jpg";
 import chipsetCrossSection from "@/assets/chipset-cross-section.jpg";
@@ -28,6 +20,7 @@ import SEO from "@/components/SEO";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
+import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -490,12 +483,40 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Partners Logo Strip */}
+      <section className="py-16 border-y border-border">
+        <div className="container mx-auto px-4">
+          <p className="text-center text-sm text-muted-foreground uppercase tracking-wider mb-8">
+            Trusted by Industry Leaders
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+            {[
+              { logo: logoTechscale, name: "TechScale AI" },
+              { logo: logoDataflow, name: "DataFlow Systems" },
+              { logo: logoGreentech, name: "GreenTech Ventures" },
+              { logo: logoNexus, name: "Nexus Computing" },
+            ].map((partner, i) => (
+              <div 
+                key={i} 
+                className="h-12 w-24 flex items-center justify-center grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all duration-300"
+              >
+                <img 
+                  src={partner.logo} 
+                  alt={partner.name} 
+                  className="h-10 w-auto object-contain"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <Badge variant="outline" className="mb-4 px-4 py-2">
-              Trusted by Industry Leaders
+              Customer Success Stories
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               What Our Partners Say
@@ -505,78 +526,7 @@ const Index = () => {
             </p>
           </div>
 
-          <Carousel 
-            className="max-w-5xl mx-auto" 
-            opts={{ loop: true }}
-            plugins={[
-              Autoplay({
-                delay: 4000,
-                stopOnInteraction: false,
-                stopOnMouseEnter: true,
-              }),
-            ]}
-          >
-            <CarouselContent>
-              {[
-                {
-                  quote: "LightRail's photonic computing has reduced our AI training costs by 60%. The energy savings alone have transformed our sustainability metrics.",
-                  name: "Sarah Chen",
-                  role: "VP of Infrastructure",
-                  company: "TechScale AI",
-                  logo: logoTechscale
-                },
-                {
-                  quote: "The transition from GPU clusters to LightRail was seamless. We saw immediate improvements in both performance and power consumption.",
-                  name: "Marcus Thompson",
-                  role: "CTO",
-                  company: "DataFlow Systems",
-                  logo: logoDataflow
-                },
-                {
-                  quote: "Finally, AI infrastructure that aligns with our carbon neutrality goals. LightRail is the future of sustainable computing.",
-                  name: "Emma Rodriguez",
-                  role: "Chief Sustainability Officer",
-                  company: "GreenTech Ventures",
-                  logo: logoGreentech
-                },
-                {
-                  quote: "The unit economics simply work. We've scaled our AI operations 3x while actually reducing our energy bill. That's unprecedented.",
-                  name: "James Park",
-                  role: "Director of Engineering",
-                  company: "Nexus Computing",
-                  logo: logoNexus
-                }
-              ].map((testimonial, i) => (
-                <CarouselItem key={i} className="md:basis-1/2 lg:basis-1/2 pl-4">
-                  <Card className="h-full border-2 hover:border-primary/30 transition-colors">
-                    <CardContent className="p-6 flex flex-col h-full">
-                      <Quote className="h-8 w-8 text-primary/30 mb-4" />
-                      <p className="text-lg mb-6 flex-1 text-foreground/90 leading-relaxed">
-                        "{testimonial.quote}"
-                      </p>
-                      <div className="flex items-center gap-4 pt-4 border-t border-border">
-                        <div className="h-12 w-12 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                          <img 
-                            src={testimonial.logo} 
-                            alt={`${testimonial.company} logo`} 
-                            className="h-10 w-10 object-contain"
-                          />
-                        </div>
-                        <div>
-                          <div className="font-semibold">{testimonial.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {testimonial.role}, {testimonial.company}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden md:flex -left-12" />
-            <CarouselNext className="hidden md:flex -right-12" />
-          </Carousel>
+          <TestimonialsCarousel />
         </div>
       </section>
 
