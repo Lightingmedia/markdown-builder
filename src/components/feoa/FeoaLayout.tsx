@@ -77,7 +77,7 @@ export default function FeoaLayout() {
           <SidebarHeader className="p-4 border-b border-border">
             <div className="flex items-center gap-2">
               <Zap className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold">FEOA</span>
+              <span className="text-xl font-bold">LightRail</span>
             </div>
           </SidebarHeader>
           <SidebarContent className="p-2">
@@ -126,7 +126,7 @@ export default function FeoaLayout() {
           <header className="h-14 border-b border-border flex items-center px-4 gap-4">
             <SidebarTrigger />
             <h1 className="font-semibold">
-              {menuItems.find((item) => item.path === location.pathname)?.title || "FEOA"}
+              {menuItems.find((item) => item.path === location.pathname)?.title || "LightRail"}
             </h1>
           </header>
           <div className="flex-1 p-6 overflow-auto">
