@@ -154,7 +154,7 @@ const Index = () => {
       </section>
 
       {/* Chipset Technology Section */}
-      <section className="py-24 bg-muted/30">
+      <section id="features" className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -331,7 +331,7 @@ const Index = () => {
       </section>
 
       {/* Industry Validation Section */}
-      <section className="py-24">
+      <section id="about" className="py-24">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
@@ -586,7 +586,7 @@ const Index = () => {
       </section>
 
       {/* Contact CTA Section */}
-      <section className="py-24 bg-muted/30 relative overflow-hidden">
+      <section id="contact" className="py-24 bg-muted/30 relative overflow-hidden">
         <div ref={dataCenterRef} className="absolute inset-0 opacity-20">
           <img src={dataCenter} alt="Data center infrastructure" className={`w-full h-full object-cover transition-all duration-1000 ${dataCenterInView ? 'opacity-20 scale-100' : 'opacity-0 scale-110'}`} />
         </div>

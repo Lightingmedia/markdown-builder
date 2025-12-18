@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { exportAITrainingCostsPDF } from "@/lib/pdfExport";
 import EnergyComparisonTool from "@/components/feoa/EnergyComparisonTool";
@@ -229,59 +230,78 @@ export default function FeoaDashboard() {
         <TabsContent value="facility" className="space-y-6 mt-6">
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="border-2 border-primary/20">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Real-time Energy Score
-                </CardTitle>
-                <Zap className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{metrics.energyScore || "12.5"}</div>
-                <p className="text-xs text-muted-foreground">Wh/1000 queries</p>
-              </CardContent>
-            </Card>
+            {isLoading ? (
+              <>
+                {[1, 2, 3, 4].map((i) => (
+                  <Card key={i} className="border-2 border-border">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-8 w-20 mb-2" />
+                      <Skeleton className="h-3 w-16" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </>
+            ) : (
+              <>
+                <Card className="border-2 border-primary/20">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Real-time Energy Score
+                    </CardTitle>
+                    <Zap className="h-4 w-4 text-primary" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{metrics.energyScore || "12.5"}</div>
+                    <p className="text-xs text-muted-foreground">Wh/1000 queries</p>
+                  </CardContent>
+                </Card>
 
-            <Card className="border-2 border-secondary/20">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  GPU/TPU Efficiency
-                </CardTitle>
-                <Cpu className="h-4 w-4 text-secondary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{metrics.gpuEfficiency || 85}%</div>
-                <p className="text-xs text-muted-foreground">Compute utilisation</p>
-              </CardContent>
-            </Card>
+                <Card className="border-2 border-secondary/20">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      GPU/TPU Efficiency
+                    </CardTitle>
+                    <Cpu className="h-4 w-4 text-secondary" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{metrics.gpuEfficiency || 85}%</div>
+                    <p className="text-xs text-muted-foreground">Compute utilisation</p>
+                  </CardContent>
+                </Card>
 
-            <Card className="border-2 border-primary/20">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Projected Monthly Savings
-                </CardTitle>
-                <DollarSign className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">${(metrics.projectedSavings || 1200).toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">Based on current optimisations</p>
-              </CardContent>
-            </Card>
+                <Card className="border-2 border-primary/20">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Projected Monthly Savings
+                    </CardTitle>
+                    <DollarSign className="h-4 w-4 text-primary" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">${(metrics.projectedSavings || 1200).toLocaleString()}</div>
+                    <p className="text-xs text-muted-foreground">Based on current optimisations</p>
+                  </CardContent>
+                </Card>
 
-            <Card className="border-2 border-border">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Current Load Status
-                </CardTitle>
-                <Activity className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <Badge className={getLoadStatusColor(metrics.loadStatus)}>
-                  {metrics.loadStatus}
-                </Badge>
-                <p className="text-xs text-muted-foreground mt-2">System health: Good</p>
-              </CardContent>
-            </Card>
+                <Card className="border-2 border-border">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Current Load Status
+                    </CardTitle>
+                    <Activity className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <Badge className={getLoadStatusColor(metrics.loadStatus)}>
+                      {metrics.loadStatus}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-2">System health: Good</p>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </div>
 
           {/* Charts */}
@@ -291,34 +311,38 @@ export default function FeoaDashboard() {
                 <CardTitle>Last 24h Energy Consumption (kWh)</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={energyChartData.length > 0 ? energyChartData : [
-                    { time: "00:00", consumption: 45 },
-                    { time: "04:00", consumption: 38 },
-                    { time: "08:00", consumption: 72 },
-                    { time: "12:00", consumption: 85 },
-                    { time: "16:00", consumption: 78 },
-                    { time: "20:00", consumption: 62 },
-                  ]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="consumption"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={2}
-                      dot={{ fill: "hsl(var(--primary))" }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                {isLoading ? (
+                  <Skeleton className="w-full h-[300px]" />
+                ) : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={energyChartData.length > 0 ? energyChartData : [
+                      { time: "00:00", consumption: 45 },
+                      { time: "04:00", consumption: 38 },
+                      { time: "08:00", consumption: 72 },
+                      { time: "12:00", consumption: 85 },
+                      { time: "16:00", consumption: 78 },
+                      { time: "20:00", consumption: 62 },
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px",
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="consumption"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={2}
+                        dot={{ fill: "hsl(var(--primary))" }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </CardContent>
             </Card>
 
@@ -327,21 +351,25 @@ export default function FeoaDashboard() {
                 <CardTitle>Top 5 Energy Drivers (%)</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={driversData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" width={100} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Bar dataKey="value" fill="hsl(var(--secondary))" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                {isLoading ? (
+                  <Skeleton className="w-full h-[300px]" />
+                ) : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={driversData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" width={100} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px",
+                        }}
+                      />
+                      <Bar dataKey="value" fill="hsl(var(--secondary))" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -353,7 +381,20 @@ export default function FeoaDashboard() {
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[200px]">
-                {recommendations.length > 0 ? (
+                {isLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border">
+                        <Skeleton className="h-4 w-4 rounded" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-3 w-1/2" />
+                        </div>
+                        <Skeleton className="h-5 w-16 rounded-full" />
+                      </div>
+                    ))}
+                  </div>
+                ) : recommendations.length > 0 ? (
                   <div className="space-y-3">
                     {recommendations.map((rec) => (
                       <div
