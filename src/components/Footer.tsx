@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Cpu, Linkedin, Twitter, Github, Mail, MapPin } from "lucide-react";
 
 const footerLinks = {
@@ -27,6 +27,32 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const navigate = useNavigate();
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    
+    // Check if it's an anchor link on the same page
+    if (href.startsWith("/#")) {
+      const elementId = href.substring(2);
+      const element = document.getElementById(elementId);
+      
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      } else {
+        // Navigate to home and then scroll
+        navigate("/");
+        setTimeout(() => {
+          const el = document.getElementById(elementId);
+          if (el) el.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    } else if (href.startsWith("/")) {
+      navigate(href);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <footer className="bg-muted/30 border-t border-border">
       <div className="container mx-auto px-4 py-12">
@@ -62,12 +88,13 @@ export default function Footer() {
             <ul className="space-y-2">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  <a
+                    href={link.href}
+                    onClick={(e) => handleLinkClick(e, link.href)}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                   >
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -79,12 +106,13 @@ export default function Footer() {
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  <a
+                    href={link.href}
+                    onClick={(e) => handleLinkClick(e, link.href)}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                   >
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -114,12 +142,20 @@ export default function Footer() {
             © {new Date().getFullYear()} LightRail AI. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <Link to="/#privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            <a
+              href="/#privacy"
+              onClick={(e) => handleLinkClick(e, "/#privacy")}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+            >
               Privacy Policy
-            </Link>
-            <Link to="/#terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            </a>
+            <a
+              href="/#terms"
+              onClick={(e) => handleLinkClick(e, "/#terms")}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+            >
               Terms of Service
-            </Link>
+            </a>
           </div>
         </div>
       </div>

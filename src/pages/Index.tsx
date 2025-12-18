@@ -15,6 +15,7 @@ import ContactFormDialog from "@/components/ContactFormDialog";
 import SEO from "@/components/SEO";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import BackToTop from "@/components/BackToTop";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -626,6 +627,7 @@ const Index = () => {
       </section>
 
       <Footer />
+      <BackToTop />
 
       <ContactFormDialog open={contactDialogOpen} onOpenChange={setContactDialogOpen} />
     </div>;
