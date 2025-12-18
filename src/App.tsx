@@ -12,6 +12,8 @@ import EnergyLab from "./pages/feoa/EnergyLab";
 import Connectivity from "./pages/feoa/Connectivity";
 import Reports from "./pages/feoa/Reports";
 import Settings from "./pages/feoa/Settings";
+import Notifications from "./pages/feoa/Notifications";
+import TrendAnalysis from "./pages/feoa/TrendAnalysis";
 
 const queryClient = new QueryClient();
 
@@ -29,8 +31,10 @@ const App = () => (
           <Route path="/monitor" element={<FeoaLayout />}>
             <Route index element={<FeoaDashboard />} />
             <Route path="energy-lab" element={<EnergyLab />} />
+            <Route path="trends" element={<TrendAnalysis />} />
             <Route path="connectivity" element={<Connectivity />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="settings" element={<Settings />} />
           </Route>
           
