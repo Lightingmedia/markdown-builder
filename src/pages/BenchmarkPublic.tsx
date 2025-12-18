@@ -19,6 +19,18 @@ import {
 import { ArrowRight, Zap, TrendingDown, Building2, Leaf, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
 import ContactFormDialog from "@/components/ContactFormDialog";
+import SEO from "@/components/SEO";
+
+const benchmarkStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "LightRail AI vs Traditional GPU Infrastructure Benchmark",
+  "description": "Compare photonic computing performance against traditional GPU data centers - 68% less power consumption, 85% less cooling required",
+  "author": {
+    "@type": "Organization",
+    "name": "LightRail AI"
+  }
+};
 
 const benchmarkData = [
   { name: "Traditional GPU", power: 450, cooling: 180, total: 630 },
@@ -42,6 +54,12 @@ export default function BenchmarkPublic() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Benchmark - Photonic vs GPU Performance Comparison"
+        description="Compare LightRail AI photonic computing against traditional GPU infrastructure. See 68% power reduction, 85% cooling savings, and 45% lower cost per TFLOP."
+        canonical="/benchmark"
+        structuredData={benchmarkStructuredData}
+      />
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
