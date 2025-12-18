@@ -38,6 +38,12 @@ interface TelemetryData {
   gpu_wattage: number;
   temp_c: number;
   tokens_generated: number;
+  accelerator_vendor?: string;
+  tpu_wattage?: number;
+  tpu_utilization?: number;
+  amd_gpu_wattage?: number;
+  amd_utilization?: number;
+  nvidia_utilization?: number;
 }
 
 interface AITrainingCost {
@@ -58,18 +64,28 @@ interface ProcessedMetric {
   created_at: string;
 }
 
+type VendorFilter = "all" | "nvidia" | "google_tpu" | "amd";
+
 export default function FeoaDashboard() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [telemetryData, setTelemetryData] = useState<TelemetryData[]>([]);
   const [aiTrainingCosts, setAiTrainingCosts] = useState<AITrainingCost[]>([]);
   const [processedMetrics, setProcessedMetrics] = useState<ProcessedMetric[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [vendorFilter, setVendorFilter] = useState<VendorFilter>("all");
   
   const [metrics, setMetrics] = useState({
     energyScore: 0,
     gpuEfficiency: 0,
     projectedSavings: 0,
     loadStatus: "Low",
+  });
+
+  // Vendor breakdown stats
+  const [vendorStats, setVendorStats] = useState({
+    nvidia: { count: 0, avgWattage: 0, avgUtilization: 0 },
+    google_tpu: { count: 0, avgWattage: 0, avgUtilization: 0 },
+    amd: { count: 0, avgWattage: 0, avgUtilization: 0 },
   });
 
   useEffect(() => {
@@ -85,18 +101,44 @@ export default function FeoaDashboard() {
 
       if (recData) setRecommendations(recData);
 
-      // Fetch raw telemetry for charts
+      // Fetch raw telemetry for charts with multi-vendor fields
       const { data: telData } = await supabase
         .from("raw_telemetry")
-        .select("timestamp, gpu_wattage, temp_c, tokens_generated")
+        .select("timestamp, gpu_wattage, temp_c, tokens_generated, accelerator_vendor, tpu_wattage, tpu_utilization, amd_gpu_wattage, amd_utilization, nvidia_utilization")
         .order("timestamp", { ascending: false })
-        .limit(24);
+        .limit(50);
 
       if (telData && telData.length > 0) {
         setTelemetryData(telData.reverse());
         
+        // Calculate vendor-specific stats
+        const nvidiaData = telData.filter(t => !t.accelerator_vendor || t.accelerator_vendor === "nvidia");
+        const tpuData = telData.filter(t => t.accelerator_vendor === "google_tpu");
+        const amdData = telData.filter(t => t.accelerator_vendor === "amd");
+
+        setVendorStats({
+          nvidia: {
+            count: nvidiaData.length,
+            avgWattage: nvidiaData.length > 0 ? nvidiaData.reduce((sum, t) => sum + (Number(t.gpu_wattage) || 0), 0) / nvidiaData.length : 0,
+            avgUtilization: nvidiaData.length > 0 ? nvidiaData.reduce((sum, t) => sum + (Number(t.nvidia_utilization) || 0), 0) / nvidiaData.length : 0,
+          },
+          google_tpu: {
+            count: tpuData.length,
+            avgWattage: tpuData.length > 0 ? tpuData.reduce((sum, t) => sum + (Number(t.tpu_wattage) || 0), 0) / tpuData.length : 0,
+            avgUtilization: tpuData.length > 0 ? tpuData.reduce((sum, t) => sum + (Number(t.tpu_utilization) || 0), 0) / tpuData.length : 0,
+          },
+          amd: {
+            count: amdData.length,
+            avgWattage: amdData.length > 0 ? amdData.reduce((sum, t) => sum + (Number(t.amd_gpu_wattage) || 0), 0) / amdData.length : 0,
+            avgUtilization: amdData.length > 0 ? amdData.reduce((sum, t) => sum + (Number(t.amd_utilization) || 0), 0) / amdData.length : 0,
+          },
+        });
+        
         // Calculate metrics from real data
-        const avgGpuWattage = telData.reduce((sum, t) => sum + (Number(t.gpu_wattage) || 0), 0) / telData.length;
+        const avgGpuWattage = telData.reduce((sum, t) => {
+          const wattage = Number(t.gpu_wattage) || Number(t.tpu_wattage) || Number(t.amd_gpu_wattage) || 0;
+          return sum + wattage;
+        }, 0) / telData.length;
         const totalTokens = telData.reduce((sum, t) => sum + (t.tokens_generated || 0), 0);
         const energyScore = totalTokens > 0 ? (avgGpuWattage / totalTokens) * 1000 : 12.5;
         const efficiency = Math.min(100, Math.max(0, 100 - (avgGpuWattage / 300) * 100));
@@ -158,20 +200,36 @@ export default function FeoaDashboard() {
     };
   }, []);
 
+  // Filter telemetry by vendor
+  const filteredTelemetry = vendorFilter === "all" 
+    ? telemetryData 
+    : telemetryData.filter(t => (t.accelerator_vendor || "nvidia") === vendorFilter);
+
   // Transform telemetry for line chart
-  const energyChartData = telemetryData.map((t) => ({
-    time: new Date(t.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-    consumption: Number(t.gpu_wattage) || 0,
-  }));
+  const energyChartData = filteredTelemetry.map((t) => {
+    const wattage = Number(t.gpu_wattage) || Number(t.tpu_wattage) || Number(t.amd_gpu_wattage) || 0;
+    return {
+      time: new Date(t.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+      consumption: wattage,
+      vendor: t.accelerator_vendor || "nvidia",
+    };
+  });
+
+  // Vendor breakdown for pie chart
+  const vendorBreakdownData = [
+    { name: "NVIDIA", value: vendorStats.nvidia.count, color: "hsl(142 76% 36%)" },
+    { name: "Google TPU", value: vendorStats.google_tpu.count, color: "hsl(221 83% 53%)" },
+    { name: "AMD", value: vendorStats.amd.count, color: "hsl(0 84% 60%)" },
+  ].filter(v => v.value > 0);
 
   // Calculate energy drivers from telemetry
   const driversData = [
-    { name: "GPU Inference", value: 42 },
+    { name: "NVIDIA GPU", value: vendorStats.nvidia.count > 0 ? Math.round(vendorStats.nvidia.avgWattage) : 0 },
+    { name: "Google TPU", value: vendorStats.google_tpu.count > 0 ? Math.round(vendorStats.google_tpu.avgWattage) : 0 },
+    { name: "AMD GPU", value: vendorStats.amd.count > 0 ? Math.round(vendorStats.amd.avgWattage) : 0 },
     { name: "HVAC", value: 28 },
-    { name: "Cooling", value: 15 },
-    { name: "Lighting", value: 10 },
     { name: "Other", value: 5 },
-  ];
+  ].filter(d => d.value > 0).sort((a, b) => b.value - a.value).slice(0, 5);
 
   // AI Training costs chart data
   const trainingCostData = aiTrainingCosts.slice(0, 6).map((t) => ({
@@ -228,6 +286,81 @@ export default function FeoaDashboard() {
         </TabsList>
 
         <TabsContent value="facility" className="space-y-6 mt-6">
+          {/* Vendor Filter */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium text-muted-foreground">Accelerator:</span>
+            <div className="flex gap-2">
+              <Button
+                variant={vendorFilter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setVendorFilter("all")}
+              >
+                All Vendors
+              </Button>
+              <Button
+                variant={vendorFilter === "nvidia" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setVendorFilter("nvidia")}
+                className="gap-1"
+              >
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+                NVIDIA ({vendorStats.nvidia.count})
+              </Button>
+              <Button
+                variant={vendorFilter === "google_tpu" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setVendorFilter("google_tpu")}
+                className="gap-1"
+              >
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                Google TPU ({vendorStats.google_tpu.count})
+              </Button>
+              <Button
+                variant={vendorFilter === "amd" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setVendorFilter("amd")}
+                className="gap-1"
+              >
+                <span className="w-2 h-2 rounded-full bg-red-500" />
+                AMD ({vendorStats.amd.count})
+              </Button>
+            </div>
+          </div>
+
+          {/* Vendor-Specific Stats (when filtered) */}
+          {vendorFilter !== "all" && (
+            <Card className="border-2 border-primary/30 bg-primary/5">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${
+                      vendorFilter === "nvidia" ? "bg-green-500" : 
+                      vendorFilter === "google_tpu" ? "bg-blue-500" : "bg-red-500"
+                    }`} />
+                    <span className="font-semibold">
+                      {vendorFilter === "nvidia" ? "NVIDIA GPU" : 
+                       vendorFilter === "google_tpu" ? "Google TPU" : "AMD GPU"} Metrics
+                    </span>
+                  </div>
+                  <div className="flex gap-6 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Avg Power: </span>
+                      <span className="font-bold">{vendorStats[vendorFilter].avgWattage.toFixed(0)}W</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Avg Utilization: </span>
+                      <span className="font-bold">{vendorStats[vendorFilter].avgUtilization.toFixed(0)}%</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Data Points: </span>
+                      <span className="font-bold">{vendorStats[vendorFilter].count}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {isLoading ? (
@@ -305,10 +438,12 @@ export default function FeoaDashboard() {
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Last 24h Energy Consumption (kWh)</CardTitle>
+                <CardTitle>
+                  {vendorFilter === "all" ? "All Vendors" : vendorFilter.toUpperCase().replace("_", " ")} - Energy Consumption (W)
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -332,13 +467,18 @@ export default function FeoaDashboard() {
                           border: "1px solid hsl(var(--border))",
                           borderRadius: "8px",
                         }}
+                        formatter={(value: number, name: string) => [`${value}W`, "Power"]}
                       />
                       <Line
                         type="monotone"
                         dataKey="consumption"
-                        stroke="hsl(var(--primary))"
+                        stroke={vendorFilter === "nvidia" ? "hsl(142 76% 36%)" : 
+                               vendorFilter === "google_tpu" ? "hsl(221 83% 53%)" : 
+                               vendorFilter === "amd" ? "hsl(0 84% 60%)" : "hsl(var(--primary))"}
                         strokeWidth={2}
-                        dot={{ fill: "hsl(var(--primary))" }}
+                        dot={{ fill: vendorFilter === "nvidia" ? "hsl(142 76% 36%)" : 
+                               vendorFilter === "google_tpu" ? "hsl(221 83% 53%)" : 
+                               vendorFilter === "amd" ? "hsl(0 84% 60%)" : "hsl(var(--primary))" }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -348,17 +488,27 @@ export default function FeoaDashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Top 5 Energy Drivers (%)</CardTitle>
+                <CardTitle>Vendor Distribution</CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
                   <Skeleton className="w-full h-[300px]" />
-                ) : (
+                ) : vendorBreakdownData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={driversData} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" width={100} />
+                    <PieChart>
+                      <Pie
+                        data={vendorBreakdownData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {vendorBreakdownData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
                       <Tooltip
                         contentStyle={{
                           backgroundColor: "hsl(var(--card))",
@@ -366,9 +516,56 @@ export default function FeoaDashboard() {
                           borderRadius: "8px",
                         }}
                       />
-                      <Bar dataKey="value" fill="hsl(var(--secondary))" radius={[0, 4, 4, 0]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    No vendor data available
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Power Consumption by Source (W)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <Skeleton className="w-full h-[300px]" />
+                ) : driversData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={driversData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" unit="W" />
+                      <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" width={100} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px",
+                        }}
+                        formatter={(value: number) => [`${value}W`, "Avg Power"]}
+                      />
+                      <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                        {driversData.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={
+                              entry.name === "NVIDIA GPU" ? "hsl(142 76% 36%)" :
+                              entry.name === "Google TPU" ? "hsl(221 83% 53%)" :
+                              entry.name === "AMD GPU" ? "hsl(0 84% 60%)" :
+                              "hsl(var(--secondary))"
+                            } 
+                          />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    No power data available
+                  </div>
                 )}
               </CardContent>
             </Card>
