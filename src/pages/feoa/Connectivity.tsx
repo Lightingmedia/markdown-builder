@@ -88,19 +88,52 @@ export default function Connectivity() {
   const testWebhook = async () => {
     setIsTesting(true);
     try {
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const testPayloads = {
+        nvidia: {
           timestamp: new Date().toISOString(),
           facility_id: "test-facility-001",
+          accelerator_vendor: "nvidia",
           temp_c: 22.5,
           humidity_pct: 60,
           hvac_status: "ON",
-          gpu_wattage: 180,
+          gpu_wattage: 280,
+          nvidia_utilization: 85,
+          nvidia_memory_gb: 32,
           tokens_generated: 1200,
-          model_id: "test-model",
-        }),
+          model_id: "test-nvidia-model",
+        },
+        google_tpu: {
+          timestamp: new Date().toISOString(),
+          facility_id: "test-facility-001",
+          accelerator_vendor: "google_tpu",
+          temp_c: 21.0,
+          humidity_pct: 55,
+          hvac_status: "ON",
+          tpu_wattage: 200,
+          tpu_utilization: 92,
+          tpu_memory_gb: 64,
+          tokens_generated: 2400,
+          model_id: "test-tpu-model",
+        },
+        amd: {
+          timestamp: new Date().toISOString(),
+          facility_id: "test-facility-001",
+          accelerator_vendor: "amd",
+          temp_c: 23.5,
+          humidity_pct: 58,
+          hvac_status: "ON",
+          amd_gpu_wattage: 350,
+          amd_utilization: 78,
+          amd_memory_gb: 128,
+          tokens_generated: 1800,
+          model_id: "test-amd-model",
+        },
+      };
+
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testPayloads[selectedVendor]),
       });
 
       if (response.ok) {
@@ -194,16 +227,51 @@ export default function Connectivity() {
     }
   };
 
-  const examplePayload = `{
-  "timestamp": "2024-01-15T10:30:00Z",
+  const [selectedVendor, setSelectedVendor] = useState<"nvidia" | "google_tpu" | "amd">("nvidia");
+
+  const vendorPayloads = {
+    nvidia: `{
+  "timestamp": "${new Date().toISOString()}",
   "facility_id": "facility-uuid",
+  "accelerator_vendor": "nvidia",
   "temp_c": 22.5,
   "humidity_pct": 60,
   "hvac_status": "ON",
-  "gpu_wattage": 180,
+  "gpu_wattage": 280,
+  "nvidia_utilization": 85,
+  "nvidia_memory_gb": 32,
   "tokens_generated": 1200,
-  "model_id": "gpt-3.5-turbo"
-}`;
+  "model_id": "llama-3-70b"
+}`,
+    google_tpu: `{
+  "timestamp": "${new Date().toISOString()}",
+  "facility_id": "facility-uuid",
+  "accelerator_vendor": "google_tpu",
+  "temp_c": 21.0,
+  "humidity_pct": 55,
+  "hvac_status": "ON",
+  "tpu_wattage": 200,
+  "tpu_utilization": 92,
+  "tpu_memory_gb": 64,
+  "tokens_generated": 2400,
+  "model_id": "gemma-2-27b"
+}`,
+    amd: `{
+  "timestamp": "${new Date().toISOString()}",
+  "facility_id": "facility-uuid",
+  "accelerator_vendor": "amd",
+  "temp_c": 23.5,
+  "humidity_pct": 58,
+  "hvac_status": "ON",
+  "amd_gpu_wattage": 350,
+  "amd_utilization": 78,
+  "amd_memory_gb": 128,
+  "tokens_generated": 1800,
+  "model_id": "mistral-large"
+}`
+  };
+
+  const examplePayload = vendorPayloads[selectedVendor];
 
   return (
     <div className="space-y-6">
@@ -252,10 +320,36 @@ export default function Connectivity() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Example Payload</Label>
+                    <Label>Example Payload (OpenTelemetry Compatible)</Label>
+                    <div className="flex gap-2 mb-2">
+                      <Button
+                        variant={selectedVendor === "nvidia" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedVendor("nvidia")}
+                      >
+                        NVIDIA GPU
+                      </Button>
+                      <Button
+                        variant={selectedVendor === "google_tpu" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedVendor("google_tpu")}
+                      >
+                        Google TPU
+                      </Button>
+                      <Button
+                        variant={selectedVendor === "amd" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedVendor("amd")}
+                      >
+                        AMD GPU
+                      </Button>
+                    </div>
                     <pre className="p-4 bg-muted rounded-lg text-xs font-mono overflow-auto">
                       {examplePayload}
                     </pre>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Supports NVIDIA (DCGM/nvidia-smi), Google TPU (Cloud Monitoring), and AMD (ROCm SMI) telemetry formats.
+                    </p>
                   </div>
                 </div>
               )}
