@@ -6,6 +6,7 @@ import { ArrowRight, Zap, Check } from "lucide-react";
 import ContactFormDialog from "@/components/ContactFormDialog";
 import SEO from "@/components/SEO";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 
 const pricingStructuredData = {
   "@context": "https://schema.org",
@@ -205,6 +206,8 @@ export default function Pricing() {
           </CardContent>
         </Card>
       </section>
+
+      <Footer />
 
       <ContactFormDialog open={contactOpen} onOpenChange={setContactOpen} />
     </div>

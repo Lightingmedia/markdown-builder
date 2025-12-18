@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import ContactFormDialog from "@/components/ContactFormDialog";
 import SEO from "@/components/SEO";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 
 const benchmarkStructuredData = {
   "@context": "https://schema.org",
@@ -155,6 +156,8 @@ export default function BenchmarkPublic() {
           </CardContent>
         </Card>
       </section>
+
+      <Footer />
 
       <ContactFormDialog open={contactOpen} onOpenChange={setContactOpen} />
     </div>
