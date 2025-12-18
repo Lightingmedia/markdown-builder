@@ -30,14 +30,18 @@ import {
   LogOut,
   User,
   Home,
+  Bell,
+  TrendingUp,
 } from "lucide-react";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, path: "/monitor" },
   { title: "Energy Lab", icon: FlaskConical, path: "/monitor/energy-lab" },
+  { title: "Trend Analysis", icon: TrendingUp, path: "/monitor/trends" },
   { title: "Connectivity", icon: Link2, path: "/monitor/connectivity" },
   { title: "Eco-Efficiency Reports", icon: FileBarChart, path: "/monitor/reports" },
+  { title: "Notifications", icon: Bell, path: "/monitor/notifications" },
   { title: "Settings", icon: Settings, path: "/monitor/settings" },
 ];
 
