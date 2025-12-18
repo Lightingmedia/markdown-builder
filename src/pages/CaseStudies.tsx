@@ -7,6 +7,7 @@ import { ArrowRight, TrendingDown, Zap, Leaf, BarChart3 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ContactFormDialog from "@/components/ContactFormDialog";
+import AnimatedCounter from "@/components/AnimatedCounter";
 import { useState } from "react";
 import logoTechscale from "@/assets/logo-techscale.png";
 import logoDataflow from "@/assets/logo-dataflow.png";
@@ -131,11 +132,15 @@ export default function CaseStudies() {
             </p>
             <div className="flex flex-wrap justify-center gap-8 mt-12">
               <div className="text-center">
-                <div className="text-4xl font-bold text-primary">60%</div>
+                <div className="text-4xl font-bold text-primary">
+                  <AnimatedCounter end={60} suffix="%" />
+                </div>
                 <div className="text-sm text-muted-foreground">Avg. Cost Reduction</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-primary">100x</div>
+                <div className="text-4xl font-bold text-primary">
+                  <AnimatedCounter end={100} suffix="x" />
+                </div>
                 <div className="text-sm text-muted-foreground">Energy Efficiency</div>
               </div>
               <div className="text-center">
@@ -143,7 +148,9 @@ export default function CaseStudies() {
                 <div className="text-sm text-muted-foreground">Water Usage</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-primary">&lt;12mo</div>
+                <div className="text-4xl font-bold text-primary">
+                  &lt;<AnimatedCounter end={12} suffix="mo" />
+                </div>
                 <div className="text-sm text-muted-foreground">Avg. ROI Period</div>
               </div>
             </div>
