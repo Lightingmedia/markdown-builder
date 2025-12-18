@@ -16,10 +16,9 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { ArrowRight, Zap, TrendingDown, Building2, Leaf } from "lucide-react";
+import { ArrowRight, Zap, TrendingDown, Building2, Leaf, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
 import ContactFormDialog from "@/components/ContactFormDialog";
-import logo from "@/assets/lightrail-logo.png";
 
 const benchmarkData = [
   { name: "Traditional GPU", power: 450, cooling: 180, total: 630 },
@@ -47,7 +46,7 @@ export default function BenchmarkPublic() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="LightRail AI Logo" className="h-8 w-8" />
+            <Cpu className="h-7 w-7 text-primary" aria-hidden="true" />
             <span className="text-xl font-bold text-primary">LightRail AI</span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
