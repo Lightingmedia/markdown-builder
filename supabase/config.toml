@@ -1,1 +1,7 @@
 project_id = "lgwaccltpoogoukjyzke"
+
+[functions.energy-analysis-agent]
+verify_jwt = false
+
+[functions.energy-webhook-handler]
+verify_jwt = false

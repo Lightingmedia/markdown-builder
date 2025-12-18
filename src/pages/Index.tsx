@@ -73,6 +73,13 @@ const Index = () => {
           <span className="text-3xl font-bold text-primary">LightRail</span>
         </div>
         
+        {/* Customer Portal Link */}
+        <div className="absolute top-8 right-8 z-20">
+          <Button variant="outline" onClick={() => window.location.href = '/monitor'}>
+            Customer Portal
+          </Button>
+        </div>
+        
         <div className="relative z-10 container mx-auto px-4 py-32 text-center">
           <Badge variant="default" className="mb-6 px-4 py-2 text-sm">
             Next-Generation Infrastructure
