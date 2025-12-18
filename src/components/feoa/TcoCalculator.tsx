@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -6,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Calculator, Server, Wrench, Snowflake, DollarSign, TrendingDown, Zap, Building2, Rocket, Globe } from "lucide-react";
+import { Calculator, Server, Wrench, Snowflake, DollarSign, TrendingDown, Zap, Building2, Rocket, Globe, Share2, Check } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
+import { toast } from "sonner";
 
 interface TcoInputs {
   // Hardware
@@ -116,8 +118,39 @@ const scenarioPresets: Record<Exclude<ScenarioKey, "custom">, { name: string; de
 };
 
 export function TcoCalculator() {
+  const [searchParams] = useSearchParams();
   const [inputs, setInputs] = useState<TcoInputs>(scenarioPresets.enterprise.inputs);
   const [activeScenario, setActiveScenario] = useState<ScenarioKey>("enterprise");
+  const [copied, setCopied] = useState(false);
+
+  // Load from URL params if present
+  useEffect(() => {
+    const tcoParam = searchParams.get("tco");
+    if (tcoParam) {
+      try {
+        const decoded = JSON.parse(atob(tcoParam)) as Partial<TcoInputs>;
+        const validInputs: TcoInputs = {
+          serverCount: decoded.serverCount ?? scenarioPresets.enterprise.inputs.serverCount,
+          gpuPerServer: decoded.gpuPerServer ?? scenarioPresets.enterprise.inputs.gpuPerServer,
+          gpuUnitCost: decoded.gpuUnitCost ?? scenarioPresets.enterprise.inputs.gpuUnitCost,
+          serverLifespan: decoded.serverLifespan ?? scenarioPresets.enterprise.inputs.serverLifespan,
+          itStaffCost: decoded.itStaffCost ?? scenarioPresets.enterprise.inputs.itStaffCost,
+          annualMaintenancePct: decoded.annualMaintenancePct ?? scenarioPresets.enterprise.inputs.annualMaintenancePct,
+          downtimeCostPerHour: decoded.downtimeCostPerHour ?? scenarioPresets.enterprise.inputs.downtimeCostPerHour,
+          expectedDowntimeHours: decoded.expectedDowntimeHours ?? scenarioPresets.enterprise.inputs.expectedDowntimeHours,
+          powerPerGpu: decoded.powerPerGpu ?? scenarioPresets.enterprise.inputs.powerPerGpu,
+          pueRatio: decoded.pueRatio ?? scenarioPresets.enterprise.inputs.pueRatio,
+          electricityRate: decoded.electricityRate ?? scenarioPresets.enterprise.inputs.electricityRate,
+          coolingInfrastructureCost: decoded.coolingInfrastructureCost ?? scenarioPresets.enterprise.inputs.coolingInfrastructureCost,
+        };
+        setInputs(validInputs);
+        setActiveScenario("custom");
+        toast.success("Loaded shared TCO calculation");
+      } catch {
+        // Invalid param, use defaults
+      }
+    }
+  }, [searchParams]);
 
   const updateInput = (key: keyof TcoInputs, value: number) => {
     setInputs(prev => ({ ...prev, [key]: value }));
@@ -127,6 +160,20 @@ export function TcoCalculator() {
   const applyPreset = (key: Exclude<ScenarioKey, "custom">) => {
     setInputs(scenarioPresets[key].inputs);
     setActiveScenario(key);
+  };
+
+  const shareResults = async () => {
+    const encoded = btoa(JSON.stringify(inputs));
+    const url = `${window.location.origin}/monitor?tco=${encoded}`;
+    
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success("Share link copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy link");
+    }
   };
 
   const calculations = useMemo(() => {
@@ -241,12 +288,16 @@ export function TcoCalculator() {
 
   return (
     <Card className="bg-card border-border">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2 text-foreground">
           <Calculator className="h-5 w-5 text-primary" />
           Total Cost of Ownership Calculator
           <Badge variant="outline" className="ml-2 border-primary/50 text-primary">Interactive</Badge>
         </CardTitle>
+        <Button variant="outline" size="sm" onClick={shareResults} className="gap-2">
+          {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+          {copied ? "Copied!" : "Share Results"}
+        </Button>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="inputs" className="space-y-4">
