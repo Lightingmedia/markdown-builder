@@ -1,5 +1,8 @@
 project_id = "lgwaccltpoogoukjyzke"
 
+[functions.create-admin-user]
+verify_jwt = false
+
 [functions.energy-analysis-agent]
 verify_jwt = false
 
