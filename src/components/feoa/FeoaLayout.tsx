@@ -35,7 +35,7 @@ import {
   Building2,
 } from "lucide-react";
 import { User as SupabaseUser } from "@supabase/supabase-js";
-import logo from "@/assets/lightrail-logo.png";
+
 
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, path: "/monitor" },
@@ -84,7 +84,7 @@ export default function FeoaLayout() {
         <Sidebar className="border-r border-border">
           <SidebarHeader className="p-4 border-b border-border">
             <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <img src={logo} alt="LightRail AI Logo" className="h-6 w-6" />
+              <Cpu className="h-5 w-5 text-primary" aria-hidden="true" />
               <span className="text-xl font-bold">LightRail AI</span>
               <Home className="h-4 w-4 text-muted-foreground ml-auto" />
             </Link>
