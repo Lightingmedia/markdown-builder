@@ -13,6 +13,7 @@ import dataCenter from "@/assets/data-center.jpg";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import ContactFormDialog from "@/components/ContactFormDialog";
 import SEO from "@/components/SEO";
+import Navigation from "@/components/Navigation";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -77,29 +78,7 @@ const Index = () => {
         canonical="/"
         structuredData={homeStructuredData}
       />
-      {/* Fixed Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Cpu className="h-7 w-7 text-primary" aria-hidden="true" />
-            <span className="text-xl font-bold text-primary">LightRail AI</span>
-          </div>
-          <div className="hidden md:flex items-center gap-6">
-            <a href="#" className="text-sm font-medium text-primary">Home</a>
-            <a href="/monitor" className="text-sm hover:text-primary transition-colors">Portal</a>
-            <a href="/benchmark" className="text-sm hover:text-primary transition-colors">Benchmark</a>
-            <a href="/pricing" className="text-sm hover:text-primary transition-colors">Pricing</a>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={() => window.location.href = '/monitor/auth'}>
-              Sign In
-            </Button>
-            <Button size="sm" onClick={() => setContactDialogOpen(true)}>
-              Get Started
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navigation onGetStarted={() => setContactDialogOpen(true)} />
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
