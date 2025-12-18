@@ -28,6 +28,7 @@ import {
   Loader2,
   Calendar,
 } from "lucide-react";
+import { ReportBuilder } from "@/components/feoa/ReportBuilder";
 
 interface Recommendation {
   id: string;
@@ -149,6 +150,9 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
+      {/* Custom Report Builder */}
+      <ReportBuilder />
+
       {/* Generate Report */}
       <Card>
         <CardHeader>
