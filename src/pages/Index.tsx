@@ -59,8 +59,8 @@ const Index = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="LightRail Logo" className="h-8 w-8" />
-            <span className="text-xl font-bold text-primary">LightRail</span>
+            <img src="/lovable-uploads/488a5334-de8c-4152-99cd-49b9736d7c34.png" alt="LightRail AI Logo" className="h-8 w-8 rounded" />
+            <span className="text-xl font-bold text-primary">LightRail AI</span>
           </div>
           <div className="hidden md:flex items-center gap-6">
             <a href="#" className="text-sm font-medium text-primary">Home</a>
@@ -284,7 +284,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              LightRail vs Traditional GPU Infrastructure
+              LightRail AI vs Traditional GPU Infrastructure
             </h2>
             <p className="text-xl text-muted-foreground">
               Quantifiable advantages across critical metrics
@@ -376,7 +376,7 @@ const Index = () => {
               <p className="text-lg text-muted-foreground mb-6">
                 The winners will not have the biggest clusters. They will have the best unit economics.
                 <span className="block mt-2 text-primary font-semibold">
-                  LightRail delivers 100x energy efficiency—solving the impossible equation.
+                  LightRail AI delivers 100x energy efficiency—solving the impossible equation.
                 </span>
               </p>
               <Button size="lg" onClick={() => setContactDialogOpen(true)}>
@@ -480,7 +480,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Why Choose <span className="text-primary">LightRail</span>?
+              Why Choose <span className="text-primary">LightRail AI</span>?
             </h2>
           </div>
 
@@ -623,12 +623,11 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="bg-card border-t-2 border-border py-12">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="font-bold text-xl mb-4 text-primary">LightRail</h3>
+              <h3 className="font-bold text-xl mb-4 text-primary">LightRail AI</h3>
               <p className="text-sm text-muted-foreground">
                 Next-generation photonic computing infrastructure for AI workloads.
               </p>

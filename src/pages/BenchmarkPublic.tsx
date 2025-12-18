@@ -18,7 +18,6 @@ import {
 } from "recharts";
 import { ArrowRight, Zap, TrendingDown, Building2, Leaf } from "lucide-react";
 import { Link } from "react-router-dom";
-import logo from "@/assets/lightrail-logo.png";
 import ContactFormDialog from "@/components/ContactFormDialog";
 
 const benchmarkData = [
@@ -47,8 +46,8 @@ export default function BenchmarkPublic() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="LightRail Logo" className="h-8 w-8" />
-            <span className="text-xl font-bold text-primary">LightRail</span>
+            <img src="/lovable-uploads/488a5334-de8c-4152-99cd-49b9736d7c34.png" alt="LightRail AI Logo" className="h-8 w-8 rounded" />
+            <span className="text-xl font-bold text-primary">LightRail AI</span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-sm hover:text-primary transition-colors">Home</Link>
