@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { exportAITrainingCostsPDF } from "@/lib/pdfExport";
 import EnergyComparisonTool from "@/components/feoa/EnergyComparisonTool";
 import EfficiencyComparison from "@/components/feoa/EfficiencyComparison";
+import { TcoCalculator } from "@/components/feoa/TcoCalculator";
 import {
   LineChart,
   Line,
@@ -294,11 +295,15 @@ export default function FeoaDashboard() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="facility" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="facility">Facility Metrics</TabsTrigger>
           <TabsTrigger value="roi-calculator">
             <Calculator className="h-4 w-4 mr-1" />
             ROI Calculator
+          </TabsTrigger>
+          <TabsTrigger value="tco-calculator">
+            <DollarSign className="h-4 w-4 mr-1" />
+            TCO
           </TabsTrigger>
           <TabsTrigger value="ai-training">AI Training Costs</TabsTrigger>
           <TabsTrigger value="comparison">
@@ -847,6 +852,10 @@ export default function FeoaDashboard() {
 
         <TabsContent value="comparison" className="mt-6">
           <EnergyComparisonTool />
+        </TabsContent>
+
+        <TabsContent value="tco-calculator" className="mt-6">
+          <TcoCalculator />
         </TabsContent>
       </Tabs>
     </div>
