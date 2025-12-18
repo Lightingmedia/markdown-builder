@@ -59,7 +59,7 @@ const Index = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/lovable-uploads/488a5334-de8c-4152-99cd-49b9736d7c34.png" alt="LightRail AI Logo" className="h-8 w-8 rounded" />
+            <img src={logo} alt="LightRail AI Logo" className="h-8 w-8" />
             <span className="text-xl font-bold text-primary">LightRail AI</span>
           </div>
           <div className="hidden md:flex items-center gap-6">
@@ -198,7 +198,7 @@ const Index = () => {
                 animation: 'floatParticle3 6s ease-in-out infinite 2s'
               }} />
               </div>
-              <img alt="Detailed cross-section of silicon photonic chipset architecture" className="rounded-xl shadow-2xl shadow-primary/20 transition-transform duration-500 group-hover:scale-105" src="/lovable-uploads/488a5334-de8c-4152-99cd-49b9736d7c34.png" />
+              <img alt="Detailed cross-section of silicon photonic chipset architecture" className="rounded-xl shadow-2xl shadow-primary/20 transition-transform duration-500 group-hover:scale-105" src={logo} />
               {/* Glow effect */}
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-secondary/10 rounded-xl pointer-events-none" />
             </div>
