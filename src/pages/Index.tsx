@@ -55,8 +55,32 @@ const Index = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   return <div className="min-h-screen bg-background">
+      {/* Fixed Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur border-b border-border">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="LightRail Logo" className="h-8 w-8" />
+            <span className="text-xl font-bold text-primary">LightRail</span>
+          </div>
+          <div className="hidden md:flex items-center gap-6">
+            <a href="#" className="text-sm font-medium text-primary">Home</a>
+            <a href="/monitor" className="text-sm hover:text-primary transition-colors">Portal</a>
+            <a href="/benchmark" className="text-sm hover:text-primary transition-colors">Benchmark</a>
+            <a href="/pricing" className="text-sm hover:text-primary transition-colors">Pricing</a>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={() => window.location.href = '/monitor/auth'}>
+              Sign In
+            </Button>
+            <Button size="sm" onClick={() => setContactDialogOpen(true)}>
+              Get Started
+            </Button>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 z-0">
           <img src={heroChipset} alt="Silicon photonic chipset with glowing light paths" className="w-full h-full object-cover opacity-40" style={{
           transform: `translateY(${scrollY * 0.5}px)`
@@ -66,19 +90,6 @@ const Index = () => {
         
         {/* Animated particles overlay */}
         <AnimatedBackground />
-        
-        {/* Logo in upper left */}
-        <div className="absolute top-8 left-8 z-20 flex items-center gap-3">
-          <img src={logo} alt="LightRail Logo" className="h-12 w-12" />
-          <span className="text-3xl font-bold text-primary">LightRail</span>
-        </div>
-        
-        {/* Customer Portal Link */}
-        <div className="absolute top-8 right-8 z-20">
-          <Button variant="outline" onClick={() => window.location.href = '/monitor'}>
-            Customer Portal
-          </Button>
-        </div>
         
         <div className="relative z-10 container mx-auto px-4 py-32 text-center">
           <Badge variant="default" className="mb-6 px-4 py-2 text-sm">
