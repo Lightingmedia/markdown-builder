@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Zap,
+  Cpu,
   LayoutDashboard,
   FlaskConical,
   Link2,
@@ -76,7 +76,7 @@ export default function FeoaLayout() {
         <Sidebar className="border-r border-border">
           <SidebarHeader className="p-4 border-b border-border">
             <div className="flex items-center gap-2">
-              <Zap className="h-6 w-6 text-primary" />
+              <Cpu className="h-6 w-6 text-primary" />
               <span className="text-xl font-bold">LightRail</span>
             </div>
           </SidebarHeader>

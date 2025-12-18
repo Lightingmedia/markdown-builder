@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, Loader2 } from "lucide-react";
+import { Cpu, Loader2 } from "lucide-react";
 
 export default function FeoaAuth() {
   const [email, setEmail] = useState("");
@@ -85,7 +85,7 @@ export default function FeoaAuth() {
       <Card className="w-full max-w-md border-2 border-primary/30">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Zap className="h-8 w-8 text-primary" />
+            <Cpu className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold">LightRail</span>
           </div>
           <CardTitle>Facility Energy Optimisation Agent</CardTitle>
