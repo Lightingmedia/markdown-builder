@@ -70,7 +70,10 @@ const TestimonialsCarousel = () => {
     <div className="max-w-5xl mx-auto">
       <Carousel 
         setApi={setApi}
-        opts={{ loop: true }}
+        opts={{ 
+          loop: true,
+          duration: 30,
+        }}
         plugins={[
           Autoplay({
             delay: 4000,
