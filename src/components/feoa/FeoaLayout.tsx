@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import { useNavigate, useLocation, Outlet, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
@@ -29,6 +29,7 @@ import {
   Settings,
   LogOut,
   User,
+  Home,
 } from "lucide-react";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -75,10 +76,11 @@ export default function FeoaLayout() {
       <div className="min-h-screen flex w-full bg-background">
         <Sidebar className="border-r border-border">
           <SidebarHeader className="p-4 border-b border-border">
-            <div className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <Cpu className="h-6 w-6 text-primary" />
               <span className="text-xl font-bold">LightRail</span>
-            </div>
+              <Home className="h-4 w-4 text-muted-foreground ml-auto" />
+            </Link>
           </SidebarHeader>
           <SidebarContent className="p-2">
             <SidebarMenu>

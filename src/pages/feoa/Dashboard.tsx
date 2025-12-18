@@ -3,7 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { exportAITrainingCostsPDF } from "@/lib/pdfExport";
+import EnergyComparisonTool from "@/components/feoa/EnergyComparisonTool";
 import {
   LineChart,
   Line,
@@ -18,7 +21,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Zap, Cpu, DollarSign, Activity, AlertTriangle, CheckCircle, Clock, Leaf, Flame } from "lucide-react";
+import { Zap, Cpu, DollarSign, Activity, AlertTriangle, CheckCircle, Clock, Leaf, Flame, FileDown, Scale } from "lucide-react";
 
 interface Recommendation {
   id: string;
@@ -214,9 +217,13 @@ export default function FeoaDashboard() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="facility" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="facility">Facility Metrics</TabsTrigger>
           <TabsTrigger value="ai-training">AI Training Costs</TabsTrigger>
+          <TabsTrigger value="comparison">
+            <Scale className="h-4 w-4 mr-1" />
+            Compare
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="facility" className="space-y-6 mt-6">
@@ -376,6 +383,26 @@ export default function FeoaDashboard() {
         </TabsContent>
 
         <TabsContent value="ai-training" className="space-y-6 mt-6">
+          {/* Header with Export Button */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">AI Model Training Costs</h2>
+              <p className="text-sm text-muted-foreground">Track energy and cost across trained models</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => exportAITrainingCostsPDF(aiTrainingCosts, {
+                totalCost: totalTrainingCost,
+                totalEnergy: totalTrainingEnergy,
+                totalCarbon: totalCarbon,
+              })}
+              disabled={aiTrainingCosts.length === 0}
+            >
+              <FileDown className="h-4 w-4 mr-2" />
+              Export PDF
+            </Button>
+          </div>
+
           {/* AI Training Cost KPIs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="border-2 border-destructive/20">
@@ -523,6 +550,10 @@ export default function FeoaDashboard() {
               </ScrollArea>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="comparison" className="mt-6">
+          <EnergyComparisonTool />
         </TabsContent>
       </Tabs>
     </div>
