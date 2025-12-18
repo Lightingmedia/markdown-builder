@@ -55,7 +55,7 @@ export default function FeoaAuth() {
     } else {
       toast({
         title: "Account created",
-        description: "You can now sign in to FEOA."
+        description: "You can now sign in to LightRail."
       });
     }
     setLoading(false);
@@ -86,7 +86,7 @@ export default function FeoaAuth() {
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Zap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold">FEOA</span>
+            <span className="text-2xl font-bold">LightRail</span>
           </div>
           <CardTitle>Facility Energy Optimisation Agent</CardTitle>
           <CardDescription>

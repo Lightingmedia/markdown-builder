@@ -289,7 +289,7 @@ export default function Reports() {
       <Card>
         <CardHeader>
           <CardTitle>AI Recommendations</CardTitle>
-          <CardDescription>All recommendations from the FEOA Architect</CardDescription>
+          <CardDescription>All recommendations from the LightRail Architect</CardDescription>
         </CardHeader>
         <CardContent>
           {recommendations.length === 0 ? (
