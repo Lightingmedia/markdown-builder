@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { exportAITrainingCostsPDF } from "@/lib/pdfExport";
 import EnergyComparisonTool from "@/components/feoa/EnergyComparisonTool";
+import EfficiencyComparison from "@/components/feoa/EfficiencyComparison";
 import {
   LineChart,
   Line,
@@ -22,7 +23,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Zap, Cpu, DollarSign, Activity, AlertTriangle, CheckCircle, Clock, Leaf, Flame, FileDown, Scale } from "lucide-react";
+import { Zap, Cpu, DollarSign, Activity, AlertTriangle, CheckCircle, Clock, Leaf, Flame, FileDown, Scale, Calculator } from "lucide-react";
 
 interface Recommendation {
   id: string;
@@ -155,10 +156,14 @@ export default function FeoaDashboard() {
         const energyScore = totalTokens > 0 ? (avgGpuWattage / totalTokens) * 1000 : 12.5;
         const efficiency = Math.min(100, Math.max(0, 100 - (avgGpuWattage / 300) * 100));
         
+        // Calculate monthly energy cost: avgWattage * hours/month / 1000 (kWh) * $/kWh
+        const monthlyKwh = (avgGpuWattage * 730) / 1000; // 730 hours in a month
+        const monthlyCost = Math.round(monthlyKwh * 0.12); // $0.12/kWh average
+        
         setMetrics({
           energyScore: Number(energyScore.toFixed(1)),
           gpuEfficiency: Math.round(efficiency),
-          projectedSavings: Math.round((100 - efficiency) * 12),
+          projectedSavings: monthlyCost || 87, // Monthly energy cost in dollars
           loadStatus: avgGpuWattage > 200 ? "High" : avgGpuWattage > 100 ? "Optimal" : "Low",
         });
       }
@@ -289,8 +294,12 @@ export default function FeoaDashboard() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="facility" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="facility">Facility Metrics</TabsTrigger>
+          <TabsTrigger value="roi-calculator">
+            <Calculator className="h-4 w-4 mr-1" />
+            ROI Calculator
+          </TabsTrigger>
           <TabsTrigger value="ai-training">AI Training Costs</TabsTrigger>
           <TabsTrigger value="comparison">
             <Scale className="h-4 w-4 mr-1" />
@@ -446,13 +455,15 @@ export default function FeoaDashboard() {
                 <Card className="border-2 border-primary/20">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Projected Monthly Savings
+                      Est. Monthly Energy Cost
                     </CardTitle>
                     <DollarSign className="h-4 w-4 text-primary" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold">${(metrics.projectedSavings || 1200).toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">Based on current optimisations</p>
+                    <p className="text-xs text-muted-foreground">
+                      @ $0.12/kWh × {Math.round((metrics.gpuEfficiency || 85) * 7.3)} kWh/mo
+                    </p>
                   </CardContent>
                 </Card>
 
@@ -658,6 +669,10 @@ export default function FeoaDashboard() {
               </ScrollArea>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="roi-calculator" className="space-y-6 mt-6">
+          <EfficiencyComparison />
         </TabsContent>
 
         <TabsContent value="ai-training" className="space-y-6 mt-6">
