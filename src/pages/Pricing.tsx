@@ -5,6 +5,30 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Zap, Check, Building2, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
 import ContactFormDialog from "@/components/ContactFormDialog";
+import SEO from "@/components/SEO";
+
+const pricingStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "LightRail AI Energy Optimization Platform",
+  "description": "Industrial IoT SaaS for facility energy optimization with AI-powered recommendations",
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Starter",
+      "price": "499",
+      "priceCurrency": "USD",
+      "priceValidUntil": "2025-12-31"
+    },
+    {
+      "@type": "Offer", 
+      "name": "Professional",
+      "price": "1499",
+      "priceCurrency": "USD",
+      "priceValidUntil": "2025-12-31"
+    }
+  ]
+};
 
 const pricingPlans = [
   {
@@ -62,6 +86,12 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Pricing - Energy Optimization Plans"
+        description="Flexible pricing plans for LightRail AI's facility energy optimization platform. From $499/month for startups to enterprise solutions with unlimited endpoints."
+        canonical="/pricing"
+        structuredData={pricingStructuredData}
+      />
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">

@@ -12,6 +12,23 @@ import chipsetCrossSection from "@/assets/chipset-cross-section.jpg";
 import dataCenter from "@/assets/data-center.jpg";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import ContactFormDialog from "@/components/ContactFormDialog";
+import SEO from "@/components/SEO";
+
+const homeStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "LightRail AI Photonic Computing Infrastructure",
+  "description": "Silicon photonic chipsets and TPU server racks delivering 100x energy efficiency for AI workloads with zero water usage.",
+  "brand": {
+    "@type": "Brand",
+    "name": "LightRail AI"
+  },
+  "offers": {
+    "@type": "AggregateOffer",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  }
+};
 
 const Index = () => {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
@@ -54,6 +71,12 @@ const Index = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   return <div className="min-h-screen bg-background">
+      <SEO 
+        title="Photonic Computing Infrastructure for AI - 100x Energy Efficiency"
+        description="LightRail AI delivers next-generation photonic computing infrastructure with 100x energy efficiency and zero water usage. Transform AI data centers with silicon photonics technology."
+        canonical="/"
+        structuredData={homeStructuredData}
+      />
       {/* Fixed Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
