@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -55,6 +56,7 @@ export default function EnergyLab() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("ingest");
   const [isLiveActive] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [chatMessages, setChatMessages] = useState<Array<{ role: string; content: string }>>([]);
   const [chatInput, setChatInput] = useState("");
   const [isAnalysing, setIsAnalysing] = useState(false);
@@ -67,6 +69,12 @@ export default function EnergyLab() {
   const [hvacSetpoint, setHvacSetpoint] = useState([24]);
   const [occupancy, setOccupancy] = useState([75]);
   const [modelVerbosity, setModelVerbosity] = useState([500]);
+
+  useEffect(() => {
+    // Simulate initial data loading
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Calculate predicted consumption based on sliders
   const predictedConsumption =
@@ -163,57 +171,83 @@ export default function EnergyLab() {
         {/* Data Ingest Tab */}
         <TabsContent value="ingest" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Manual Upload</CardTitle>
-                <CardDescription>Upload CSV/Excel files with historical facility data</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
-                  <FileSpreadsheet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <Label htmlFor="file-upload" className="cursor-pointer">
-                    <span className="text-primary font-medium">Click to upload</span>
-                    <span className="text-muted-foreground"> or drag and drop</span>
-                  </Label>
-                  <Input
-                    id="file-upload"
-                    type="file"
-                    accept=".csv,.xlsx,.xls"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                  />
-                  <p className="text-sm text-muted-foreground mt-2">CSV, XLSX up to 50MB</p>
-                </div>
-              </CardContent>
-            </Card>
+            {isLoading ? (
+              <>
+                <Card>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-4 w-48 mt-2" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-40 w-full rounded-lg" />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-4 w-48 mt-2" />
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-4 w-full" />
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Manual Upload</CardTitle>
+                    <CardDescription>Upload CSV/Excel files with historical facility data</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
+                      <FileSpreadsheet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <Label htmlFor="file-upload" className="cursor-pointer">
+                        <span className="text-primary font-medium">Click to upload</span>
+                        <span className="text-muted-foreground"> or drag and drop</span>
+                      </Label>
+                      <Input
+                        id="file-upload"
+                        type="file"
+                        accept=".csv,.xlsx,.xls"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                      />
+                      <p className="text-sm text-muted-foreground mt-2">CSV, XLSX up to 50MB</p>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  Live Data Status
-                  {isLiveActive && (
-                    <span className="relative flex h-3 w-3">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-                    </span>
-                  )}
-                </CardTitle>
-                <CardDescription>Real-time webhook data ingestion</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Badge variant={isLiveActive ? "default" : "secondary"}>
-                    {isLiveActive ? "Active" : "Inactive"}
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    Webhook endpoint configured
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Configure webhooks in the Connectivity page to send live telemetry data.
-                </p>
-              </CardContent>
-            </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      Live Data Status
+                      {isLiveActive && (
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                        </span>
+                      )}
+                    </CardTitle>
+                    <CardDescription>Real-time webhook data ingestion</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={isLiveActive ? "default" : "secondary"}>
+                        {isLiveActive ? "Active" : "Inactive"}
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        Webhook endpoint configured
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Configure webhooks in the Connectivity page to send live telemetry data.
+                    </p>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </div>
         </TabsContent>
 

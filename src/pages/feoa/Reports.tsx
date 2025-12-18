@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -54,16 +55,19 @@ export default function Reports() {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [dateRange, setDateRange] = useState("7d");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
+      setIsLoading(true);
       const { data } = await supabase
         .from("recommendations")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (data) setRecommendations(data);
+      setIsLoading(false);
     };
 
     fetchRecommendations();
@@ -296,7 +300,27 @@ export default function Reports() {
           <CardDescription>All recommendations from the LightRail Architect</CardDescription>
         </CardHeader>
         <CardContent>
-          {recommendations.length === 0 ? (
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-4 border rounded-lg space-y-2">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-2">
+                      <Skeleton className="h-4 w-4 rounded" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-5 w-48" />
+                        <Skeleton className="h-4 w-64" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recommendations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <p>No recommendations yet.</p>
               <p className="text-sm">Generate a report or upload data to receive insights.</p>
