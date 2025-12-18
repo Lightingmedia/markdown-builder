@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Zap, Check, Building2, Cpu } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowRight, Zap, Check } from "lucide-react";
 import ContactFormDialog from "@/components/ContactFormDialog";
 import SEO from "@/components/SEO";
+import Navigation from "@/components/Navigation";
 
 const pricingStructuredData = {
   "@context": "https://schema.org",
@@ -92,27 +92,7 @@ export default function Pricing() {
         canonical="/pricing"
         structuredData={pricingStructuredData}
       />
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <Cpu className="h-7 w-7 text-primary" aria-hidden="true" />
-            <span className="text-xl font-bold text-primary">LightRail AI</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-6">
-            <Link to="/" className="text-sm hover:text-primary transition-colors">Home</Link>
-            <Link to="/monitor" className="text-sm hover:text-primary transition-colors">Portal</Link>
-            <Link to="/benchmark" className="text-sm hover:text-primary transition-colors">Benchmark</Link>
-            <Link to="/pricing" className="text-sm text-primary font-medium">Pricing</Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link to="/monitor/auth">
-              <Button variant="outline" size="sm">Sign In</Button>
-            </Link>
-            <Button size="sm" onClick={() => setContactOpen(true)}>Get Started</Button>
-          </div>
-        </div>
-      </nav>
+      <Navigation onGetStarted={() => setContactOpen(true)} />
 
       {/* Hero */}
       <section className="pt-32 pb-16 container mx-auto px-4 text-center">
