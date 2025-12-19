@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Box, Cpu, Cable, AlertCircle, Save } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import { Plus, Trash2, Box, Cpu, Cable, AlertCircle, Save, Download, Upload, FileJson, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { Json } from "@/integrations/supabase/types";
 
@@ -27,6 +28,26 @@ interface Project {
   name: string;
 }
 
+interface KiCadComponent {
+  reference: string;
+  value: string;
+  footprint?: string;
+  library?: string;
+}
+
+interface KiCadNet {
+  code: string;
+  name: string;
+  nodes?: Array<{ ref: string; pin: string }>;
+}
+
+interface AltiumComponent {
+  Designator: string;
+  Comment: string;
+  Footprint?: string;
+  Description?: string;
+}
+
 const OBJECT_TYPES = [
   { value: "BLOCK", label: "Block", icon: Box },
   { value: "COMPONENT", label: "Component", icon: Cpu },
@@ -37,6 +58,7 @@ const OBJECT_TYPES = [
 export default function DesignCanvas() {
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get("project");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [project, setProject] = useState<Project | null>(null);
   const [objects, setObjects] = useState<DesignObject[]>([]);
@@ -45,6 +67,7 @@ export default function DesignCanvas() {
   const [newObjectType, setNewObjectType] = useState("COMPONENT");
   const [newObjectName, setNewObjectName] = useState("");
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const fetchProjectAndObjects = async () => {
     if (!projectId) {
@@ -161,6 +184,227 @@ export default function DesignCanvas() {
     }
   };
 
+  // Export functions
+  const exportAsJSON = () => {
+    const exportData = {
+      format: "PCB-Copilot-v1",
+      project: project?.name,
+      exportedAt: new Date().toISOString(),
+      objects: objects.map(obj => ({
+        type: obj.type,
+        name: obj.name,
+        metadata: obj.metadata
+      }))
+    };
+    downloadFile(JSON.stringify(exportData, null, 2), `${project?.name || "design"}.json`, "application/json");
+    toast.success("Exported as JSON");
+  };
+
+  const exportAsKiCad = () => {
+    // Export in KiCad-compatible netlist format
+    const components = objects.filter(o => o.type === "COMPONENT");
+    const nets = objects.filter(o => o.type === "NET");
+    
+    let kicadContent = `# KiCad Netlist Export\n`;
+    kicadContent += `# Project: ${project?.name}\n`;
+    kicadContent += `# Exported: ${new Date().toISOString()}\n\n`;
+    
+    kicadContent += `(components\n`;
+    components.forEach((comp, idx) => {
+      kicadContent += `  (comp (ref "${comp.name}")\n`;
+      kicadContent += `    (value "${comp.metadata.value || comp.name}")\n`;
+      if (comp.metadata.footprint) {
+        kicadContent += `    (footprint "${comp.metadata.footprint}")\n`;
+      }
+      kicadContent += `  )\n`;
+    });
+    kicadContent += `)\n\n`;
+    
+    kicadContent += `(nets\n`;
+    nets.forEach((net, idx) => {
+      kicadContent += `  (net (code "${idx + 1}") (name "${net.name}"))\n`;
+    });
+    kicadContent += `)\n`;
+    
+    downloadFile(kicadContent, `${project?.name || "design"}.net`, "text/plain");
+    toast.success("Exported in KiCad format");
+  };
+
+  const exportAsAltium = () => {
+    // Export in Altium-compatible CSV format
+    const components = objects.filter(o => o.type === "COMPONENT");
+    
+    let csvContent = "Designator,Comment,Footprint,Description\n";
+    components.forEach(comp => {
+      const designator = comp.name;
+      const comment = (comp.metadata.value as string) || "";
+      const footprint = (comp.metadata.footprint as string) || "";
+      const description = (comp.metadata.description as string) || "";
+      csvContent += `"${designator}","${comment}","${footprint}","${description}"\n`;
+    });
+    
+    downloadFile(csvContent, `${project?.name || "design"}_altium.csv`, "text/csv");
+    toast.success("Exported in Altium CSV format");
+  };
+
+  const downloadFile = (content: string, filename: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Import functions
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !projectId) return;
+
+    setImporting(true);
+    const reader = new FileReader();
+    
+    reader.onload = async (e) => {
+      const content = e.target?.result as string;
+      
+      try {
+        let importedObjects: Array<{ type: string; name: string; metadata: Record<string, unknown> }> = [];
+        
+        if (file.name.endsWith(".json")) {
+          importedObjects = parseJSONImport(content);
+        } else if (file.name.endsWith(".net")) {
+          importedObjects = parseKiCadImport(content);
+        } else if (file.name.endsWith(".csv")) {
+          importedObjects = parseAltiumCSVImport(content);
+        } else {
+          throw new Error("Unsupported file format");
+        }
+
+        if (importedObjects.length === 0) {
+          toast.error("No objects found in file");
+          setImporting(false);
+          return;
+        }
+
+        // Insert imported objects
+        const { data, error } = await supabase
+          .from("pcb_design_objects")
+          .insert(
+            importedObjects.map(obj => ({
+              project_id: projectId,
+              type: obj.type,
+              name: obj.name,
+              metadata: obj.metadata as Json,
+            }))
+          )
+          .select();
+
+        if (error) {
+          throw error;
+        }
+
+        const formattedData = (data || []).map(obj => ({
+          ...obj,
+          metadata: (obj.metadata as Record<string, unknown>) || {}
+        }));
+        
+        setObjects([...formattedData, ...objects]);
+        toast.success(`Imported ${importedObjects.length} objects`);
+      } catch (error) {
+        console.error("Import error:", error);
+        toast.error("Failed to import file");
+      }
+      
+      setImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    };
+    
+    reader.readAsText(file);
+  };
+
+  const parseJSONImport = (content: string): Array<{ type: string; name: string; metadata: Record<string, unknown> }> => {
+    const data = JSON.parse(content);
+    
+    // Handle PCB-Copilot format
+    if (data.format === "PCB-Copilot-v1" && data.objects) {
+      return data.objects;
+    }
+    
+    // Handle generic array of objects
+    if (Array.isArray(data)) {
+      return data.map(item => ({
+        type: item.type || "COMPONENT",
+        name: item.name || item.reference || item.designator || "Unknown",
+        metadata: item.metadata || item
+      }));
+    }
+    
+    return [];
+  };
+
+  const parseKiCadImport = (content: string): Array<{ type: string; name: string; metadata: Record<string, unknown> }> => {
+    const results: Array<{ type: string; name: string; metadata: Record<string, unknown> }> = [];
+    
+    // Parse components
+    const compMatches = content.matchAll(/\(comp\s+\(ref\s+"([^"]+)"\)\s*\(value\s+"([^"]+)"\)/g);
+    for (const match of compMatches) {
+      results.push({
+        type: "COMPONENT",
+        name: match[1],
+        metadata: { value: match[2] }
+      });
+    }
+    
+    // Parse nets
+    const netMatches = content.matchAll(/\(net\s+\(code\s+"[^"]+"\)\s+\(name\s+"([^"]+)"\)\)/g);
+    for (const match of netMatches) {
+      results.push({
+        type: "NET",
+        name: match[1],
+        metadata: {}
+      });
+    }
+    
+    return results;
+  };
+
+  const parseAltiumCSVImport = (content: string): Array<{ type: string; name: string; metadata: Record<string, unknown> }> => {
+    const lines = content.split("\n").filter(line => line.trim());
+    if (lines.length < 2) return [];
+    
+    const headers = lines[0].split(",").map(h => h.replace(/"/g, "").trim().toLowerCase());
+    const designatorIdx = headers.findIndex(h => h === "designator" || h === "reference");
+    const commentIdx = headers.findIndex(h => h === "comment" || h === "value");
+    const footprintIdx = headers.findIndex(h => h === "footprint");
+    const descIdx = headers.findIndex(h => h === "description");
+    
+    const results: Array<{ type: string; name: string; metadata: Record<string, unknown> }> = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(",").map(v => v.replace(/"/g, "").trim());
+      const designator = designatorIdx >= 0 ? values[designatorIdx] : "";
+      
+      if (designator) {
+        results.push({
+          type: "COMPONENT",
+          name: designator,
+          metadata: {
+            value: commentIdx >= 0 ? values[commentIdx] : "",
+            footprint: footprintIdx >= 0 ? values[footprintIdx] : "",
+            description: descIdx >= 0 ? values[descIdx] : ""
+          }
+        });
+      }
+    }
+    
+    return results;
+  };
+
   if (!projectId) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -188,12 +432,56 @@ export default function DesignCanvas() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileImport}
+        accept=".json,.net,.csv"
+        className="hidden"
+      />
+
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-bold">{project?.name || "Design Canvas"}</h2>
           <p className="text-muted-foreground">{objects.length} design objects</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {/* Import Button */}
+          <Button 
+            variant="outline" 
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            {importing ? "Importing..." : "Import"}
+          </Button>
+
+          {/* Export Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Export Format</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={exportAsJSON}>
+                <FileJson className="h-4 w-4 mr-2" />
+                JSON (PCB Copilot)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportAsKiCad}>
+                <FileText className="h-4 w-4 mr-2" />
+                KiCad Netlist (.net)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportAsAltium}>
+                <FileText className="h-4 w-4 mr-2" />
+                Altium CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button variant="outline" onClick={handleSaveVersion}>
             <Save className="h-4 w-4 mr-2" />
             Save Version
@@ -253,6 +541,17 @@ export default function DesignCanvas() {
           </Dialog>
         </div>
       </div>
+
+      <Card className="bg-muted/30">
+        <CardContent className="py-3">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span className="font-medium">Supported formats:</span>
+            <Badge variant="outline">JSON</Badge>
+            <Badge variant="outline">KiCad (.net)</Badge>
+            <Badge variant="outline">Altium CSV</Badge>
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="COMPONENT">
         <TabsList>
