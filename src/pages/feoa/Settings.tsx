@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, User, Bell, Shield } from "lucide-react";
 import { DataExport } from "@/components/feoa/DataExport";
+import { UserRoleManagement } from "@/components/feoa/UserRoleManagement";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -82,6 +83,9 @@ export default function Settings() {
 
   return (
     <div className="space-y-6 max-w-4xl">
+      {/* User Role Management (Admin Only) */}
+      <UserRoleManagement />
+
       {/* Data Export */}
       <DataExport />
 
