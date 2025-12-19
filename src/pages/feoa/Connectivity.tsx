@@ -10,7 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Copy, RefreshCw, CheckCircle, XCircle, Loader2, Send, Plus, Database, Cloud, Server, Monitor, Terminal, Activity, Zap, Settings2 } from "lucide-react";
+import { Copy, RefreshCw, CheckCircle, XCircle, Loader2, Send, Plus, Database, Cloud, Server, Monitor, Terminal, Activity, Zap, Settings2, BookOpen } from "lucide-react";
+import DataCenterOnboarding from "@/components/feoa/DataCenterOnboarding";
 
 interface AIModel {
   id: string;
@@ -389,13 +390,21 @@ docker run -d --gpus all --rm -p 9400:9400 \\
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="webhooks" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="onboarding" className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="onboarding" className="flex items-center gap-1">
+            <BookOpen className="h-4 w-4" />
+            Setup Guide
+          </TabsTrigger>
           <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
           <TabsTrigger value="gcp-gpu">Google Cloud GPU</TabsTrigger>
           <TabsTrigger value="integrations">API Integrations</TabsTrigger>
           <TabsTrigger value="ai-data">AI Training Data</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="onboarding" className="mt-6">
+          <DataCenterOnboarding />
+        </TabsContent>
 
         <TabsContent value="webhooks" className="space-y-6 mt-6">
           {/* Webhooks Section */}
