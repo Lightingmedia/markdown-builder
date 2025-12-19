@@ -33,9 +33,11 @@ import {
   Bell,
   TrendingUp,
   Building2,
+  CircuitBoard,
 } from "lucide-react";
 import { User as SupabaseUser } from "@supabase/supabase-js";
-
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, path: "/monitor" },
@@ -50,14 +52,24 @@ const menuItems = [
 
 export default function FeoaLayout() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data, error } = await supabase.rpc("is_admin");
+      if (!error && data === true) {
+        setIsAdmin(true);
+      }
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (!session?.user) {
         navigate("/monitor/auth");
+      } else {
+        checkAdminStatus();
       }
     });
 
@@ -65,6 +77,8 @@ export default function FeoaLayout() {
       setUser(session?.user ?? null);
       if (!session?.user) {
         navigate("/monitor/auth");
+      } else {
+        checkAdminStatus();
       }
     });
 
@@ -104,6 +118,33 @@ export default function FeoaLayout() {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+
+            {/* Admin-only PCB Copilot Link */}
+            {isAdmin && (
+              <>
+                <Separator className="my-3" />
+                <div className="px-2 mb-1">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Admin Tools
+                  </span>
+                </div>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => navigate("/pcb-copilot")}
+                      isActive={location.pathname.startsWith("/pcb-copilot")}
+                      className="w-full"
+                    >
+                      <CircuitBoard className="h-4 w-4" />
+                      <span>PCB Copilot</span>
+                      <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0">
+                        Admin
+                      </Badge>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </>
+            )}
           </SidebarContent>
           <SidebarFooter className="p-4 border-t border-border">
             <DropdownMenu>
