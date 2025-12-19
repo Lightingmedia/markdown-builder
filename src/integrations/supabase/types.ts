@@ -14,6 +14,167 @@ export type Database = {
   }
   public: {
     Tables: {
+      pcb_chat_messages: {
+        Row: {
+          chat_session_id: string
+          content: string
+          created_at: string | null
+          id: string
+          role: string
+          tool_calls: Json | null
+        }
+        Insert: {
+          chat_session_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          role: string
+          tool_calls?: Json | null
+        }
+        Update: {
+          chat_session_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          role?: string
+          tool_calls?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pcb_chat_messages_chat_session_id_fkey"
+            columns: ["chat_session_id"]
+            isOneToOne: false
+            referencedRelation: "pcb_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pcb_chat_sessions: {
+        Row: {
+          created_at: string | null
+          id: string
+          project_id: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          project_id: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          project_id?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pcb_chat_sessions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "pcb_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pcb_design_objects: {
+        Row: {
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          name: string
+          project_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          name: string
+          project_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string
+          project_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pcb_design_objects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "pcb_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pcb_design_versions: {
+        Row: {
+          created_at: string | null
+          design_snapshot: Json
+          id: string
+          project_id: string
+          summary_text: string | null
+          version_number: number
+        }
+        Insert: {
+          created_at?: string | null
+          design_snapshot?: Json
+          id?: string
+          project_id: string
+          summary_text?: string | null
+          version_number: number
+        }
+        Update: {
+          created_at?: string | null
+          design_snapshot?: Json
+          id?: string
+          project_id?: string
+          summary_text?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pcb_design_versions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "pcb_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pcb_projects: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          owner_user_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          owner_user_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          owner_user_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       processed_metrics: {
         Row: {
           ai_energy_score: number | null

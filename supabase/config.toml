@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.energy-webhook-handler]
 verify_jwt = false
+
+[functions.pcb-design-copilot]
+verify_jwt = true
