@@ -54,17 +54,27 @@ export default function Chat() {
   }, [messages]);
 
   const fetchProjects = async () => {
-    const { data, error } = await supabase
-      .from("pcb_projects")
-      .select("id, name")
-      .order("updated_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("pcb_projects")
+        .select("id, name")
+        .order("updated_at", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching projects:", error);
-    } else {
-      setProjects(data || []);
-      if (!selectedProject && data && data.length > 0) {
-        setSelectedProject(data[0].id);
+      if (error) {
+        console.error("Error fetching projects:", error);
+        toast.error("Failed to load projects");
+      } else {
+        setProjects(data || []);
+        if (!selectedProject && data && data.length > 0) {
+          setSelectedProject(data[0].id);
+        }
+      }
+    } catch (err) {
+      console.error("Error in fetchProjects:", err);
+    } finally {
+      // If no project will be selected, stop loading
+      if (!selectedProject && projects.length === 0) {
+        setLoading(false);
       }
     }
   };
@@ -72,24 +82,31 @@ export default function Chat() {
   const fetchSessions = async () => {
     if (!selectedProject) {
       setSessions([]);
+      setLoading(false);
       return;
     }
 
-    const { data, error } = await supabase
-      .from("pcb_chat_sessions")
-      .select("*")
-      .eq("project_id", selectedProject)
-      .order("created_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("pcb_chat_sessions")
+        .select("*")
+        .eq("project_id", selectedProject)
+        .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching sessions:", error);
-    } else {
-      setSessions(data || []);
-      if (data && data.length > 0 && !selectedSession) {
-        setSelectedSession(data[0].id);
+      if (error) {
+        console.error("Error fetching sessions:", error);
+        toast.error("Failed to load chat sessions");
+      } else {
+        setSessions(data || []);
+        if (data && data.length > 0 && !selectedSession) {
+          setSelectedSession(data[0].id);
+        }
       }
+    } catch (err) {
+      console.error("Error in fetchSessions:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fetchMessages = async () => {
@@ -112,7 +129,10 @@ export default function Chat() {
   };
 
   useEffect(() => {
-    fetchProjects();
+    const init = async () => {
+      await fetchProjects();
+    };
+    init();
   }, []);
 
   useEffect(() => {
@@ -120,6 +140,8 @@ export default function Chat() {
       setLoading(true);
       fetchSessions();
       setSearchParams({ project: selectedProject });
+    } else {
+      setLoading(false);
     }
   }, [selectedProject]);
 
@@ -184,6 +206,7 @@ export default function Chat() {
 
     // Call AI copilot edge function
     try {
+      console.log("Calling PCB Design Copilot edge function...");
       const { data: aiResponse, error: aiError } = await supabase.functions.invoke("pcb-design-copilot", {
         body: {
           message: userMessage,
@@ -192,7 +215,19 @@ export default function Chat() {
         },
       });
 
-      if (aiError) throw aiError;
+      console.log("Edge function response:", aiResponse, "Error:", aiError);
+
+      if (aiError) {
+        console.error("Edge function error:", aiError);
+        throw new Error(aiError.message || "Failed to call AI");
+      }
+
+      if (aiResponse?.error) {
+        console.error("AI error:", aiResponse.error);
+        toast.error(aiResponse.error);
+        setSending(false);
+        return;
+      }
 
       const assistantContent = aiResponse?.response || "I'm sorry, I couldn't process that request.";
 
@@ -212,7 +247,7 @@ export default function Chat() {
       setMessages(prev => [...prev, assistantMsgData]);
     } catch (error) {
       console.error("Error getting AI response:", error);
-      toast.error("Failed to get AI response");
+      toast.error(error instanceof Error ? error.message : "Failed to get AI response");
     }
 
     setSending(false);
