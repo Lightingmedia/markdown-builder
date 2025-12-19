@@ -63,19 +63,25 @@ export default function Chat() {
       if (error) {
         console.error("Error fetching projects:", error);
         toast.error("Failed to load projects");
-      } else {
-        setProjects(data || []);
-        if (!selectedProject && data && data.length > 0) {
-          setSelectedProject(data[0].id);
-        }
+        setProjects([]);
+        return;
+      }
+
+      const nextProjects = data || [];
+      setProjects(nextProjects);
+
+      // If URL contains a project that isn't accessible/visible, keep it selected
+      // but avoid blocking the UI in a loading state.
+      if (!selectedProject && nextProjects.length > 0) {
+        setSelectedProject(nextProjects[0].id);
       }
     } catch (err) {
       console.error("Error in fetchProjects:", err);
+      toast.error("Failed to load projects");
+      setProjects([]);
     } finally {
-      // If no project will be selected, stop loading
-      if (!selectedProject && projects.length === 0) {
-        setLoading(false);
-      }
+      // Always unblock the UI; sessions/messages have their own loading flow.
+      setLoading(false);
     }
   };
 
