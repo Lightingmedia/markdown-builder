@@ -19,9 +19,10 @@ Deno.serve(async (req) => {
 
     // Create the admin user
     const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email: 'lightrail@gmail.com',
-      password: 'liteRail',
-      email_confirm: true
+      email: 'admin@feoa.test',
+      password: 'testlight',
+      email_confirm: true,
+      user_metadata: { full_name: 'Admin' }
     })
 
     if (createError) {
