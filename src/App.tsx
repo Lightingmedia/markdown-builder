@@ -20,6 +20,14 @@ import Notifications from "./pages/feoa/Notifications";
 import TrendAnalysis from "./pages/feoa/TrendAnalysis";
 import Benchmark from "./pages/feoa/Benchmark";
 
+// PCB EDA Copilot (Admin Only)
+import PcbLayout from "./components/pcb/PcbLayout";
+import PcbProjects from "./pages/pcb/Projects";
+import PcbDesignCanvas from "./pages/pcb/DesignCanvas";
+import PcbVersions from "./pages/pcb/Versions";
+import PcbChat from "./pages/pcb/Chat";
+import PcbSettings from "./pages/pcb/Settings";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -46,6 +54,15 @@ const App = () => (
               <Route path="reports" element={<Reports />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="settings" element={<Settings />} />
+            </Route>
+
+            {/* PCB EDA Copilot Routes (Admin Only) */}
+            <Route path="/pcb-copilot" element={<PcbLayout />}>
+              <Route index element={<PcbProjects />} />
+              <Route path="design" element={<PcbDesignCanvas />} />
+              <Route path="versions" element={<PcbVersions />} />
+              <Route path="chat" element={<PcbChat />} />
+              <Route path="settings" element={<PcbSettings />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
