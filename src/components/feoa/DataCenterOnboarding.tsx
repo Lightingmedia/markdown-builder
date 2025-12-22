@@ -1,14 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Copy, Check, Download, Server, Webhook, Cloud, Activity, Shield, Zap, BookOpen, ExternalLink } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Copy, Check, Download, Server, Webhook, Cloud, Activity, Shield, Zap, BookOpen, ExternalLink, Globe, Leaf, Droplets } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { exportIntegrationDocumentation } from "@/lib/integrationDocsPdf";
+import { supabase } from "@/integrations/supabase/client";
 
+interface FacilityCoefficient {
+  id: string;
+  region_code: string;
+  region_name: string | null;
+  provider: string | null;
+  pue: number;
+  wue_l_per_kwh: number | null;
+  grid_co2_kg_per_kwh: number | null;
+  renewable_pct: number | null;
+}
 interface OnboardingStep {
   id: string;
   title: string;
@@ -21,11 +34,31 @@ export default function DataCenterOnboarding() {
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
   const [steps, setSteps] = useState<OnboardingStep[]>([
     { id: "prereq", title: "Review Prerequisites", description: "Ensure your infrastructure meets requirements", completed: false },
+    { id: "region", title: "Select Region", description: "Choose your data centre location", completed: false },
     { id: "auth", title: "Create API Credentials", description: "Generate authentication tokens", completed: false },
     { id: "webhook", title: "Configure Webhook Endpoint", description: "Set up data ingestion pipeline", completed: false },
     { id: "agent", title: "Deploy Monitoring Agent", description: "Install telemetry collection agent", completed: false },
     { id: "test", title: "Validate Connection", description: "Send test payload and verify data flow", completed: false },
   ]);
+  
+  const [facilities, setFacilities] = useState<FacilityCoefficient[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState("gcp");
+  const [selectedRegion, setSelectedRegion] = useState<string>("");
+
+  useEffect(() => {
+    const fetchFacilities = async () => {
+      const { data, error } = await supabase
+        .from("facility_coefficients")
+        .select("*")
+        .order("provider", { ascending: true })
+        .order("region_name", { ascending: true });
+      
+      if (!error && data) {
+        setFacilities(data);
+      }
+    };
+    fetchFacilities();
+  }, []);
 
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "lgwaccltpoogoukjyzke";
   const webhookUrl = `https://${projectId}.supabase.co/functions/v1/energy-webhook-handler`;
@@ -150,7 +183,7 @@ scrape_configs:
         </CardHeader>
         <CardContent>
           <Progress value={progress} className="h-2 mb-4" />
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
             {steps.map((step) => (
               <div
                 key={step.id}
@@ -164,6 +197,152 @@ scrape_configs:
               </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Global Region Selector */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="h-5 w-5 text-primary" />
+            Select Your Region
+          </CardTitle>
+          <CardDescription>Choose the data centre region closest to your infrastructure</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-4 flex-wrap">
+            <Select value={selectedProvider} onValueChange={(v) => { setSelectedProvider(v); setSelectedRegion(""); }}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select provider" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="gcp">Google Cloud</SelectItem>
+                <SelectItem value="aws">Amazon Web Services</SelectItem>
+                <SelectItem value="azure">Microsoft Azure</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {(() => {
+            const filteredFacilities = facilities.filter(f => f.provider === selectedProvider);
+            const groupedByContinent = filteredFacilities.reduce((acc, facility) => {
+              let continent = "Other";
+              const name = facility.region_name?.toLowerCase() || "";
+              
+              if (name.includes("usa") || name.includes("oregon") || name.includes("virginia") || 
+                  name.includes("ohio") || name.includes("california") || name.includes("washington") ||
+                  name.includes("canada") || name.includes("montreal") || name.includes("brazil") || 
+                  name.includes("são paulo") || name.includes("chile") || name.includes("santiago")) {
+                continent = "Americas";
+              } else if (name.includes("ireland") || name.includes("london") || name.includes("paris") || 
+                         name.includes("frankfurt") || name.includes("sweden") || name.includes("netherlands") ||
+                         name.includes("finland") || name.includes("norway") || name.includes("germany") ||
+                         name.includes("belgium") || name.includes("uk")) {
+                continent = "Europe";
+              } else if (name.includes("korea") || name.includes("seoul") || name.includes("japan") || 
+                         name.includes("tokyo") || name.includes("osaka") || name.includes("singapore") ||
+                         name.includes("sydney") || name.includes("australia") || name.includes("mumbai") ||
+                         name.includes("india") || name.includes("hong kong") || name.includes("jakarta") ||
+                         name.includes("taiwan") || name.includes("delhi")) {
+                continent = "Asia Pacific";
+              } else if (name.includes("bahrain") || name.includes("uae") || name.includes("dubai") ||
+                         name.includes("israel") || name.includes("tel aviv")) {
+                continent = "Middle East";
+              } else if (name.includes("south africa") || name.includes("cape town") || 
+                         name.includes("johannesburg")) {
+                continent = "Africa";
+              }
+              
+              if (!acc[continent]) acc[continent] = [];
+              acc[continent].push(facility);
+              return acc;
+            }, {} as Record<string, FacilityCoefficient[]>);
+
+            const sortedContinents = Object.keys(groupedByContinent).sort();
+            const selectedFacility = facilities.find(f => f.id === selectedRegion);
+
+            return (
+              <>
+                <Tabs defaultValue={sortedContinents[0] || "Americas"} className="w-full">
+                  <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted/50 p-1">
+                    {sortedContinents.map((continent) => (
+                      <TabsTrigger key={continent} value={continent} className="text-xs px-3">
+                        {continent} ({groupedByContinent[continent].length})
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  {Object.entries(groupedByContinent).map(([continent, regions]) => (
+                    <TabsContent key={continent} value={continent} className="mt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[280px] overflow-y-auto pr-2">
+                        {regions.map((facility) => (
+                          <button
+                            key={facility.id}
+                            onClick={() => {
+                              setSelectedRegion(facility.id);
+                              setSteps(prev => prev.map(s => s.id === "region" ? { ...s, completed: true } : s));
+                            }}
+                            className={`p-4 rounded-lg border text-left transition-all ${
+                              selectedRegion === facility.id
+                                ? "border-primary bg-primary/10"
+                                : "border-border/50 bg-background/50 hover:border-primary/50"
+                            }`}
+                          >
+                            <div className="font-medium text-sm">{facility.region_name}</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {facility.region_code}
+                            </div>
+                            <div className="flex gap-3 mt-2 text-xs">
+                              <span className="flex items-center gap-1">
+                                <Zap className="h-3 w-3 text-yellow-500" />
+                                PUE: {facility.pue}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Leaf className="h-3 w-3 text-emerald-500" />
+                                {facility.renewable_pct}%
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+
+                {selectedFacility && (
+                  <Card className="bg-muted/30 border-primary/30 mt-4">
+                    <CardContent className="p-4">
+                      <h4 className="font-medium mb-3">Selected: {selectedFacility.region_name}</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <div className="text-muted-foreground flex items-center gap-1">
+                            <Zap className="h-3 w-3" /> PUE
+                          </div>
+                          <div className="font-semibold">{selectedFacility.pue}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground flex items-center gap-1">
+                            <Droplets className="h-3 w-3" /> WUE
+                          </div>
+                          <div className="font-semibold">{selectedFacility.wue_l_per_kwh} L/kWh</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">CO₂ Intensity</div>
+                          <div className="font-semibold">{selectedFacility.grid_co2_kg_per_kwh} kg/kWh</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground flex items-center gap-1">
+                            <Leaf className="h-3 w-3" /> Renewable
+                          </div>
+                          <div className="font-semibold">{selectedFacility.renewable_pct}%</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            );
+          })()}
         </CardContent>
       </Card>
 
