@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.pcb-design-copilot]
 verify_jwt = true
+
+[functions.infrastructure-tools]
+verify_jwt = false
+
+[functions.infrastructure-advisor]
+verify_jwt = false

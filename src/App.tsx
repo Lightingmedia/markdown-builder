@@ -19,6 +19,8 @@ import Settings from "./pages/feoa/Settings";
 import Notifications from "./pages/feoa/Notifications";
 import TrendAnalysis from "./pages/feoa/TrendAnalysis";
 import Benchmark from "./pages/feoa/Benchmark";
+import OptimizationDashboard from "./pages/feoa/OptimizationDashboard";
+import SimulationInterface from "./pages/feoa/SimulationInterface";
 
 // PCB EDA Copilot (Admin Only)
 import PcbLayout from "./components/pcb/PcbLayout";
@@ -53,6 +55,8 @@ const App = () => (
               <Route path="connectivity" element={<Connectivity />} />
               <Route path="reports" element={<Reports />} />
               <Route path="notifications" element={<Notifications />} />
+              <Route path="optimization" element={<OptimizationDashboard />} />
+              <Route path="simulation" element={<SimulationInterface />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 

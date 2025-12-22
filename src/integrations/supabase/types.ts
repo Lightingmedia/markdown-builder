@@ -14,6 +14,218 @@ export type Database = {
   }
   public: {
     Tables: {
+      accelerator_specs: {
+        Row: {
+          arch: string | null
+          created_at: string | null
+          id: string
+          mem_bandwidth_gbps: number | null
+          memory_gb: number
+          model: string
+          peak_fp16_tflops: number | null
+          tdp_w: number
+          updated_at: string | null
+          vendor: string
+        }
+        Insert: {
+          arch?: string | null
+          created_at?: string | null
+          id?: string
+          mem_bandwidth_gbps?: number | null
+          memory_gb: number
+          model: string
+          peak_fp16_tflops?: number | null
+          tdp_w: number
+          updated_at?: string | null
+          vendor: string
+        }
+        Update: {
+          arch?: string | null
+          created_at?: string | null
+          id?: string
+          mem_bandwidth_gbps?: number | null
+          memory_gb?: number
+          model?: string
+          peak_fp16_tflops?: number | null
+          tdp_w?: number
+          updated_at?: string | null
+          vendor?: string
+        }
+        Relationships: []
+      }
+      benchmarks: {
+        Row: {
+          accelerator_id: string | null
+          avg_power_w_per_device: number | null
+          batch_size: number | null
+          created_at: string | null
+          energy_kwh_total: number | null
+          id: string
+          model_name: string
+          precision: string | null
+          tokens_per_second: number | null
+          workload_type: string
+        }
+        Insert: {
+          accelerator_id?: string | null
+          avg_power_w_per_device?: number | null
+          batch_size?: number | null
+          created_at?: string | null
+          energy_kwh_total?: number | null
+          id?: string
+          model_name: string
+          precision?: string | null
+          tokens_per_second?: number | null
+          workload_type: string
+        }
+        Update: {
+          accelerator_id?: string | null
+          avg_power_w_per_device?: number | null
+          batch_size?: number | null
+          created_at?: string | null
+          energy_kwh_total?: number | null
+          id?: string
+          model_name?: string
+          precision?: string | null
+          tokens_per_second?: number | null
+          workload_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "benchmarks_accelerator_id_fkey"
+            columns: ["accelerator_id"]
+            isOneToOne: false
+            referencedRelation: "accelerator_specs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facility_coefficients: {
+        Row: {
+          created_at: string | null
+          grid_co2_kg_per_kwh: number | null
+          id: string
+          provider: string | null
+          pue: number
+          region_code: string
+          region_name: string | null
+          renewable_pct: number | null
+          updated_at: string | null
+          wue_l_per_kwh: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          grid_co2_kg_per_kwh?: number | null
+          id?: string
+          provider?: string | null
+          pue?: number
+          region_code: string
+          region_name?: string | null
+          renewable_pct?: number | null
+          updated_at?: string | null
+          wue_l_per_kwh?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          grid_co2_kg_per_kwh?: number | null
+          id?: string
+          provider?: string | null
+          pue?: number
+          region_code?: string
+          region_name?: string | null
+          renewable_pct?: number | null
+          updated_at?: string | null
+          wue_l_per_kwh?: number | null
+        }
+        Relationships: []
+      }
+      job_runs: {
+        Row: {
+          accelerator_id: string | null
+          avg_gpu_util_pct: number | null
+          avg_power_w: number | null
+          cloud_cost_usd: number | null
+          co2_kg_estimated: number | null
+          created_at: string | null
+          device_count: number | null
+          ended_at: string | null
+          energy_kwh_total: number | null
+          facility_id: string | null
+          id: string
+          job_name: string
+          metadata: Json | null
+          model_name: string | null
+          peak_gpu_util_pct: number | null
+          started_at: string | null
+          status: string | null
+          tokens_processed: number | null
+          user_id: string
+          water_l_estimated: number | null
+          workload_type: string | null
+        }
+        Insert: {
+          accelerator_id?: string | null
+          avg_gpu_util_pct?: number | null
+          avg_power_w?: number | null
+          cloud_cost_usd?: number | null
+          co2_kg_estimated?: number | null
+          created_at?: string | null
+          device_count?: number | null
+          ended_at?: string | null
+          energy_kwh_total?: number | null
+          facility_id?: string | null
+          id?: string
+          job_name: string
+          metadata?: Json | null
+          model_name?: string | null
+          peak_gpu_util_pct?: number | null
+          started_at?: string | null
+          status?: string | null
+          tokens_processed?: number | null
+          user_id: string
+          water_l_estimated?: number | null
+          workload_type?: string | null
+        }
+        Update: {
+          accelerator_id?: string | null
+          avg_gpu_util_pct?: number | null
+          avg_power_w?: number | null
+          cloud_cost_usd?: number | null
+          co2_kg_estimated?: number | null
+          created_at?: string | null
+          device_count?: number | null
+          ended_at?: string | null
+          energy_kwh_total?: number | null
+          facility_id?: string | null
+          id?: string
+          job_name?: string
+          metadata?: Json | null
+          model_name?: string | null
+          peak_gpu_util_pct?: number | null
+          started_at?: string | null
+          status?: string | null
+          tokens_processed?: number | null
+          user_id?: string
+          water_l_estimated?: number | null
+          workload_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_runs_accelerator_id_fkey"
+            columns: ["accelerator_id"]
+            isOneToOne: false
+            referencedRelation: "accelerator_specs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_runs_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facility_coefficients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pcb_chat_messages: {
         Row: {
           chat_session_id: string
