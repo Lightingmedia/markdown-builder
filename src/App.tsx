@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import JobScheduler from "@/pages/feoa/JobScheduler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="notifications" element={<Notifications />} />
               <Route path="optimization" element={<OptimizationDashboard />} />
               <Route path="simulation" element={<SimulationInterface />} />
+              <Route path="scheduler" element={<JobScheduler />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 

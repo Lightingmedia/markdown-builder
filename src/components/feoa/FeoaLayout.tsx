@@ -36,6 +36,7 @@ import {
   CircuitBoard,
   Server,
   Calculator,
+  CalendarClock,
 } from "lucide-react";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ const menuItems = [
   { title: "Benchmark", icon: Building2, path: "/monitor/benchmark" },
   { title: "Optimization", icon: Server, path: "/monitor/optimization" },
   { title: "Simulation", icon: Calculator, path: "/monitor/simulation" },
+  { title: "Job Scheduler", icon: CalendarClock, path: "/monitor/scheduler" },
   { title: "Connectivity", icon: Link2, path: "/monitor/connectivity" },
   { title: "Eco-Efficiency Reports", icon: FileBarChart, path: "/monitor/reports" },
   { title: "Notifications", icon: Bell, path: "/monitor/notifications" },
