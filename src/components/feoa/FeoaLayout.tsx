@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Outlet, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
   SidebarContent,
@@ -15,20 +13,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Cpu,
   LayoutDashboard,
   FlaskConical,
   Link2,
   FileBarChart,
   Settings,
-  LogOut,
-  User,
   Home,
   Bell,
   TrendingUp,
@@ -38,7 +28,6 @@ import {
   Calculator,
   CalendarClock,
 } from "lucide-react";
-import { User as SupabaseUser } from "@supabase/supabase-js";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
@@ -57,46 +46,11 @@ const menuItems = [
 ];
 
 export default function FeoaLayout() {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      const { data, error } = await supabase.rpc("is_admin");
-      if (!error && data === true) {
-        setIsAdmin(true);
-      }
-    };
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (!session?.user) {
-        navigate("/monitor/auth");
-      } else {
-        checkAdminStatus();
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (!session?.user) {
-        navigate("/monitor/auth");
-      } else {
-        checkAdminStatus();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/monitor/auth");
-  };
-
-  if (!user) return null;
+  // Admin mode - no auth required
+  const isAdmin = true;
 
   return (
     <SidebarProvider>
@@ -153,28 +107,13 @@ export default function FeoaLayout() {
             )}
           </SidebarContent>
           <SidebarFooter className="p-4 border-t border-border">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="w-full justify-start gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">
-                      {user.email?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="truncate text-sm">{user.email}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem onClick={() => navigate("/monitor/settings")}>
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button variant="ghost" className="w-full justify-start gap-2">
+              <Avatar className="h-6 w-6">
+                <AvatarFallback className="text-xs">A</AvatarFallback>
+              </Avatar>
+              <span className="truncate text-sm">Admin</span>
+              <Badge variant="secondary" className="ml-auto text-[10px]">Admin</Badge>
+            </Button>
           </SidebarFooter>
         </Sidebar>
 
