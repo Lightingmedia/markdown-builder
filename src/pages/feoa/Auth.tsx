@@ -88,8 +88,10 @@ export default function FeoaAuth() {
             <Cpu className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold">LightRail</span>
           </div>
-          <CardTitle>Light for HPC</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl bg-gradient-to-r from-primary via-emerald-400 to-primary bg-[length:200%_auto] animate-[gradient_3s_linear_infinite] bg-clip-text text-transparent">
+            Light for HPC
+          </CardTitle>
+          <CardDescription className="animate-fade-in">
             Photonic-powered energy intelligence for high-performance computing
           </CardDescription>
         </CardHeader>
