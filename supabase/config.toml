@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.infrastructure-advisor]
 verify_jwt = false
+
+[functions.kaggle-data-import]
+verify_jwt = false
