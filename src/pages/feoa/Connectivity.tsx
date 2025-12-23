@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Copy, RefreshCw, CheckCircle, XCircle, Loader2, Send, Plus, Database, Cloud, Server, Monitor, Terminal, Activity, Zap, Settings2, BookOpen } from "lucide-react";
+import { Copy, RefreshCw, CheckCircle, XCircle, Loader2, Send, Plus, Database, Cloud, Server, Monitor, Terminal, Activity, Zap, Settings2, BookOpen, Download } from "lucide-react";
 import DataCenterOnboarding from "@/components/feoa/DataCenterOnboarding";
 
 interface AIModel {
@@ -231,6 +231,62 @@ export default function Connectivity() {
 
   const [selectedVendor, setSelectedVendor] = useState<"nvidia" | "google_tpu" | "amd">("nvidia");
 
+  // Kaggle import state
+  const [isImportingCarbon, setIsImportingCarbon] = useState(false);
+  const [isImportingBenchmarks, setIsImportingBenchmarks] = useState(false);
+  const [carbonImported, setCarbonImported] = useState(false);
+  const [benchmarksImported, setBenchmarksImported] = useState(false);
+
+  const importCarbonData = async () => {
+    setIsImportingCarbon(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("kaggle-data-import", {
+        body: { action: "import_carbon_intensity" },
+      });
+
+      if (error) throw error;
+
+      setCarbonImported(true);
+      toast({
+        title: "Carbon Intensity Data Imported",
+        description: `Successfully imported ${data.imported_count || 'facility'} coefficient records.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Import Failed",
+        description: "Could not import carbon intensity data. Check your Kaggle credentials.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsImportingCarbon(false);
+    }
+  };
+
+  const importBenchmarkData = async () => {
+    setIsImportingBenchmarks(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("kaggle-data-import", {
+        body: { action: "import_gpu_benchmarks" },
+      });
+
+      if (error) throw error;
+
+      setBenchmarksImported(true);
+      toast({
+        title: "GPU Benchmark Data Imported",
+        description: `Successfully imported ${data.accelerators_count || 'accelerator'} specs and ${data.benchmarks_count || 'benchmark'} records.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Import Failed",
+        description: "Could not import benchmark data. Check your Kaggle credentials.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsImportingBenchmarks(false);
+    }
+  };
+
   const vendorPayloads = {
     nvidia: `{
   "timestamp": "${new Date().toISOString()}",
@@ -391,7 +447,7 @@ docker run -d --gpus all --rm -p 9400:9400 \\
   return (
     <div className="space-y-6">
       <Tabs defaultValue="onboarding" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="onboarding" className="flex items-center gap-1">
             <BookOpen className="h-4 w-4" />
             Setup Guide
@@ -399,11 +455,132 @@ docker run -d --gpus all --rm -p 9400:9400 \\
           <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
           <TabsTrigger value="gcp-gpu">Google Cloud GPU</TabsTrigger>
           <TabsTrigger value="integrations">API Integrations</TabsTrigger>
+          <TabsTrigger value="data-import" className="flex items-center gap-1">
+            <Download className="h-4 w-4" />
+            Data Import
+          </TabsTrigger>
           <TabsTrigger value="ai-data">AI Training Data</TabsTrigger>
         </TabsList>
 
         <TabsContent value="onboarding" className="mt-6">
           <DataCenterOnboarding />
+        </TabsContent>
+
+        <TabsContent value="data-import" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-primary" />
+                Kaggle Dataset Import
+              </CardTitle>
+              <CardDescription>
+                Import real-world energy and benchmark datasets from Kaggle to populate your database with curated data.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* Carbon Intensity Import */}
+                <Card className="border-dashed">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-primary" />
+                      Carbon Intensity & Grid Coefficients
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Regional PUE values, CO₂ emissions factors, and renewable energy percentages for major cloud regions.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <ul className="text-xs text-muted-foreground space-y-1">
+                        <li>• PUE (Power Usage Effectiveness) by region</li>
+                        <li>• Grid CO₂ intensity (kg CO₂/kWh)</li>
+                        <li>• Renewable energy percentages</li>
+                        <li>• Water usage effectiveness (WUE)</li>
+                      </ul>
+                      <Button 
+                        onClick={importCarbonData} 
+                        disabled={isImportingCarbon || carbonImported}
+                        className="w-full"
+                        variant={carbonImported ? "outline" : "default"}
+                      >
+                        {isImportingCarbon ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Importing...
+                          </>
+                        ) : carbonImported ? (
+                          <>
+                            <CheckCircle className="mr-2 h-4 w-4 text-primary" />
+                            Imported Successfully
+                          </>
+                        ) : (
+                          <>
+                            <Download className="mr-2 h-4 w-4" />
+                            Import Carbon Data
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* GPU Benchmarks Import */}
+                <Card className="border-dashed">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-primary" />
+                      GPU/TPU Benchmark Data
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Accelerator specifications and performance benchmarks for AI workloads.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <ul className="text-xs text-muted-foreground space-y-1">
+                        <li>• NVIDIA A100, H100, L4, T4 specs</li>
+                        <li>• AMD MI300X specifications</li>
+                        <li>• Google TPU v4/v5 data</li>
+                        <li>• LLM inference benchmarks</li>
+                      </ul>
+                      <Button 
+                        onClick={importBenchmarkData} 
+                        disabled={isImportingBenchmarks || benchmarksImported}
+                        className="w-full"
+                        variant={benchmarksImported ? "outline" : "default"}
+                      >
+                        {isImportingBenchmarks ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Importing...
+                          </>
+                        ) : benchmarksImported ? (
+                          <>
+                            <CheckCircle className="mr-2 h-4 w-4 text-primary" />
+                            Imported Successfully
+                          </>
+                        ) : (
+                          <>
+                            <Download className="mr-2 h-4 w-4" />
+                            Import Benchmark Data
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h4 className="text-sm font-medium mb-2">Data Sources</h4>
+                <p className="text-xs text-muted-foreground">
+                  Data is curated from public energy efficiency research, cloud provider sustainability reports, 
+                  and MLPerf benchmarks. The import uses pre-validated datasets to ensure data quality.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="webhooks" className="space-y-6 mt-6">
