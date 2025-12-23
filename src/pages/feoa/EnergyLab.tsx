@@ -84,18 +84,23 @@ export default function EnergyLab() {
     occupancy[0] * 0.1 +
     (modelVerbosity[0] > 1000 ? modelVerbosity[0] * 0.03 : modelVerbosity[0] * 0.001);
 
-  // Enterprise-scale savings: 1000 GPU cluster, LightRail vs traditional
-  // Traditional: 350W per GPU, LightRail: 3.5W (100x efficient)
+  // Enterprise-scale savings calculation based on EIA 2025 data
+  // U.S. Industrial avg: $0.09/kWh (Source: EIA Electric Power Monthly, Sept 2025)
+  // PUE (Power Usage Effectiveness): 1.4 typical data center overhead for cooling
   const gpuCount = 1000;
   const hoursPerMonth = 730;
-  const costPerKwh = 0.12;
-  const traditionalWattage = 350;
-  const lightrailWattage = 3.5;
+  const costPerKwh = 0.09; // EIA U.S. industrial average
+  const pue = 1.4; // Typical data center PUE (cooling overhead)
+  const traditionalWattage = 700; // H100 SXM TDP is 700W
+  const lightrailWattage = 7; // LightRail photonic (100x efficient)
   
-  // Adjust savings based on efficiency slider (higher verbosity = more savings potential)
-  const efficiencyMultiplier = 1 + (modelVerbosity[0] / 4000) * 0.5;
-  const traditionalMonthlyCost = (traditionalWattage * gpuCount * hoursPerMonth / 1000) * costPerKwh * efficiencyMultiplier;
-  const lightrailMonthlyCost = (lightrailWattage * gpuCount * hoursPerMonth / 1000) * costPerKwh;
+  // Adjust based on verbosity slider
+  const efficiencyMultiplier = 1 + (modelVerbosity[0] / 4000) * 0.3;
+  
+  // Traditional: GPU power * PUE * cost
+  const traditionalMonthlyCost = (traditionalWattage * gpuCount * hoursPerMonth / 1000) * pue * costPerKwh * efficiencyMultiplier;
+  // LightRail: No cooling needed (photonic), so PUE = 1.0
+  const lightrailMonthlyCost = (lightrailWattage * gpuCount * hoursPerMonth / 1000) * 1.0 * costPerKwh;
   const projectedSavings = Math.round(traditionalMonthlyCost - lightrailMonthlyCost);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
