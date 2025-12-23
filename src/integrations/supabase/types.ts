@@ -139,6 +139,48 @@ export type Database = {
         }
         Relationships: []
       }
+      global_datacenter_stats: {
+        Row: {
+          available_grosspower_data: number | null
+          available_whitespace_data: number | null
+          country: string
+          created_at: string | null
+          datacenters_grosspower_na: number | null
+          datacenters_whitespace_na: number | null
+          datacenters_with_metrics: number | null
+          id: string
+          region: string
+          total_datacenters: number
+          updated_at: string | null
+        }
+        Insert: {
+          available_grosspower_data?: number | null
+          available_whitespace_data?: number | null
+          country: string
+          created_at?: string | null
+          datacenters_grosspower_na?: number | null
+          datacenters_whitespace_na?: number | null
+          datacenters_with_metrics?: number | null
+          id?: string
+          region: string
+          total_datacenters?: number
+          updated_at?: string | null
+        }
+        Update: {
+          available_grosspower_data?: number | null
+          available_whitespace_data?: number | null
+          country?: string
+          created_at?: string | null
+          datacenters_grosspower_na?: number | null
+          datacenters_whitespace_na?: number | null
+          datacenters_with_metrics?: number | null
+          id?: string
+          region?: string
+          total_datacenters?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       job_runs: {
         Row: {
           accelerator_id: string | null
