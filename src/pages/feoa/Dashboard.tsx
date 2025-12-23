@@ -10,6 +10,7 @@ import { exportAITrainingCostsPDF } from "@/lib/pdfExport";
 import EnergyComparisonTool from "@/components/feoa/EnergyComparisonTool";
 import EfficiencyComparison from "@/components/feoa/EfficiencyComparison";
 import { TcoCalculator } from "@/components/feoa/TcoCalculator";
+import GlobalDatacenterStats from "@/components/feoa/GlobalDatacenterStats";
 import {
   LineChart,
   Line,
@@ -24,7 +25,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Zap, Cpu, DollarSign, Activity, AlertTriangle, CheckCircle, Clock, Leaf, Flame, FileDown, Scale, Calculator } from "lucide-react";
+import { Zap, Cpu, DollarSign, Activity, AlertTriangle, CheckCircle, Clock, Leaf, Flame, FileDown, Scale, Calculator, Globe } from "lucide-react";
 
 interface Recommendation {
   id: string;
@@ -295,17 +296,21 @@ export default function FeoaDashboard() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="facility" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="facility">Facility Metrics</TabsTrigger>
+          <TabsTrigger value="global-dc">
+            <Globe className="h-4 w-4 mr-1" />
+            Global DCs
+          </TabsTrigger>
           <TabsTrigger value="roi-calculator">
             <Calculator className="h-4 w-4 mr-1" />
-            ROI Calculator
+            ROI
           </TabsTrigger>
           <TabsTrigger value="tco-calculator">
             <DollarSign className="h-4 w-4 mr-1" />
             TCO
           </TabsTrigger>
-          <TabsTrigger value="ai-training">AI Training Costs</TabsTrigger>
+          <TabsTrigger value="ai-training">AI Training</TabsTrigger>
           <TabsTrigger value="comparison">
             <Scale className="h-4 w-4 mr-1" />
             Compare
@@ -674,6 +679,10 @@ export default function FeoaDashboard() {
               </ScrollArea>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="global-dc" className="space-y-6 mt-6">
+          <GlobalDatacenterStats />
         </TabsContent>
 
         <TabsContent value="roi-calculator" className="space-y-6 mt-6">
