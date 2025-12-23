@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -35,6 +36,32 @@ import {
   FileSpreadsheet,
   TrendingUp,
 } from "lucide-react";
+
+// GPU Models with TDP (Thermal Design Power) - Source: Official specs
+const GPU_MODELS = {
+  "H100-SXM": { name: "NVIDIA H100 SXM", tdp: 700, memory: 80 },
+  "H100-PCIe": { name: "NVIDIA H100 PCIe", tdp: 350, memory: 80 },
+  "A100-80GB": { name: "NVIDIA A100 80GB", tdp: 400, memory: 80 },
+  "A100-40GB": { name: "NVIDIA A100 40GB", tdp: 400, memory: 40 },
+  "MI300X": { name: "AMD MI300X", tdp: 750, memory: 192 },
+  "MI250X": { name: "AMD MI250X", tdp: 560, memory: 128 },
+  "TPU-v5e": { name: "Google TPU v5e", tdp: 200, memory: 16 },
+  "TPU-v5p": { name: "Google TPU v5p", tdp: 400, memory: 95 },
+} as const;
+
+// Regional electricity rates - Source: EIA Electric Power Monthly, Sept 2025 (Industrial)
+const REGIONS = {
+  "us-average": { name: "U.S. Average", rate: 0.0902, state: "National" },
+  "texas": { name: "Texas", rate: 0.0674, state: "TX" },
+  "virginia": { name: "Virginia", rate: 0.0969, state: "VA" },
+  "california": { name: "California", rate: 0.2550, state: "CA" },
+  "oregon": { name: "Oregon", rate: 0.0856, state: "OR" },
+  "washington": { name: "Washington", rate: 0.0722, state: "WA" },
+  "georgia": { name: "Georgia", rate: 0.0747, state: "GA" },
+  "ohio": { name: "Ohio", rate: 0.0875, state: "OH" },
+  "iowa": { name: "Iowa", rate: 0.0890, state: "IA" },
+  "nevada": { name: "Nevada", rate: 0.0983, state: "NV" },
+} as const;
 
 // Mock EDA data
 const correlationData = [
@@ -69,12 +96,21 @@ export default function EnergyLab() {
   const [hvacSetpoint, setHvacSetpoint] = useState([24]);
   const [occupancy, setOccupancy] = useState([75]);
   const [modelVerbosity, setModelVerbosity] = useState([500]);
+  
+  // Infrastructure configuration
+  const [selectedGpuModel, setSelectedGpuModel] = useState<keyof typeof GPU_MODELS>("H100-SXM");
+  const [selectedRegion, setSelectedRegion] = useState<keyof typeof REGIONS>("us-average");
+  const [gpuCount, setGpuCount] = useState([1000]);
 
   useEffect(() => {
     // Simulate initial data loading
     const timer = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(timer);
   }, []);
+
+  // Get selected GPU and region data
+  const selectedGpu = GPU_MODELS[selectedGpuModel];
+  const selectedRegionData = REGIONS[selectedRegion];
 
   // Calculate predicted consumption based on sliders
   const predictedConsumption =
@@ -85,23 +121,21 @@ export default function EnergyLab() {
     (modelVerbosity[0] > 1000 ? modelVerbosity[0] * 0.03 : modelVerbosity[0] * 0.001);
 
   // Enterprise-scale savings calculation based on EIA 2025 data
-  // U.S. Industrial avg: $0.09/kWh (Source: EIA Electric Power Monthly, Sept 2025)
-  // PUE (Power Usage Effectiveness): 1.4 typical data center overhead for cooling
-  const gpuCount = 1000;
   const hoursPerMonth = 730;
-  const costPerKwh = 0.09; // EIA U.S. industrial average
+  const costPerKwh = selectedRegionData.rate;
   const pue = 1.4; // Typical data center PUE (cooling overhead)
-  const traditionalWattage = 700; // H100 SXM TDP is 700W
-  const lightrailWattage = 7; // LightRail photonic (100x efficient)
+  const traditionalWattage = selectedGpu.tdp;
+  const lightrailWattage = selectedGpu.tdp / 100; // LightRail photonic (100x efficient)
   
   // Adjust based on verbosity slider
   const efficiencyMultiplier = 1 + (modelVerbosity[0] / 4000) * 0.3;
   
   // Traditional: GPU power * PUE * cost
-  const traditionalMonthlyCost = (traditionalWattage * gpuCount * hoursPerMonth / 1000) * pue * costPerKwh * efficiencyMultiplier;
+  const traditionalMonthlyCost = (traditionalWattage * gpuCount[0] * hoursPerMonth / 1000) * pue * costPerKwh * efficiencyMultiplier;
   // LightRail: No cooling needed (photonic), so PUE = 1.0
-  const lightrailMonthlyCost = (lightrailWattage * gpuCount * hoursPerMonth / 1000) * 1.0 * costPerKwh;
+  const lightrailMonthlyCost = (lightrailWattage * gpuCount[0] * hoursPerMonth / 1000) * 1.0 * costPerKwh;
   const projectedSavings = Math.round(traditionalMonthlyCost - lightrailMonthlyCost);
+  const annualSavings = projectedSavings * 12;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -450,11 +484,80 @@ export default function EnergyLab() {
 
         {/* What-If Simulator Tab */}
         <TabsContent value="whatif" className="space-y-4">
+          {/* Infrastructure Configuration Card */}
+          <Card className="border-2 border-primary/20 bg-primary/5">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg">Infrastructure Configuration</CardTitle>
+              <CardDescription>Configure your GPU cluster and regional electricity rates (Source: EIA Sept 2025)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* GPU Model Selector */}
+                <div className="space-y-2">
+                  <Label>GPU/Accelerator Model</Label>
+                  <Select value={selectedGpuModel} onValueChange={(v) => setSelectedGpuModel(v as keyof typeof GPU_MODELS)}>
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="Select GPU model" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border border-border z-50">
+                      {Object.entries(GPU_MODELS).map(([key, gpu]) => (
+                        <SelectItem key={key} value={key}>
+                          {gpu.name} ({gpu.tdp}W)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    TDP: {selectedGpu.tdp}W | Memory: {selectedGpu.memory}GB
+                  </p>
+                </div>
+
+                {/* Region Selector */}
+                <div className="space-y-2">
+                  <Label>Electricity Region</Label>
+                  <Select value={selectedRegion} onValueChange={(v) => setSelectedRegion(v as keyof typeof REGIONS)}>
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="Select region" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border border-border z-50">
+                      {Object.entries(REGIONS).map(([key, region]) => (
+                        <SelectItem key={key} value={key}>
+                          {region.name} (${region.rate.toFixed(4)}/kWh)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Industrial rate: ${selectedRegionData.rate.toFixed(4)}/kWh
+                  </p>
+                </div>
+
+                {/* GPU Count */}
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label>GPU Cluster Size</Label>
+                    <span className="font-mono text-primary font-bold">{gpuCount[0].toLocaleString()}</span>
+                  </div>
+                  <Slider
+                    value={gpuCount}
+                    onValueChange={setGpuCount}
+                    min={100}
+                    max={10000}
+                    step={100}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Total TDP: {((selectedGpu.tdp * gpuCount[0]) / 1000).toFixed(1)} MW
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Scenario Parameters</CardTitle>
-                <CardDescription>Adjust variables to simulate energy impact</CardDescription>
+                <CardDescription>Adjust environmental variables</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-3">
@@ -527,16 +630,19 @@ export default function EnergyLab() {
                     <div className="text-5xl font-bold text-primary">
                       {predictedConsumption.toFixed(1)}
                     </div>
-                    <p className="text-muted-foreground">kWh/hr</p>
+                    <p className="text-muted-foreground">kWh/hr per device</p>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-primary bg-primary/10">
                 <CardHeader>
                   <CardTitle>Projected Cost Savings</CardTitle>
+                  <CardDescription>
+                    {selectedGpu.name} × {gpuCount[0].toLocaleString()} in {selectedRegionData.name}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <div className="text-center">
                     <div className="text-4xl font-bold text-primary">
                       ${projectedSavings >= 1000000 
@@ -545,7 +651,27 @@ export default function EnergyLab() {
                           ? `${Math.round(projectedSavings / 1000)}K`
                           : projectedSavings.toLocaleString()}
                     </div>
-                    <p className="text-muted-foreground">per month vs traditional (1000 GPUs)</p>
+                    <p className="text-muted-foreground">per month vs traditional</p>
+                  </div>
+                  <div className="border-t border-primary/30 pt-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary/80">
+                        ${annualSavings >= 1000000 
+                          ? `${(annualSavings / 1000000).toFixed(1)}M`
+                          : `${Math.round(annualSavings / 1000)}K`}
+                      </div>
+                      <p className="text-sm text-muted-foreground">annual savings</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm pt-2">
+                    <div className="text-center p-2 bg-background/50 rounded-lg">
+                      <div className="font-semibold">${(traditionalMonthlyCost / 1000).toFixed(0)}K</div>
+                      <div className="text-xs text-muted-foreground">Traditional/mo</div>
+                    </div>
+                    <div className="text-center p-2 bg-background/50 rounded-lg">
+                      <div className="font-semibold text-primary">${(lightrailMonthlyCost / 1000).toFixed(0)}K</div>
+                      <div className="text-xs text-muted-foreground">LightRail/mo</div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
