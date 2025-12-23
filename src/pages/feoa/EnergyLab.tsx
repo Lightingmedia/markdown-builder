@@ -84,7 +84,19 @@ export default function EnergyLab() {
     occupancy[0] * 0.1 +
     (modelVerbosity[0] > 1000 ? modelVerbosity[0] * 0.03 : modelVerbosity[0] * 0.001);
 
-  const projectedSavings = Math.max(0, (50 - predictedConsumption) * 0.15 * 720);
+  // Enterprise-scale savings: 1000 GPU cluster, LightRail vs traditional
+  // Traditional: 350W per GPU, LightRail: 3.5W (100x efficient)
+  const gpuCount = 1000;
+  const hoursPerMonth = 730;
+  const costPerKwh = 0.12;
+  const traditionalWattage = 350;
+  const lightrailWattage = 3.5;
+  
+  // Adjust savings based on efficiency slider (higher verbosity = more savings potential)
+  const efficiencyMultiplier = 1 + (modelVerbosity[0] / 4000) * 0.5;
+  const traditionalMonthlyCost = (traditionalWattage * gpuCount * hoursPerMonth / 1000) * costPerKwh * efficiencyMultiplier;
+  const lightrailMonthlyCost = (lightrailWattage * gpuCount * hoursPerMonth / 1000) * costPerKwh;
+  const projectedSavings = Math.round(traditionalMonthlyCost - lightrailMonthlyCost);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -522,9 +534,13 @@ export default function EnergyLab() {
                 <CardContent>
                   <div className="text-center">
                     <div className="text-4xl font-bold text-primary">
-                      ${projectedSavings.toFixed(0)}
+                      ${projectedSavings >= 1000000 
+                        ? `${(projectedSavings / 1000000).toFixed(1)}M`
+                        : projectedSavings >= 1000 
+                          ? `${Math.round(projectedSavings / 1000)}K`
+                          : projectedSavings.toLocaleString()}
                     </div>
-                    <p className="text-muted-foreground">per month vs baseline</p>
+                    <p className="text-muted-foreground">per month vs traditional (1000 GPUs)</p>
                   </div>
                 </CardContent>
               </Card>
