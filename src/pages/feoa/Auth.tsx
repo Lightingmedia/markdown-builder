@@ -88,9 +88,9 @@ export default function FeoaAuth() {
             <Cpu className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold">LightRail</span>
           </div>
-          <CardTitle>Facility Energy Optimisation Agent</CardTitle>
+          <CardTitle>Light for HPC</CardTitle>
           <CardDescription>
-            Industrial IoT SaaS for energy efficiency
+            Photonic-powered energy intelligence for high-performance computing
           </CardDescription>
         </CardHeader>
         <CardContent>
