@@ -85,7 +85,10 @@ export default function FeoaAuth() {
       <Card className="w-full max-w-md border-2 border-primary/30">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Cpu className="h-8 w-8 text-primary" />
+            <div className="relative">
+              <Cpu className="h-8 w-8 text-primary relative z-10 animate-pulse" />
+              <div className="absolute inset-0 h-8 w-8 bg-primary/40 blur-md rounded-full animate-[pulse_2s_ease-in-out_infinite]" />
+            </div>
             <span className="text-2xl font-bold">LightRail</span>
           </div>
           <CardTitle className="text-2xl bg-gradient-to-r from-primary via-emerald-400 to-primary bg-[length:200%_auto] animate-[gradient_3s_linear_infinite] bg-clip-text text-transparent">
