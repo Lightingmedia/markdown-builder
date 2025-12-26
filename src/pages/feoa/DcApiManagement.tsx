@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Cpu,
   Shield,
@@ -24,6 +26,10 @@ import {
   Server,
   Gauge,
   Lock,
+  Loader2,
+  Trash2,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 
 // Redfish-inspired API capability definitions
@@ -99,13 +105,33 @@ const API_CAPABILITIES = {
   },
 };
 
-// Mock connected endpoints
-const CONNECTED_ENDPOINTS = [
-  { id: "1", name: "GPU Cluster A", type: "compute", status: "connected", lastPing: "2s ago" },
-  { id: "2", name: "CDU Unit 1", type: "cooling", status: "connected", lastPing: "5s ago" },
-  { id: "3", name: "PDU Rack 1", type: "power", status: "warning", lastPing: "30s ago" },
-  { id: "4", name: "GPU Cluster B", type: "compute", status: "connected", lastPing: "1s ago" },
-];
+interface DcEndpoint {
+  id: string;
+  name: string;
+  type: string;
+  url: string;
+  status: string;
+  last_ping: string | null;
+  metadata: unknown;
+  created_at: string;
+}
+
+interface TelemetryEntry {
+  id: string;
+  endpoint_id: string | null;
+  endpoint_name: string;
+  endpoint_type: string;
+  temperature_c: number | null;
+  power_w: number | null;
+  utilization_pct: number | null;
+  flow_lpm: number | null;
+  pressure_bar: number | null;
+  leak_status: string | null;
+  load_kw: number | null;
+  voltage_v: number | null;
+  power_factor: number | null;
+  created_at: string;
+}
 
 export default function DcApiManagement() {
   const { toast } = useToast();
@@ -113,8 +139,87 @@ export default function DcApiManagement() {
   const [apiEnabled, setApiEnabled] = useState(true);
   const [rbacEnabled, setRbacEnabled] = useState(true);
   const [telemetryInterval, setTelemetryInterval] = useState("1000");
+  
+  // Endpoint state
+  const [endpoints, setEndpoints] = useState<DcEndpoint[]>([]);
+  const [loadingEndpoints, setLoadingEndpoints] = useState(true);
+  const [registering, setRegistering] = useState(false);
+  
+  // New endpoint form
+  const [newEndpoint, setNewEndpoint] = useState({
+    name: '',
+    type: 'compute' as 'compute' | 'cooling' | 'power',
+    url: ''
+  });
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  
+  // Real-time telemetry
+  const [telemetryStream, setTelemetryStream] = useState<TelemetryEntry[]>([]);
+  const [streamActive, setStreamActive] = useState(false);
 
   const apiEndpoint = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dc-api`;
+
+  // Fetch endpoints from database
+  const fetchEndpoints = async () => {
+    setLoadingEndpoints(true);
+    const { data, error } = await supabase
+      .from('dc_endpoints')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching endpoints:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load endpoints",
+        variant: "destructive"
+      });
+    } else {
+      setEndpoints(data || []);
+    }
+    setLoadingEndpoints(false);
+  };
+
+  // Fetch initial telemetry
+  const fetchTelemetry = async () => {
+    const { data, error } = await supabase
+      .from('dc_telemetry')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20);
+    
+    if (!error && data) {
+      setTelemetryStream(data);
+    }
+  };
+
+  // Subscribe to real-time telemetry updates
+  useEffect(() => {
+    fetchEndpoints();
+    fetchTelemetry();
+    
+    // Set up real-time subscription for telemetry
+    const channel = supabase
+      .channel('dc-telemetry-stream')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'dc_telemetry'
+        },
+        (payload) => {
+          console.log('[DC-API] New telemetry:', payload.new);
+          setTelemetryStream(prev => [payload.new as TelemetryEntry, ...prev.slice(0, 19)]);
+          setStreamActive(true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleCopyEndpoint = () => {
     navigator.clipboard.writeText(apiEndpoint);
@@ -124,11 +229,127 @@ export default function DcApiManagement() {
     });
   };
 
-  const handleRefreshConnections = () => {
+  const handleRefreshConnections = async () => {
     toast({
       title: "Refreshing Connections",
       description: "Polling all connected endpoints for status updates...",
     });
+    await fetchEndpoints();
+  };
+
+  // Validate and register new endpoint
+  const handleRegisterEndpoint = async () => {
+    const errors: string[] = [];
+    
+    if (!newEndpoint.name || newEndpoint.name.trim().length < 2) {
+      errors.push("Name must be at least 2 characters");
+    }
+    
+    if (!newEndpoint.url || newEndpoint.url.trim().length < 5) {
+      errors.push("URL/IP address is required");
+    }
+    
+    if (!['compute', 'cooling', 'power'].includes(newEndpoint.type)) {
+      errors.push("Type must be compute, cooling, or power");
+    }
+
+    setValidationErrors(errors);
+    
+    if (errors.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: errors[0],
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setRegistering(true);
+    
+    try {
+      // Call edge function to register endpoint
+      const response = await supabase.functions.invoke('dc-api', {
+        body: {
+          name: newEndpoint.name.trim(),
+          type: newEndpoint.type,
+          url: newEndpoint.url.trim()
+        },
+        method: 'POST'
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Registration failed');
+      }
+
+      toast({
+        title: "Endpoint Registered",
+        description: `${newEndpoint.name} has been registered successfully`,
+      });
+
+      // Reset form and refresh
+      setNewEndpoint({ name: '', type: 'compute', url: '' });
+      setValidationErrors([]);
+      await fetchEndpoints();
+      
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Registration Failed",
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        variant: "destructive"
+      });
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  // Delete endpoint
+  const handleDeleteEndpoint = async (id: string) => {
+    const { error } = await supabase
+      .from('dc_endpoints')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete endpoint",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Endpoint Deleted",
+        description: "The endpoint has been removed",
+      });
+      setEndpoints(prev => prev.filter(e => e.id !== id));
+    }
+  };
+
+  // Format telemetry for display
+  const formatTelemetryLine = (entry: TelemetryEntry) => {
+    const time = new Date(entry.created_at).toLocaleTimeString();
+    const name = entry.endpoint_name;
+    
+    let metrics = '';
+    if (entry.endpoint_type === 'compute') {
+      metrics = `Temp=${entry.temperature_c ?? '--'}°C, Power=${entry.power_w ?? '--'}W, Util=${entry.utilization_pct ?? '--'}%`;
+    } else if (entry.endpoint_type === 'cooling') {
+      metrics = `Flow=${entry.flow_lpm ?? '--'}L/min, Pressure=${entry.pressure_bar ?? '--'}bar, Leak=${entry.leak_status || 'OK'}`;
+    } else if (entry.endpoint_type === 'power') {
+      metrics = `Load=${entry.load_kw ?? '--'}kW, Voltage=${entry.voltage_v ?? '--'}V, PF=${entry.power_factor ?? '--'}`;
+    }
+    
+    return `[${time}] ${name}: ${metrics}`;
+  };
+
+  // Get relative time
+  const getRelativeTime = (timestamp: string | null) => {
+    if (!timestamp) return 'Never';
+    const diff = Date.now() - new Date(timestamp).getTime();
+    if (diff < 1000) return 'Just now';
+    if (diff < 60000) return `${Math.floor(diff / 1000)}s ago`;
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    return `${Math.floor(diff / 3600000)}h ago`;
   };
 
   return (
@@ -188,6 +409,7 @@ export default function DcApiManagement() {
                 <Badge variant="outline">REST API</Badge>
                 <Badge variant="outline">JSON Payload</Badge>
                 <Badge variant="outline">TLS 1.3</Badge>
+                <Badge variant="outline">Redfish-Compatible</Badge>
               </div>
             </CardContent>
           </Card>
@@ -220,66 +442,128 @@ export default function DcApiManagement() {
         {/* Endpoints Tab */}
         <TabsContent value="endpoints" className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Connected Infrastructure</h3>
-            <Button variant="outline" onClick={handleRefreshConnections}>
-              <RefreshCw className="h-4 w-4 mr-2" />
+            <h3 className="text-lg font-semibold">Connected Infrastructure ({endpoints.length})</h3>
+            <Button variant="outline" onClick={handleRefreshConnections} disabled={loadingEndpoints}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${loadingEndpoints ? 'animate-spin' : ''}`} />
               Refresh All
             </Button>
           </div>
 
-          <div className="grid gap-4">
-            {CONNECTED_ENDPOINTS.map((endpoint) => {
-              const cap = API_CAPABILITIES[endpoint.type as keyof typeof API_CAPABILITIES];
-              return (
-                <Card key={endpoint.id}>
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-4">
-                      <div className={`p-2 rounded-lg ${cap?.color || "bg-muted"}`}>
-                        {cap?.icon && <cap.icon className={`h-5 w-5 ${cap?.iconColor}`} />}
+          {loadingEndpoints ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : endpoints.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+                <WifiOff className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-lg font-medium">No Endpoints Connected</p>
+                <p className="text-sm text-muted-foreground">Register your first infrastructure endpoint below</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
+              {endpoints.map((endpoint) => {
+                const cap = API_CAPABILITIES[endpoint.type as keyof typeof API_CAPABILITIES];
+                return (
+                  <Card key={endpoint.id}>
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`p-2 rounded-lg ${cap?.color || "bg-muted"}`}>
+                          {cap?.icon && <cap.icon className={`h-5 w-5 ${cap?.iconColor}`} />}
+                        </div>
+                        <div>
+                          <p className="font-medium">{endpoint.name}</p>
+                          <p className="text-sm text-muted-foreground">{endpoint.url}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{endpoint.name}</p>
-                        <p className="text-sm text-muted-foreground capitalize">{endpoint.type}</p>
+                      <div className="flex items-center gap-4">
+                        <span className="text-sm text-muted-foreground">{getRelativeTime(endpoint.last_ping)}</span>
+                        <Badge
+                          variant={endpoint.status === "connected" ? "default" : endpoint.status === "warning" ? "destructive" : "secondary"}
+                          className="capitalize gap-1"
+                        >
+                          {endpoint.status === 'connected' ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+                          {endpoint.status}
+                        </Badge>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteEndpoint(endpoint.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-muted-foreground">{endpoint.lastPing}</span>
-                      <Badge
-                        variant={endpoint.status === "connected" ? "default" : "destructive"}
-                        className="capitalize"
-                      >
-                        {endpoint.status}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
 
+          {/* Registration Form */}
           <Card>
             <CardHeader>
-              <CardTitle>Add New Endpoint</CardTitle>
+              <CardTitle>Register New Endpoint</CardTitle>
               <CardDescription>Connect a new infrastructure component to the DC API</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              {validationErrors.length > 0 && (
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  {validationErrors.map((err, i) => (
+                    <p key={i} className="text-sm text-destructive">{err}</p>
+                  ))}
+                </div>
+              )}
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Endpoint Name</Label>
-                  <Input placeholder="e.g., GPU Cluster C" />
+                  <Label>Endpoint Name *</Label>
+                  <Input 
+                    placeholder="e.g., GPU Cluster C" 
+                    value={newEndpoint.name}
+                    onChange={(e) => setNewEndpoint(prev => ({ ...prev, name: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label>Endpoint Type</Label>
-                  <Input placeholder="compute / cooling / power" />
+                  <Label>Endpoint Type *</Label>
+                  <Select 
+                    value={newEndpoint.type} 
+                    onValueChange={(v) => setNewEndpoint(prev => ({ ...prev, type: v as 'compute' | 'cooling' | 'power' }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="compute">
+                        <span className="flex items-center gap-2">
+                          <Cpu className="h-4 w-4" /> Compute / GPU
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="cooling">
+                        <span className="flex items-center gap-2">
+                          <Droplets className="h-4 w-4" /> Cooling / CDU
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="power">
+                        <span className="flex items-center gap-2">
+                          <Zap className="h-4 w-4" /> Power / PDU
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Endpoint URL / IP Address *</Label>
+                  <Input 
+                    placeholder="https://10.0.1.100/redfish/v1" 
+                    value={newEndpoint.url}
+                    onChange={(e) => setNewEndpoint(prev => ({ ...prev, url: e.target.value }))}
+                  />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Endpoint URL / IP Address</Label>
-                <Input placeholder="https://10.0.1.100/redfish/v1" />
-              </div>
-              <Button>
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                Register Endpoint
+              <Button onClick={handleRegisterEndpoint} disabled={registering}>
+                {registering ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                )}
+                {registering ? 'Registering...' : 'Register Endpoint'}
               </Button>
             </CardContent>
           </Card>
@@ -444,21 +728,34 @@ export default function DcApiManagement() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Live Sensor Stream</CardTitle>
-              <CardDescription>Real-time telemetry data from connected endpoints</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                Live Sensor Stream
+                {streamActive && (
+                  <Badge variant="default" className="ml-2 gap-1">
+                    <Activity className="h-3 w-3 animate-pulse" />
+                    Live
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription>Real-time telemetry data from connected endpoints (via WebSocket)</CardDescription>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[200px] border border-border rounded-lg p-3 font-mono text-xs">
-                <div className="space-y-1 text-muted-foreground">
-                  <p>[2025-12-26 10:23:45] GPU-A1: Temp=72°C, Power=685W, Util=98%</p>
-                  <p>[2025-12-26 10:23:44] CDU-1: Flow=45L/min, Pressure=2.1bar, Leak=OK</p>
-                  <p>[2025-12-26 10:23:44] PDU-R1: Load=12.5kW, Voltage=480V, PF=0.98</p>
-                  <p>[2025-12-26 10:23:43] GPU-A2: Temp=70°C, Power=672W, Util=95%</p>
-                  <p>[2025-12-26 10:23:43] GPU-B1: Temp=68°C, Power=690W, Util=99%</p>
-                  <p>[2025-12-26 10:23:42] CDU-1: Flow=45L/min, Pressure=2.1bar, Leak=OK</p>
-                  <p>[2025-12-26 10:23:41] PDU-R2: Load=11.8kW, Voltage=480V, PF=0.97</p>
-                  <p>[2025-12-26 10:23:40] GPU-A1: Temp=71°C, Power=688W, Util=97%</p>
-                </div>
+              <ScrollArea className="h-[250px] border border-border rounded-lg p-3 font-mono text-xs bg-muted/30">
+                {telemetryStream.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                    <Activity className="h-8 w-8 mb-2" />
+                    <p>Waiting for telemetry data...</p>
+                    <p className="text-xs">Send data to the DC API telemetry endpoint</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {telemetryStream.map((entry) => (
+                      <p key={entry.id} className="text-muted-foreground hover:text-foreground transition-colors">
+                        {formatTelemetryLine(entry)}
+                      </p>
+                    ))}
+                  </div>
+                )}
               </ScrollArea>
             </CardContent>
           </Card>

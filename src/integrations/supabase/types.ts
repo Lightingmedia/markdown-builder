@@ -100,6 +100,107 @@ export type Database = {
           },
         ]
       }
+      dc_endpoints: {
+        Row: {
+          api_key: string | null
+          created_at: string
+          id: string
+          last_ping: string | null
+          metadata: Json | null
+          name: string
+          status: string
+          type: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          api_key?: string | null
+          created_at?: string
+          id?: string
+          last_ping?: string | null
+          metadata?: Json | null
+          name: string
+          status?: string
+          type: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          api_key?: string | null
+          created_at?: string
+          id?: string
+          last_ping?: string | null
+          metadata?: Json | null
+          name?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      dc_telemetry: {
+        Row: {
+          created_at: string
+          endpoint_id: string | null
+          endpoint_name: string
+          endpoint_type: string
+          flow_lpm: number | null
+          id: string
+          leak_status: string | null
+          load_kw: number | null
+          power_factor: number | null
+          power_w: number | null
+          pressure_bar: number | null
+          raw_data: Json | null
+          temperature_c: number | null
+          utilization_pct: number | null
+          voltage_v: number | null
+        }
+        Insert: {
+          created_at?: string
+          endpoint_id?: string | null
+          endpoint_name: string
+          endpoint_type: string
+          flow_lpm?: number | null
+          id?: string
+          leak_status?: string | null
+          load_kw?: number | null
+          power_factor?: number | null
+          power_w?: number | null
+          pressure_bar?: number | null
+          raw_data?: Json | null
+          temperature_c?: number | null
+          utilization_pct?: number | null
+          voltage_v?: number | null
+        }
+        Update: {
+          created_at?: string
+          endpoint_id?: string | null
+          endpoint_name?: string
+          endpoint_type?: string
+          flow_lpm?: number | null
+          id?: string
+          leak_status?: string | null
+          load_kw?: number | null
+          power_factor?: number | null
+          power_w?: number | null
+          pressure_bar?: number | null
+          raw_data?: Json | null
+          temperature_c?: number | null
+          utilization_pct?: number | null
+          voltage_v?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dc_telemetry_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "dc_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       facility_coefficients: {
         Row: {
           created_at: string | null
