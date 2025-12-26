@@ -22,6 +22,8 @@ import TrendAnalysis from "./pages/feoa/TrendAnalysis";
 import Benchmark from "./pages/feoa/Benchmark";
 import OptimizationDashboard from "./pages/feoa/OptimizationDashboard";
 import SimulationInterface from "./pages/feoa/SimulationInterface";
+import GlobalData from "./pages/feoa/GlobalData";
+import DcApiManagement from "./pages/feoa/DcApiManagement";
 
 // PCB EDA Copilot (Admin Only)
 import PcbLayout from "./components/pcb/PcbLayout";
@@ -50,6 +52,7 @@ const App = () => (
             <Route path="/monitor/auth" element={<FeoaAuth />} />
             <Route path="/monitor" element={<FeoaLayout />}>
               <Route index element={<FeoaDashboard />} />
+              <Route path="global-data" element={<GlobalData />} />
               <Route path="energy-lab" element={<EnergyLab />} />
               <Route path="trends" element={<TrendAnalysis />} />
               <Route path="benchmark" element={<Benchmark />} />
@@ -59,6 +62,7 @@ const App = () => (
               <Route path="optimization" element={<OptimizationDashboard />} />
               <Route path="simulation" element={<SimulationInterface />} />
               <Route path="scheduler" element={<JobScheduler />} />
+              <Route path="dc-api" element={<DcApiManagement />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 

@@ -27,18 +27,22 @@ import {
   Server,
   Calculator,
   CalendarClock,
+  Globe,
+  Network,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, path: "/monitor" },
+  { title: "Global Data", icon: Globe, path: "/monitor/global-data" },
   { title: "Energy Lab", icon: FlaskConical, path: "/monitor/energy-lab" },
   { title: "Trend Analysis", icon: TrendingUp, path: "/monitor/trends" },
   { title: "Benchmark", icon: Building2, path: "/monitor/benchmark" },
   { title: "Optimization", icon: Server, path: "/monitor/optimization" },
   { title: "Simulation", icon: Calculator, path: "/monitor/simulation" },
   { title: "Job Scheduler", icon: CalendarClock, path: "/monitor/scheduler" },
+  { title: "DC API", icon: Network, path: "/monitor/dc-api" },
   { title: "Connectivity", icon: Link2, path: "/monitor/connectivity" },
   { title: "Eco-Efficiency Reports", icon: FileBarChart, path: "/monitor/reports" },
   { title: "Notifications", icon: Bell, path: "/monitor/notifications" },
