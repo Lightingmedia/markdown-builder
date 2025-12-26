@@ -35,7 +35,9 @@ import {
   Loader2,
   FileSpreadsheet,
   TrendingUp,
+  Globe,
 } from "lucide-react";
+import GlobalDatacenterStats from "@/components/feoa/GlobalDatacenterStats";
 
 // GPU Models with TDP (Thermal Design Power) - Source: Official specs
 const GPU_MODELS = {
@@ -200,7 +202,7 @@ export default function EnergyLab() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="ingest" className="gap-2">
             <Upload className="h-4 w-4" />
             Data Ingest
@@ -216,6 +218,10 @@ export default function EnergyLab() {
           <TabsTrigger value="whatif" className="gap-2">
             <Sliders className="h-4 w-4" />
             What-If
+          </TabsTrigger>
+          <TabsTrigger value="global" className="gap-2">
+            <Globe className="h-4 w-4" />
+            Global Stats
           </TabsTrigger>
         </TabsList>
 
@@ -677,6 +683,11 @@ export default function EnergyLab() {
               </Card>
             </div>
           </div>
+        </TabsContent>
+
+        {/* Global Stats Tab */}
+        <TabsContent value="global" className="space-y-4">
+          <GlobalDatacenterStats />
         </TabsContent>
       </Tabs>
     </div>
