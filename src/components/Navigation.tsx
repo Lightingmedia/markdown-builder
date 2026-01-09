@@ -14,6 +14,7 @@ const navLinks = [
   { href: "/monitor", label: "Portal" },
   { href: "/benchmark", label: "Benchmark" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/llm-tools", label: "LLM Dev Tools" },
 ];
 
 export default function Navigation({ onGetStarted }: NavigationProps) {

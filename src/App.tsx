@@ -33,6 +33,14 @@ import PcbVersions from "./pages/pcb/Versions";
 import PcbChat from "./pages/pcb/Chat";
 import PcbSettings from "./pages/pcb/Settings";
 
+// LLM Dev Tools
+import LlmToolsLayout from "./components/llm-tools/LlmToolsLayout";
+import LlmDashboard from "./pages/llm-tools/Dashboard";
+import UnslothFineTuning from "./pages/llm-tools/UnslothFineTuning";
+import GlmCodingAgent from "./pages/llm-tools/GlmCodingAgent";
+import QwenCoder from "./pages/llm-tools/QwenCoder";
+import LlmDocumentation from "./pages/llm-tools/Documentation";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -73,6 +81,15 @@ const App = () => (
               <Route path="versions" element={<PcbVersions />} />
               <Route path="chat" element={<PcbChat />} />
               <Route path="settings" element={<PcbSettings />} />
+            </Route>
+
+            {/* LLM Dev Tools Routes */}
+            <Route path="/llm-tools" element={<LlmToolsLayout />}>
+              <Route index element={<LlmDashboard />} />
+              <Route path="unsloth" element={<UnslothFineTuning />} />
+              <Route path="glm4" element={<GlmCodingAgent />} />
+              <Route path="qwen" element={<QwenCoder />} />
+              <Route path="docs" element={<LlmDocumentation />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
