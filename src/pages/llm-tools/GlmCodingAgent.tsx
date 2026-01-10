@@ -14,10 +14,8 @@ import {
   Loader2,
   Square,
   Code2,
-  User,
-  Sparkles
+  User
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -226,10 +224,10 @@ const GlmCodingAgent = () => {
         <div key={message.id} className="flex justify-end">
           <div className="flex max-w-[80%] items-start gap-3">
             <div className="rounded-2xl bg-primary px-4 py-3 text-primary-foreground">
-              <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
             </div>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-              <User className="h-4 w-4" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
+              <User className="h-5 w-5" />
             </div>
           </div>
         </div>
@@ -239,12 +237,12 @@ const GlmCodingAgent = () => {
     return (
       <div key={message.id} className="flex justify-start">
         <div className="flex max-w-[85%] items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600">
-            <Bot className="h-4 w-4 text-white" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600">
+            <Bot className="h-5 w-5 text-white" />
           </div>
           <div className="space-y-3">
             <div className="rounded-2xl bg-muted px-4 py-3">
-              <p className="whitespace-pre-wrap text-sm text-foreground">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                 {message.content || (isLoading && messages[messages.length - 1]?.id === message.id ? (
                   <span className="flex items-center gap-2 text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -259,7 +257,7 @@ const GlmCodingAgent = () => {
                 <div className="flex items-center justify-between border-b border-border bg-muted/50 px-4 py-2">
                   <div className="flex items-center gap-2">
                     <Code2 className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs font-medium text-muted-foreground">
+                    <span className="text-sm font-medium text-muted-foreground">
                       {message.language || "code"}
                     </span>
                   </div>
@@ -267,22 +265,22 @@ const GlmCodingAgent = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-8 w-8"
                       onClick={() => copyCode(message.code!)}
                     >
-                      <Copy className="h-3.5 w-3.5" />
+                      <Copy className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
+                      className="h-8 w-8"
                       onClick={() => downloadCode(message.code!, message.language!)}
                     >
-                      <Download className="h-3.5 w-3.5" />
+                      <Download className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
-                <div className="h-64">
+                <div className="h-72">
                   <Editor
                     height="100%"
                     language={message.language || "typescript"}
@@ -291,10 +289,10 @@ const GlmCodingAgent = () => {
                     options={{
                       readOnly: true,
                       minimap: { enabled: false },
-                      fontSize: 13,
+                      fontSize: 14,
                       lineNumbers: "on",
                       scrollBeyondLastLine: false,
-                      padding: { top: 12 },
+                      padding: { top: 16 },
                     }}
                   />
                 </div>
@@ -309,12 +307,12 @@ const GlmCodingAgent = () => {
   return (
     <div className="flex h-screen flex-col">
       {/* Header */}
-      <header className="flex h-12 shrink-0 items-center border-b border-border bg-background px-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-cyan-500 to-blue-600">
-            <Bot className="h-3.5 w-3.5 text-white" />
+      <header className="flex h-14 shrink-0 items-center border-b border-border bg-background px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600">
+            <Bot className="h-4 w-4 text-white" />
           </div>
-          <span className="text-sm font-medium">GLM-4</span>
+          <span className="text-base font-semibold">LightRail AI</span>
         </div>
       </header>
 
@@ -322,52 +320,52 @@ const GlmCodingAgent = () => {
       <div className="flex flex-1 flex-col overflow-hidden">
         {messages.length === 0 ? (
           /* Empty State */
-          <div className="flex flex-1 flex-col items-center justify-center px-4">
+          <div className="flex flex-1 flex-col items-center justify-center px-6">
             <div className="max-w-2xl text-center">
-              <h1 className="mb-2 text-3xl font-semibold">
+              <h1 className="mb-3 text-4xl font-bold tracking-tight">
                 <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                   Hey there!
                 </span>{" "}
-                I'm GLM-4 and I'm a
+                I'm LightRail AI and I'm a
                 <br />
                 software engineer.
               </h1>
-              <p className="mb-8 text-muted-foreground">
+              <p className="mb-10 text-lg text-muted-foreground">
                 Enter a coding task below to get started.
               </p>
-              <div className="animate-pulse text-4xl text-muted-foreground">|</div>
+              <div className="animate-pulse text-5xl text-muted-foreground/50">|</div>
             </div>
           </div>
         ) : (
           /* Messages */
-          <ScrollArea className="flex-1 px-4" ref={scrollRef}>
-            <div className="mx-auto max-w-4xl space-y-6 py-6">
+          <ScrollArea className="flex-1 px-6" ref={scrollRef}>
+            <div className="mx-auto max-w-4xl space-y-6 py-8">
               {messages.map(renderMessage)}
             </div>
           </ScrollArea>
         )}
 
         {/* Input Area */}
-        <div className="shrink-0 border-t border-border bg-background p-4">
+        <div className="shrink-0 border-t border-border bg-background p-6">
           <div className="mx-auto max-w-3xl">
-            <div className="relative rounded-xl border border-border bg-muted/50 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50">
+            <div className="relative rounded-xl border border-border bg-muted/50 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20">
               <Textarea
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Give GLM-4 a task to work on..."
-                className="min-h-[56px] resize-none border-0 bg-transparent px-4 py-3 text-sm focus-visible:ring-0"
+                placeholder="Give LightRail AI a task to work on..."
+                className="min-h-[60px] resize-none border-0 bg-transparent px-4 py-4 text-base focus-visible:ring-0"
                 rows={1}
                 disabled={isLoading}
               />
-              <div className="flex items-center justify-between px-3 pb-3">
-                <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                    <Paperclip className="h-4 w-4" />
+              <div className="flex items-center justify-between px-4 pb-4">
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
+                    <Paperclip className="h-5 w-5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                    <Maximize2 className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
+                    <Maximize2 className="h-5 w-5" />
                   </Button>
                 </div>
                 <div>
@@ -375,7 +373,7 @@ const GlmCodingAgent = () => {
                     <Button
                       variant="destructive"
                       size="icon"
-                      className="h-8 w-8"
+                      className="h-9 w-9"
                       onClick={handleStop}
                     >
                       <Square className="h-4 w-4" />
@@ -383,7 +381,7 @@ const GlmCodingAgent = () => {
                   ) : (
                     <Button
                       size="icon"
-                      className="h-8 w-8"
+                      className="h-9 w-9"
                       onClick={handleSubmit}
                       disabled={!input.trim()}
                     >
