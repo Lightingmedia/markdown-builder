@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.dc-api]
 verify_jwt = false
+
+[functions.llm-code-gen]
+verify_jwt = false

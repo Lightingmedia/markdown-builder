@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,8 @@ import {
   Terminal,
   Settings,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Square
 } from "lucide-react";
 
 const languages = [
@@ -43,296 +44,7 @@ const tabs = [
   { id: "refactor", label: "Refactor", icon: RefreshCw },
 ];
 
-const mockOutputs: Record<string, string> = {
-  generate: `from typing import List, Optional
-from dataclasses import dataclass
-from datetime import datetime
-import asyncio
-import aiohttp
-
-@dataclass
-class Task:
-    """Represents an async task with metadata."""
-    id: str
-    name: str
-    status: str = "pending"
-    created_at: datetime = None
-    
-    def __post_init__(self):
-        if self.created_at is None:
-            self.created_at = datetime.utcnow()
-
-class TaskQueue:
-    """
-    Async task queue with priority support and retry logic.
-    
-    Features:
-    - Priority-based execution
-    - Automatic retry with exponential backoff
-    - Concurrent task processing
-    - Progress tracking
-    """
-    
-    def __init__(self, max_workers: int = 5, max_retries: int = 3):
-        self.max_workers = max_workers
-        self.max_retries = max_retries
-        self._queue: asyncio.PriorityQueue = asyncio.PriorityQueue()
-        self._active_tasks: dict = {}
-        self._results: dict = {}
-        
-    async def submit(
-        self,
-        task: Task,
-        priority: int = 0,
-        callback: Optional[callable] = None
-    ) -> str:
-        """Submit a task to the queue with optional priority."""
-        await self._queue.put((priority, task))
-        if callback:
-            self._register_callback(task.id, callback)
-        return task.id
-    
-    async def process(self) -> None:
-        """Process all tasks in the queue concurrently."""
-        workers = [
-            asyncio.create_task(self._worker(i))
-            for i in range(self.max_workers)
-        ]
-        await asyncio.gather(*workers)
-    
-    async def _worker(self, worker_id: int) -> None:
-        """Individual worker that processes tasks from queue."""
-        while not self._queue.empty():
-            priority, task = await self._queue.get()
-            try:
-                result = await self._execute_with_retry(task)
-                self._results[task.id] = result
-                task.status = "completed"
-            except Exception as e:
-                task.status = "failed"
-                self._results[task.id] = {"error": str(e)}
-            finally:
-                self._queue.task_done()`,
-  explain: `# Code Explanation
-
-## Overview
-This code implements an **async task queue** with the following features:
-
-### Key Components:
-
-1. **Task Dataclass**
-   - Immutable task representation
-   - Auto-generated timestamps
-   - Status tracking (pending → running → completed/failed)
-
-2. **TaskQueue Class**
-   - **Priority Queue**: Tasks are processed by priority (lower = higher priority)
-   - **Worker Pool**: Configurable concurrent workers (default: 5)
-   - **Retry Logic**: Automatic retry with exponential backoff
-
-### How It Works:
-
-\`\`\`
-submit() → Queue → Workers → execute_with_retry() → Results
-    ↓         ↓         ↓
- Priority   FIFO    Exponential
-  Order    Order     Backoff
-\`\`\`
-
-### Time Complexity:
-- **Submit**: O(log n) - priority queue insertion
-- **Process**: O(n) - where n is number of tasks
-
-### Space Complexity:
-- O(n) for queue + O(m) for active tasks + O(n) for results
-
-### Best Practices Used:
-✓ Type hints throughout
-✓ Dataclasses for immutable data
-✓ Context managers for resources
-✓ Proper exception handling
-✓ Async/await patterns`,
-  fix: `# Bug Fixes Applied
-
-## Issue #1: Race Condition (Line 45)
-\`\`\`python
-# BEFORE - Not thread-safe
-self._active_tasks[task.id] = task
-
-# AFTER - Thread-safe with lock
-async with self._lock:
-    self._active_tasks[task.id] = task
-\`\`\`
-
-## Issue #2: Missing Timeout (Line 67)
-\`\`\`python
-# BEFORE - Can hang indefinitely
-result = await self._execute(task)
-
-# AFTER - With timeout protection
-try:
-    result = await asyncio.wait_for(
-        self._execute(task),
-        timeout=30.0
-    )
-except asyncio.TimeoutError:
-    task.status = "timeout"
-    raise
-\`\`\`
-
-## Issue #3: Resource Leak (Line 89)
-\`\`\`python
-# BEFORE - Session not closed
-async def _make_request(self):
-    session = aiohttp.ClientSession()
-    return await session.get(url)
-
-# AFTER - Proper resource management
-async def _make_request(self):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            return await response.json()
-\`\`\`
-
-## Summary
-- Added asyncio.Lock for thread safety
-- Implemented 30s timeout for all async operations
-- Fixed resource leaks with context managers
-- Added proper error propagation`,
-  docs: `"""
-Task Queue Module
-=================
-
-A high-performance async task queue for managing concurrent workloads.
-
-Installation
-------------
-    pip install task-queue
-
-Quick Start
------------
-    >>> from task_queue import TaskQueue, Task
-    >>> 
-    >>> queue = TaskQueue(max_workers=10)
-    >>> task = Task(id="1", name="process_data")
-    >>> await queue.submit(task, priority=1)
-    >>> await queue.process()
-
-Classes
--------
-Task
-    Dataclass representing a single task unit.
-    
-    Attributes:
-        id (str): Unique task identifier
-        name (str): Human-readable task name
-        status (str): Current status (pending/running/completed/failed)
-        created_at (datetime): Creation timestamp
-
-TaskQueue
-    Async queue for processing tasks concurrently.
-    
-    Args:
-        max_workers (int): Maximum concurrent workers (default: 5)
-        max_retries (int): Retry attempts for failed tasks (default: 3)
-    
-    Methods:
-        submit(task, priority, callback): Add task to queue
-        process(): Start processing all queued tasks
-        get_result(task_id): Retrieve task result
-
-Example
--------
-    >>> async def main():
-    ...     queue = TaskQueue(max_workers=5)
-    ...     
-    ...     # Submit tasks with priorities
-    ...     await queue.submit(Task(id="1", name="urgent"), priority=0)
-    ...     await queue.submit(Task(id="2", name="normal"), priority=5)
-    ...     
-    ...     # Process all tasks
-    ...     await queue.process()
-    ...     
-    ...     # Get results
-    ...     result = queue.get_result("1")
-    
-    >>> asyncio.run(main())
-"""`,
-  refactor: `# Refactored Code
-
-## Changes Applied:
-1. ✓ Extracted magic numbers to constants
-2. ✓ Applied Single Responsibility Principle
-3. ✓ Added comprehensive type hints
-4. ✓ Implemented Strategy pattern for extensibility
-5. ✓ Enhanced error handling
-
-\`\`\`python
-from abc import ABC, abstractmethod
-from typing import Protocol, TypeVar, Generic
-from dataclasses import dataclass, field
-from functools import lru_cache
-from enum import Enum, auto
-import logging
-
-# Constants (extracted from magic numbers)
-class Config:
-    MAX_WORKERS = 5
-    MAX_RETRIES = 3
-    TIMEOUT_SECONDS = 30
-    BACKOFF_BASE = 2
-    CACHE_SIZE = 1000
-
-class TaskStatus(Enum):
-    PENDING = auto()
-    RUNNING = auto()
-    COMPLETED = auto()
-    FAILED = auto()
-    TIMEOUT = auto()
-
-# Protocol for type safety
-T = TypeVar('T')
-
-class Executor(Protocol[T]):
-    """Protocol defining executor interface."""
-    async def execute(self, task: T) -> dict: ...
-    async def validate(self, task: T) -> bool: ...
-
-# Strategy pattern for retry logic
-class RetryStrategy(ABC):
-    """Abstract base for retry strategies."""
-    
-    @abstractmethod
-    def get_delay(self, attempt: int) -> float:
-        """Calculate delay before next retry."""
-        pass
-
-class ExponentialBackoff(RetryStrategy):
-    """Exponential backoff with jitter."""
-    
-    def __init__(self, base: float = Config.BACKOFF_BASE):
-        self.base = base
-    
-    def get_delay(self, attempt: int) -> float:
-        import random
-        delay = self.base ** attempt
-        jitter = random.uniform(0, delay * 0.1)
-        return delay + jitter
-
-# Clean implementation
-@dataclass
-class TaskQueue(Generic[T]):
-    """Refactored task queue with clean architecture."""
-    
-    max_workers: int = Config.MAX_WORKERS
-    retry_strategy: RetryStrategy = field(
-        default_factory=ExponentialBackoff
-    )
-    logger: logging.Logger = field(
-        default_factory=lambda: logging.getLogger(__name__)
-    )
-\`\`\``,
-};
+const CODE_GEN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/llm-code-gen`;
 
 const GlmCodingAgent = () => {
   const { toast } = useToast();
@@ -347,10 +59,11 @@ const GlmCodingAgent = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [logs, setLogs] = useState<string[]>([
     "$ GLM-4 Coding Agent initialized",
-    "$ Model: glm-4-9b-chat (4-bit quantized)",
-    "$ VRAM: 7.2GB | Context: 128K tokens",
+    "$ Connected to Lovable AI backend",
+    "$ Model: gemini-3-flash-preview",
     "$ Ready for code generation..."
   ]);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const getPlaceholder = () => {
     const placeholders: Record<string, string> = {
@@ -373,20 +86,96 @@ const GlmCodingAgent = () => {
     setOutputCode("");
     setLogs(l => [...l, `$ Processing ${activeTab} request...`]);
 
-    const response = mockOutputs[activeTab] || mockOutputs.generate;
-    let currentIndex = 0;
-    
-    const streamInterval = setInterval(() => {
-      if (currentIndex < response.length) {
-        setOutputCode(response.slice(0, currentIndex + 20));
-        currentIndex += 20;
-      } else {
-        clearInterval(streamInterval);
-        setIsLoading(false);
-        setLogs(l => [...l, `$ [✓] ${activeTab} completed (${response.length} chars)`]);
-        toast({ title: "Complete", description: "Code generation finished." });
+    abortControllerRef.current = new AbortController();
+
+    try {
+      const response = await fetch(CODE_GEN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          action: activeTab,
+          code: inputCode,
+          prompt: inputCode,
+          language,
+          temperature: temperature[0],
+          maxTokens: maxTokens[0],
+          model: "glm-4",
+        }),
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Request failed: ${response.status}`);
       }
-    }, 15);
+
+      if (!response.body) {
+        throw new Error("No response body");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullOutput = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          const line = buffer.slice(0, newlineIndex).trim();
+          buffer = buffer.slice(newlineIndex + 1);
+
+          if (line.startsWith(":") || line === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullOutput += content;
+              setOutputCode(fullOutput);
+            }
+          } catch {
+            // Incomplete JSON, will get more data
+          }
+        }
+      }
+
+      setLogs(l => [...l, `$ [✓] ${activeTab} completed (${fullOutput.length} chars)`]);
+      toast({ title: "Complete", description: "Code generation finished." });
+    } catch (error) {
+      if ((error as Error).name === "AbortError") {
+        setLogs(l => [...l, `$ [!] Generation stopped by user`]);
+        toast({ title: "Stopped", description: "Generation cancelled." });
+      } else {
+        console.error("Generation error:", error);
+        setLogs(l => [...l, `$ [✗] Error: ${(error as Error).message}`]);
+        toast({ 
+          title: "Error", 
+          description: (error as Error).message || "Failed to generate code.", 
+          variant: "destructive" 
+        });
+      }
+    } finally {
+      setIsLoading(false);
+      abortControllerRef.current = null;
+    }
+  };
+
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
   };
 
   const copyToClipboard = () => {
@@ -414,7 +203,7 @@ const GlmCodingAgent = () => {
               <Bot className="h-4 w-4 text-blue-500" />
               GLM-4 Agent
               <Badge variant="secondary" className="ml-auto text-xs">
-                71.8% HumanEval
+                Lovable AI
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -490,6 +279,7 @@ const GlmCodingAgent = () => {
                     className={`${
                       log.includes('[✓]') ? 'text-emerald-500' :
                       log.includes('[!]') ? 'text-yellow-500' :
+                      log.includes('[✗]') ? 'text-destructive' :
                       'text-muted-foreground'
                     }`}
                   >
@@ -498,7 +288,8 @@ const GlmCodingAgent = () => {
                 ))}
                 {isLoading && (
                   <div className="flex items-center text-muted-foreground">
-                    <span className="animate-pulse">▋</span>
+                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                    Generating...
                   </div>
                 )}
               </div>
@@ -510,98 +301,100 @@ const GlmCodingAgent = () => {
       {/* Main Editor Area */}
       <div className="flex flex-col gap-4 lg:col-span-3">
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full justify-start bg-muted/30">
-            {tabs.map((tab) => (
-              <TabsTrigger 
-                key={tab.id} 
-                value={tab.id} 
-                className="flex items-center gap-2 data-[state=active]:bg-background"
-              >
-                <tab.icon className="h-4 w-4" />
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center justify-between">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="bg-muted/50">
+              {tabs.map((tab) => (
+                <TabsTrigger 
+                  key={tab.id} 
+                  value={tab.id}
+                  className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  <tab.icon className="h-4 w-4" />
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+
+          <div className="flex items-center gap-2">
+            {isLoading ? (
+              <Button variant="destructive" size="sm" onClick={handleStop}>
+                <Square className="mr-2 h-4 w-4" />
+                Stop
+              </Button>
+            ) : (
+              <Button onClick={handleGenerate} size="sm" className="gap-2">
+                <Play className="h-4 w-4" />
+                Run
+              </Button>
+            )}
+          </div>
+        </div>
 
         {/* Split Editor View */}
         <div className="grid flex-1 gap-4 lg:grid-cols-2">
-          {/* Input Editor */}
+          {/* Input Panel */}
           <Card className="flex flex-col border-border bg-card/50">
-            <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-medium">Input</CardTitle>
-              <Button 
-                onClick={handleGenerate} 
-                disabled={isLoading}
-                size="sm"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                  </>
-                )}
-              </Button>
+            <CardHeader className="flex-row items-center justify-between py-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Code className="h-4 w-4 text-blue-500" />
+                Input
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 p-0">
-              <div className="h-full overflow-hidden rounded-b-lg border-t border-border">
-                <Editor
-                  height="100%"
-                  language={language}
-                  value={inputCode}
-                  onChange={(value) => setInputCode(value || "")}
-                  theme="vs-dark"
-                  options={{
-                    minimap: { enabled: false },
-                    fontSize: 13,
-                    lineNumbers: "on",
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                    padding: { top: 16, bottom: 16 },
-                    placeholder: getPlaceholder(),
-                  }}
-                />
-              </div>
+              <Editor
+                height="100%"
+                language={language}
+                theme="vs-dark"
+                value={inputCode}
+                onChange={(value) => setInputCode(value || "")}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 13,
+                  lineNumbers: "on",
+                  scrollBeyondLastLine: false,
+                  wordWrap: "on",
+                  padding: { top: 12 },
+                  placeholder: getPlaceholder(),
+                }}
+              />
             </CardContent>
           </Card>
 
-          {/* Output Editor */}
+          {/* Output Panel */}
           <Card className="flex flex-col border-border bg-card/50">
-            <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-medium">Output</CardTitle>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={copyToClipboard} disabled={!outputCode}>
+            <CardHeader className="flex-row items-center justify-between py-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Sparkles className="h-4 w-4 text-emerald-500" />
+                Output
+                {isLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+              </CardTitle>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={copyToClipboard} disabled={!outputCode}>
                   <Copy className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={downloadCode} disabled={!outputCode}>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={downloadCode} disabled={!outputCode}>
                   <Download className="h-4 w-4" />
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="flex-1 p-0">
-              <div className="h-full overflow-hidden rounded-b-lg border-t border-border">
-                <Editor
-                  height="100%"
-                  language={activeTab === "explain" || activeTab === "docs" ? "markdown" : language}
-                  value={outputCode}
-                  theme="vs-dark"
-                  options={{
-                    readOnly: true,
-                    minimap: { enabled: false },
-                    fontSize: 13,
-                    lineNumbers: "on",
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                    padding: { top: 16, bottom: 16 },
-                  }}
-                />
-              </div>
+              <Editor
+                height="100%"
+                language={activeTab === "explain" || activeTab === "fix" || activeTab === "docs" || activeTab === "refactor" ? "markdown" : language}
+                theme="vs-dark"
+                value={outputCode}
+                options={{
+                  readOnly: true,
+                  minimap: { enabled: false },
+                  fontSize: 13,
+                  lineNumbers: "off",
+                  scrollBeyondLastLine: false,
+                  wordWrap: "on",
+                  padding: { top: 12 },
+                }}
+              />
             </CardContent>
           </Card>
         </div>
