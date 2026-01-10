@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,8 @@ import {
   Settings,
   ChevronDown,
   ChevronUp,
-  Wand2
+  Wand2,
+  Square
 } from "lucide-react";
 
 const modelSizes = [
@@ -58,343 +59,7 @@ const tabs = [
   { id: "interactive", label: "Chat", icon: MessageSquare },
 ];
 
-const mockOutputs: Record<string, string> = {
-  generate: `import asyncio
-from typing import AsyncIterator, Optional
-from dataclasses import dataclass, field
-from contextlib import asynccontextmanager
-import aiohttp
-
-@dataclass
-class StreamConfig:
-    """Configuration for streaming responses."""
-    chunk_size: int = 1024
-    timeout: float = 30.0
-    max_retries: int = 3
-    buffer_size: int = 4096
-
-class StreamingClient:
-    """
-    High-performance async streaming client for LLM APIs.
-    
-    Supports:
-    - Chunked transfer encoding
-    - Automatic reconnection
-    - Backpressure handling
-    - Token-by-token streaming
-    """
-    
-    def __init__(
-        self,
-        base_url: str,
-        api_key: str,
-        config: Optional[StreamConfig] = None
-    ):
-        self.base_url = base_url
-        self.api_key = api_key
-        self.config = config or StreamConfig()
-        self._session: Optional[aiohttp.ClientSession] = None
-    
-    @asynccontextmanager
-    async def _get_session(self):
-        """Manage aiohttp session lifecycle."""
-        if self._session is None or self._session.closed:
-            timeout = aiohttp.ClientTimeout(total=self.config.timeout)
-            self._session = aiohttp.ClientSession(timeout=timeout)
-        try:
-            yield self._session
-        except Exception:
-            await self._session.close()
-            raise
-    
-    async def stream_completion(
-        self,
-        prompt: str,
-        max_tokens: int = 2048,
-        temperature: float = 0.7
-    ) -> AsyncIterator[str]:
-        """
-        Stream completion tokens from the API.
-        
-        Yields tokens as they arrive, enabling real-time display.
-        """
-        payload = {
-            "prompt": prompt,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-            "stream": True
-        }
-        
-        async with self._get_session() as session:
-            async with session.post(
-                f"{self.base_url}/completions",
-                json=payload,
-                headers={"Authorization": f"Bearer {self.api_key}"}
-            ) as response:
-                response.raise_for_status()
-                
-                async for chunk in response.content.iter_chunks():
-                    data, _ = chunk
-                    if data:
-                        yield data.decode('utf-8')
-    
-    async def close(self) -> None:
-        """Clean up resources."""
-        if self._session and not self._session.closed:
-            await self._session.close()`,
-  complete: `    async def batch_complete(
-        self,
-        prompts: list[str],
-        **kwargs
-    ) -> list[str]:
-        """
-        Complete multiple prompts concurrently.
-        
-        Uses semaphore to limit concurrent requests.
-        """
-        semaphore = asyncio.Semaphore(self.config.max_concurrent)
-        
-        async def _complete_one(prompt: str) -> str:
-            async with semaphore:
-                tokens = []
-                async for token in self.stream_completion(prompt, **kwargs):
-                    tokens.append(token)
-                return ''.join(tokens)
-        
-        tasks = [_complete_one(p) for p in prompts]
-        return await asyncio.gather(*tasks)
-    
-    def _parse_sse_event(self, data: bytes) -> Optional[dict]:
-        """Parse Server-Sent Event data."""
-        try:
-            text = data.decode('utf-8').strip()
-            if text.startswith('data: '):
-                json_str = text[6:]
-                if json_str == '[DONE]':
-                    return None
-                return json.loads(json_str)
-        except (json.JSONDecodeError, UnicodeDecodeError):
-            return None
-        return None
-    
-    async def health_check(self) -> bool:
-        """Check if the API is responsive."""
-        try:
-            async with self._get_session() as session:
-                async with session.get(f"{self.base_url}/health") as resp:
-                    return resp.status == 200
-        except Exception:
-            return False`,
-  tests: `import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
-from streaming_client import StreamingClient, StreamConfig
-
-class TestStreamingClient:
-    """Comprehensive test suite for StreamingClient."""
-    
-    @pytest.fixture
-    def client(self):
-        return StreamingClient(
-            base_url="https://api.example.com",
-            api_key="test-key",
-            config=StreamConfig(timeout=10.0)
-        )
-    
-    @pytest.fixture
-    def mock_response(self):
-        """Create mock streaming response."""
-        async def mock_iter():
-            chunks = [b'Hello', b' ', b'World', b'!']
-            for chunk in chunks:
-                yield (chunk, False)
-        
-        mock = AsyncMock()
-        mock.status = 200
-        mock.content.iter_chunks = mock_iter
-        mock.__aenter__ = AsyncMock(return_value=mock)
-        mock.__aexit__ = AsyncMock(return_value=None)
-        return mock
-    
-    @pytest.mark.asyncio
-    async def test_stream_completion_success(self, client, mock_response):
-        """Test successful streaming completion."""
-        with patch('aiohttp.ClientSession.post', return_value=mock_response):
-            tokens = []
-            async for token in client.stream_completion("Hello"):
-                tokens.append(token)
-            
-            assert tokens == ['Hello', ' ', 'World', '!']
-    
-    @pytest.mark.asyncio
-    async def test_stream_completion_with_params(self, client, mock_response):
-        """Test completion with custom parameters."""
-        with patch('aiohttp.ClientSession.post', return_value=mock_response) as mock_post:
-            async for _ in client.stream_completion(
-                "Test",
-                max_tokens=100,
-                temperature=0.5
-            ):
-                pass
-            
-            call_args = mock_post.call_args
-            payload = call_args.kwargs['json']
-            assert payload['max_tokens'] == 100
-            assert payload['temperature'] == 0.5
-    
-    @pytest.mark.asyncio
-    async def test_batch_complete(self, client, mock_response):
-        """Test concurrent batch completion."""
-        with patch.object(client, 'stream_completion') as mock_stream:
-            async def mock_gen():
-                yield "result"
-            mock_stream.return_value = mock_gen()
-            
-            results = await client.batch_complete(["a", "b", "c"])
-            assert len(results) == 3
-    
-    @pytest.mark.asyncio
-    async def test_health_check_success(self, client):
-        """Test health check when API is healthy."""
-        mock_resp = AsyncMock()
-        mock_resp.status = 200
-        mock_resp.__aenter__ = AsyncMock(return_value=mock_resp)
-        mock_resp.__aexit__ = AsyncMock(return_value=None)
-        
-        with patch('aiohttp.ClientSession.get', return_value=mock_resp):
-            result = await client.health_check()
-            assert result is True
-    
-    @pytest.mark.asyncio
-    async def test_health_check_failure(self, client):
-        """Test health check when API is down."""
-        with patch('aiohttp.ClientSession.get', side_effect=Exception("Connection refused")):
-            result = await client.health_check()
-            assert result is False`,
-  debug: `# 🔍 Debug Analysis Report
-
-## Issues Detected: 3
-
-### Issue #1: Memory Leak in Session Management
-**Severity:** High | **Line:** 45
-
-\`\`\`python
-# PROBLEM: Session created but never closed on error
-async with self._get_session() as session:
-    # If exception here, session leaks
-    async with session.post(...) as response:
-        ...
-
-# SOLUTION: Add finally block
-try:
-    async with self._get_session() as session:
-        async with session.post(...) as response:
-            ...
-finally:
-    await self.close()  # Ensure cleanup
-\`\`\`
-
-### Issue #2: Race Condition in Concurrent Requests
-**Severity:** Medium | **Line:** 78
-
-\`\`\`python
-# PROBLEM: _session accessed without lock
-if self._session is None:  # Thread A checks
-    self._session = ...     # Thread B also creates!
-
-# SOLUTION: Use asyncio.Lock
-self._lock = asyncio.Lock()
-
-async with self._lock:
-    if self._session is None:
-        self._session = aiohttp.ClientSession()
-\`\`\`
-
-### Issue #3: Missing Timeout on Individual Chunks
-**Severity:** Low | **Line:** 92
-
-\`\`\`python
-# PROBLEM: No per-chunk timeout
-async for chunk in response.content.iter_chunks():
-    yield chunk  # Can hang indefinitely
-
-# SOLUTION: Add chunk timeout
-async for chunk in asyncio.wait_for(
-    response.content.iter_chunks().__anext__(),
-    timeout=5.0
-):
-    yield chunk
-\`\`\`
-
-## Recommendations
-1. ✅ Implement proper session lifecycle management
-2. ✅ Add locking for shared state access
-3. ✅ Consider circuit breaker for resilience`,
-  refactor: `# ✨ Refactored Code
-
-## Applied Patterns:
-- Strategy Pattern for retry logic
-- Builder Pattern for configuration
-- Dependency Injection for testability
-
-\`\`\`python
-from abc import ABC, abstractmethod
-from typing import Protocol, TypeVar
-from dataclasses import dataclass, field
-import asyncio
-
-# Type definitions
-T = TypeVar('T')
-
-class RetryStrategy(Protocol):
-    """Protocol for retry strategies."""
-    def should_retry(self, attempt: int, error: Exception) -> bool: ...
-    def get_delay(self, attempt: int) -> float: ...
-
-@dataclass
-class ExponentialBackoff:
-    """Exponential backoff with jitter."""
-    base_delay: float = 1.0
-    max_delay: float = 60.0
-    max_attempts: int = 3
-    
-    def should_retry(self, attempt: int, error: Exception) -> bool:
-        return attempt < self.max_attempts
-    
-    def get_delay(self, attempt: int) -> float:
-        import random
-        delay = min(self.base_delay * (2 ** attempt), self.max_delay)
-        return delay + random.uniform(0, delay * 0.1)
-
-@dataclass
-class StreamConfigBuilder:
-    """Builder for StreamConfig."""
-    _config: dict = field(default_factory=dict)
-    
-    def chunk_size(self, size: int) -> 'StreamConfigBuilder':
-        self._config['chunk_size'] = size
-        return self
-    
-    def timeout(self, seconds: float) -> 'StreamConfigBuilder':
-        self._config['timeout'] = seconds
-        return self
-    
-    def retry_strategy(self, strategy: RetryStrategy) -> 'StreamConfigBuilder':
-        self._config['retry_strategy'] = strategy
-        return self
-    
-    def build(self) -> StreamConfig:
-        return StreamConfig(**self._config)
-
-# Usage:
-config = (
-    StreamConfigBuilder()
-    .chunk_size(2048)
-    .timeout(30.0)
-    .retry_strategy(ExponentialBackoff(max_attempts=5))
-    .build()
-)
-\`\`\``,
-};
+const CODE_GEN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/llm-code-gen`;
 
 const QwenCoder = () => {
   const { toast } = useToast();
@@ -409,19 +74,93 @@ const QwenCoder = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [realTimeSuggestions, setRealTimeSuggestions] = useState(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
   
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([
-    { role: "assistant", content: "Hey! I'm Qwen2.5-Coder. I can help you write, debug, and optimize code. What would you like to build?" }
+    { role: "assistant", content: "Hey! I'm Qwen2.5-Coder powered by Lovable AI. I can help you write, debug, and optimize code. What would you like to build?" }
   ]);
   const [chatInput, setChatInput] = useState("");
+  const [isChatLoading, setIsChatLoading] = useState(false);
 
   const [logs, setLogs] = useState<string[]>([
     "$ Qwen2.5-Coder initialized",
-    `$ Model: qwen2.5-coder-7b (4-bit)`,
-    "$ HumanEval: 74.5% | MBPP: 72.8%",
+    "$ Connected to Lovable AI backend",
+    "$ Model: gemini-3-flash-preview",
     "$ Real-time suggestions: enabled",
     "$ Ready for code generation..."
   ]);
+
+  const streamResponse = async (
+    action: string,
+    content: string,
+    onChunk: (chunk: string) => void,
+    signal?: AbortSignal
+  ) => {
+    const response = await fetch(CODE_GEN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({
+        action,
+        code: content,
+        prompt: content,
+        language,
+        testFramework,
+        temperature: temperature[0],
+        maxTokens: maxTokens[0],
+        model: "qwen",
+      }),
+      signal,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Request failed: ${response.status}`);
+    }
+
+    if (!response.body) {
+      throw new Error("No response body");
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let fullOutput = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      let newlineIndex: number;
+      while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+        const line = buffer.slice(0, newlineIndex).trim();
+        buffer = buffer.slice(newlineIndex + 1);
+
+        if (line.startsWith(":") || line === "") continue;
+        if (!line.startsWith("data: ")) continue;
+
+        const jsonStr = line.slice(6).trim();
+        if (jsonStr === "[DONE]") break;
+
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const chunkContent = parsed.choices?.[0]?.delta?.content;
+          if (chunkContent) {
+            fullOutput += chunkContent;
+            onChunk(fullOutput);
+          }
+        } catch {
+          // Incomplete JSON
+        }
+      }
+    }
+
+    return fullOutput;
+  };
 
   const handleGenerate = async () => {
     if (!inputCode.trim()) {
@@ -433,45 +172,83 @@ const QwenCoder = () => {
     setOutputCode("");
     setLogs(l => [...l, `$ Processing ${activeTab} request...`]);
 
-    const response = mockOutputs[activeTab] || mockOutputs.generate;
-    let currentIndex = 0;
-    
-    const streamInterval = setInterval(() => {
-      if (currentIndex < response.length) {
-        setOutputCode(response.slice(0, currentIndex + 25));
-        currentIndex += 25;
+    abortControllerRef.current = new AbortController();
+
+    try {
+      const fullOutput = await streamResponse(
+        activeTab,
+        inputCode,
+        (output) => setOutputCode(output),
+        abortControllerRef.current.signal
+      );
+
+      setLogs(l => [...l, `$ [✓] ${activeTab} completed (${fullOutput.length} chars)`]);
+      toast({ title: "Complete", description: "Code generation finished." });
+    } catch (error) {
+      if ((error as Error).name === "AbortError") {
+        setLogs(l => [...l, `$ [!] Generation stopped by user`]);
+        toast({ title: "Stopped", description: "Generation cancelled." });
       } else {
-        clearInterval(streamInterval);
-        setIsLoading(false);
-        setLogs(l => [...l, `$ [✓] ${activeTab} completed (${response.length} chars)`]);
-        toast({ title: "Complete", description: "Code generation finished." });
+        console.error("Generation error:", error);
+        setLogs(l => [...l, `$ [✗] Error: ${(error as Error).message}`]);
+        toast({ 
+          title: "Error", 
+          description: (error as Error).message || "Failed to generate code.", 
+          variant: "destructive" 
+        });
       }
-    }, 12);
+    } finally {
+      setIsLoading(false);
+      abortControllerRef.current = null;
+    }
   };
 
-  const handleChat = () => {
-    if (!chatInput.trim()) return;
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  };
+
+  const handleChat = async () => {
+    if (!chatInput.trim() || isChatLoading) return;
     
     const userMessage = { role: "user", content: chatInput };
     setChatMessages(prev => [...prev, userMessage]);
     setChatInput("");
     setLogs(l => [...l, `$ Chat: processing user query...`]);
-    
-    setTimeout(() => {
-      const responses = [
-        "I've analyzed your request. Here's an optimized solution using async/await with proper error handling. The key is to use a semaphore to limit concurrent requests.",
-        "Good question! For this use case, I recommend the Strategy pattern. It will make your code more testable and easier to extend. Want me to show you the implementation?",
-        "I see the issue - you're missing the `asynccontextmanager` decorator. This is causing the resource leak. Here's the fix with proper cleanup.",
-        "That's a great approach! To make it even better, consider adding type hints and docstrings. This will improve maintainability. Here's an enhanced version."
-      ];
-      
-      const aiMessage = {
-        role: "assistant",
-        content: responses[Math.floor(Math.random() * responses.length)]
-      };
-      setChatMessages(prev => [...prev, aiMessage]);
+    setIsChatLoading(true);
+
+    try {
+      let assistantContent = "";
+      await streamResponse(
+        "interactive",
+        chatInput,
+        (output) => {
+          assistantContent = output;
+          setChatMessages(prev => {
+            const newMessages = [...prev];
+            const lastMessage = newMessages[newMessages.length - 1];
+            if (lastMessage?.role === "assistant" && newMessages.length > 1) {
+              newMessages[newMessages.length - 1] = { role: "assistant", content: output };
+            } else {
+              newMessages.push({ role: "assistant", content: output });
+            }
+            return newMessages;
+          });
+        }
+      );
+
       setLogs(l => [...l, `$ [✓] Chat response generated`]);
-    }, 1000);
+    } catch (error) {
+      console.error("Chat error:", error);
+      setLogs(l => [...l, `$ [✗] Chat error: ${(error as Error).message}`]);
+      setChatMessages(prev => [...prev, { 
+        role: "assistant", 
+        content: `Sorry, I encountered an error: ${(error as Error).message}` 
+      }]);
+    } finally {
+      setIsChatLoading(false);
+    }
   };
 
   const copyToClipboard = () => {
@@ -498,33 +275,33 @@ const QwenCoder = () => {
             <CardTitle className="flex items-center gap-2 text-sm font-medium">
               <Code2 className="h-4 w-4 text-emerald-500" />
               Qwen2.5-Coder
-              <Badge className="ml-auto bg-yellow-500/10 text-yellow-500">
+              <Badge variant="secondary" className="ml-auto text-xs">
                 <Trophy className="mr-1 h-3 w-3" />
-                74.5%
+                Lovable AI
               </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Model Size */}
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Model Size</Label>
-              <Select value={modelSize} onValueChange={setModelSize}>
-                <SelectTrigger className="h-8 bg-background/80 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {modelSizes.map((size) => (
-                    <SelectItem key={size.id} value={size.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{size.name}</span>
-                        {size.recommended && <Star className="h-3 w-3 text-yellow-500" />}
-                        <span className="text-xs text-muted-foreground">{size.vram}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-2 gap-1">
+                {modelSizes.map((model) => (
+                  <Button
+                    key={model.id}
+                    variant={modelSize === model.id ? "default" : "outline"}
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => setModelSize(model.id)}
+                  >
+                    {model.recommended && <Star className="mr-1 h-3 w-3" />}
+                    {model.name}
+                  </Button>
+                ))}
+              </div>
             </div>
 
+            {/* Test Framework (for tests tab) */}
             {activeTab === "tests" && (
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Test Framework</Label>
@@ -534,7 +311,9 @@ const QwenCoder = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {testFrameworks.map((fw) => (
-                      <SelectItem key={fw.id} value={fw.id}>{fw.name}</SelectItem>
+                      <SelectItem key={fw.id} value={fw.id}>
+                        {fw.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -568,10 +347,13 @@ const QwenCoder = () => {
                     <Label className="text-xs">Max Tokens</Label>
                     <span className="font-mono text-xs">{maxTokens[0]}</span>
                   </div>
-                  <Slider value={maxTokens} onValueChange={setMaxTokens} min={256} max={16384} step={256} />
+                  <Slider value={maxTokens} onValueChange={setMaxTokens} min={512} max={8192} step={512} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs">Real-time Suggestions</Label>
+                  <Label className="flex items-center gap-2 text-xs">
+                    <Wand2 className="h-3 w-3" />
+                    Real-time suggestions
+                  </Label>
                   <Switch checked={realTimeSuggestions} onCheckedChange={setRealTimeSuggestions} />
                 </div>
               </div>
@@ -579,7 +361,7 @@ const QwenCoder = () => {
           </CardContent>
         </Card>
 
-        {/* Console */}
+        {/* Terminal */}
         <Card className="flex-1 border-border bg-card/50">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm font-medium">
@@ -596,6 +378,7 @@ const QwenCoder = () => {
                     className={`${
                       log.includes('[✓]') ? 'text-emerald-500' :
                       log.includes('[!]') ? 'text-yellow-500' :
+                      log.includes('[✗]') ? 'text-destructive' :
                       'text-muted-foreground'
                     }`}
                   >
@@ -604,7 +387,8 @@ const QwenCoder = () => {
                 ))}
                 {isLoading && (
                   <div className="flex items-center text-muted-foreground">
-                    <span className="animate-pulse">▋</span>
+                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                    Generating...
                   </div>
                 )}
               </div>
@@ -613,135 +397,157 @@ const QwenCoder = () => {
         </Card>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Editor Area */}
       <div className="flex flex-col gap-4 lg:col-span-3">
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full justify-start bg-muted/30">
-            {tabs.map((tab) => (
-              <TabsTrigger 
-                key={tab.id} 
-                value={tab.id} 
-                className="flex items-center gap-2 data-[state=active]:bg-background"
-              >
-                <tab.icon className="h-4 w-4" />
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center justify-between">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="bg-muted/50">
+              {tabs.map((tab) => (
+                <TabsTrigger 
+                  key={tab.id} 
+                  value={tab.id}
+                  className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  <tab.icon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
 
+          {activeTab !== "interactive" && (
+            <div className="flex items-center gap-2">
+              {isLoading ? (
+                <Button variant="destructive" size="sm" onClick={handleStop}>
+                  <Square className="mr-2 h-4 w-4" />
+                  Stop
+                </Button>
+              ) : (
+                <Button onClick={handleGenerate} size="sm" className="gap-2">
+                  <Play className="h-4 w-4" />
+                  Run
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
         {activeTab === "interactive" ? (
-          /* Chat Interface */
           <Card className="flex flex-1 flex-col border-border bg-card/50">
-            <CardContent className="flex flex-1 flex-col p-4">
-              <ScrollArea className="flex-1 pr-4">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <MessageSquare className="h-4 w-4 text-emerald-500" />
+                Interactive Chat
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-1 flex-col gap-4">
+              <ScrollArea className="flex-1 rounded-lg bg-background/80 p-4">
                 <div className="space-y-4">
-                  {chatMessages.map((msg, index) => (
-                    <div
-                      key={index}
+                  {chatMessages.map((msg, i) => (
+                    <div 
+                      key={i}
                       className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                     >
-                      <div
-                        className={`max-w-[80%] rounded-lg p-3 text-sm ${
-                          msg.role === "user"
-                            ? "bg-primary text-primary-foreground"
+                      <div 
+                        className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                          msg.role === "user" 
+                            ? "bg-primary text-primary-foreground" 
                             : "bg-muted"
                         }`}
                       >
-                        {msg.content}
+                        <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
                       </div>
                     </div>
                   ))}
+                  {isChatLoading && (
+                    <div className="flex justify-start">
+                      <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm text-muted-foreground">Thinking...</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </ScrollArea>
-              <div className="mt-4 flex gap-2">
+              <div className="flex gap-2">
                 <Input
-                  placeholder="Ask me anything about code..."
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleChat()}
-                  className="bg-background/80"
+                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleChat()}
+                  placeholder="Ask me anything about code..."
+                  className="flex-1 bg-background/80"
+                  disabled={isChatLoading}
                 />
-                <Button onClick={handleChat} size="icon">
+                <Button onClick={handleChat} disabled={isChatLoading || !chatInput.trim()}>
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
             </CardContent>
           </Card>
         ) : (
-          /* Editor View */
           <div className="grid flex-1 gap-4 lg:grid-cols-2">
-            {/* Input */}
+            {/* Input Panel */}
             <Card className="flex flex-col border-border bg-card/50">
-              <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-medium">Input</CardTitle>
-                <Button onClick={handleGenerate} disabled={isLoading} size="sm">
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="mr-2 h-4 w-4" />
-                      {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                    </>
-                  )}
-                </Button>
+              <CardHeader className="flex-row items-center justify-between py-2">
+                <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                  <Code2 className="h-4 w-4 text-blue-500" />
+                  Input
+                </CardTitle>
               </CardHeader>
               <CardContent className="flex-1 p-0">
-                <div className="h-full overflow-hidden rounded-b-lg border-t border-border">
-                  <Editor
-                    height="100%"
-                    language={language}
-                    value={inputCode}
-                    onChange={(value) => setInputCode(value || "")}
-                    theme="vs-dark"
-                    options={{
-                      minimap: { enabled: false },
-                      fontSize: 13,
-                      lineNumbers: "on",
-                      scrollBeyondLastLine: false,
-                      automaticLayout: true,
-                      padding: { top: 16, bottom: 16 },
-                    }}
-                  />
-                </div>
+                <Editor
+                  height="100%"
+                  language={language}
+                  theme="vs-dark"
+                  value={inputCode}
+                  onChange={(value) => setInputCode(value || "")}
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 13,
+                    lineNumbers: "on",
+                    scrollBeyondLastLine: false,
+                    wordWrap: "on",
+                    padding: { top: 12 },
+                  }}
+                />
               </CardContent>
             </Card>
 
-            {/* Output */}
+            {/* Output Panel */}
             <Card className="flex flex-col border-border bg-card/50">
-              <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-medium">Output</CardTitle>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={copyToClipboard} disabled={!outputCode}>
+              <CardHeader className="flex-row items-center justify-between py-2">
+                <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                  <Sparkles className="h-4 w-4 text-emerald-500" />
+                  Output
+                  {isLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                </CardTitle>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={copyToClipboard} disabled={!outputCode}>
                     <Copy className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm" onClick={downloadCode} disabled={!outputCode}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={downloadCode} disabled={!outputCode}>
                     <Download className="h-4 w-4" />
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 p-0">
-                <div className="h-full overflow-hidden rounded-b-lg border-t border-border">
-                  <Editor
-                    height="100%"
-                    language={activeTab === "debug" ? "markdown" : language}
-                    value={outputCode}
-                    theme="vs-dark"
-                    options={{
-                      readOnly: true,
-                      minimap: { enabled: false },
-                      fontSize: 13,
-                      lineNumbers: "on",
-                      scrollBeyondLastLine: false,
-                      automaticLayout: true,
-                      padding: { top: 16, bottom: 16 },
-                    }}
-                  />
-                </div>
+                <Editor
+                  height="100%"
+                  language={activeTab === "debug" || activeTab === "refactor" ? "markdown" : language}
+                  theme="vs-dark"
+                  value={outputCode}
+                  options={{
+                    readOnly: true,
+                    minimap: { enabled: false },
+                    fontSize: 13,
+                    lineNumbers: "off",
+                    scrollBeyondLastLine: false,
+                    wordWrap: "on",
+                    padding: { top: 12 },
+                  }}
+                />
               </CardContent>
             </Card>
           </div>
