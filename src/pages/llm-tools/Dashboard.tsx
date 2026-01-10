@@ -1,422 +1,333 @@
-import { useState, useRef, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/hooks/use-toast";
-import Editor from "@monaco-editor/react";
-import { 
-  Sparkles, 
-  Send, 
-  Paperclip,
-  Maximize2,
-  Copy,
-  Download,
-  Loader2,
-  Square,
-  User,
-  Zap,
-  Code2,
-  Bot
-} from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { 
+  Zap, 
+  Bot, 
+  Code2, 
+  TrendingDown, 
+  Trophy,
+  Server,
+  Terminal,
+  GitBranch,
+  Cpu,
+  Activity,
+  Play,
+  FolderOpen,
+  FileCode,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Loader2
+} from "lucide-react";
 
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  code?: string;
-  language?: string;
-  timestamp: Date;
-}
+const stats = [
+  { label: "2-5x", subtitle: "Faster Training", icon: Zap, color: "text-yellow-500", bg: "bg-yellow-500/10" },
+  { label: "70%", subtitle: "Less Memory", icon: TrendingDown, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  { label: "74.5%", subtitle: "HumanEval", icon: Trophy, color: "text-blue-500", bg: "bg-blue-500/10" },
+  { label: "6+", subtitle: "Platforms", icon: Server, color: "text-purple-500", bg: "bg-purple-500/10" },
+];
 
-const CODE_GEN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/llm-code-gen`;
+const recentJobs = [
+  { name: "fine-tune-llama-3.1", model: "Llama 3.1 8B", status: "completed", time: "2m ago", progress: 100 },
+  { name: "generate-api-tests", model: "Qwen2.5-Coder 7B", status: "running", time: "now", progress: 67 },
+  { name: "refactor-backend", model: "LightRail AI", status: "completed", time: "15m ago", progress: 100 },
+  { name: "debug-auth-module", model: "Qwen2.5-Coder 14B", status: "queued", time: "queued", progress: 0 },
+];
 
-const quickPrompts = [
-  { icon: Zap, label: "Fine-tune a model", path: "/llm-tools/unsloth" },
-  { icon: Bot, label: "Use GLM-4 Agent", path: "/llm-tools/glm4" },
-  { icon: Code2, label: "Code with Qwen", path: "/llm-tools/qwen" },
+const quickActions = [
+  { 
+    name: "LightRail AI", 
+    description: "Chat-based coding assistant",
+    icon: Bot, 
+    path: "/llm-tools/glm4",
+    color: "text-cyan-500",
+    bg: "from-cyan-500 to-blue-600"
+  },
+  { 
+    name: "Fine-Tune Model", 
+    description: "Train with Unsloth",
+    icon: Zap, 
+    path: "/llm-tools/unsloth",
+    color: "text-yellow-500",
+    bg: "from-yellow-500 to-orange-600"
+  },
+  { 
+    name: "Qwen2.5-Coder", 
+    description: "Generate & refactor code",
+    icon: Code2, 
+    path: "/llm-tools/qwen",
+    color: "text-emerald-500",
+    bg: "from-emerald-500 to-teal-600"
+  },
+];
+
+const terminalLines = [
+  { type: "info", text: "$ llm-tools init --workspace dev-env" },
+  { type: "success", text: "[✓] Workspace initialized successfully" },
+  { type: "info", text: "$ llm-tools load-model qwen2.5-coder-7b --4bit" },
+  { type: "success", text: "[✓] Model loaded (4.2GB VRAM, Flash Attention enabled)" },
+  { type: "info", text: "$ llm-tools start-server --port 8080" },
+  { type: "success", text: "[✓] API server running at http://localhost:8080" },
+  { type: "warning", text: "[!] GPU utilization at 85% - optimal performance" },
+  { type: "info", text: "$ Ready for code generation requests..." },
 ];
 
 const Dashboard = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle className="h-4 w-4 text-emerald-500" />;
+      case "running":
+        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+      case "queued":
+        return <Clock className="h-4 w-4 text-muted-foreground" />;
+      default:
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
     }
-  }, [messages]);
-
-  const handleSubmit = async () => {
-    if (!input.trim() || isLoading) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input,
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
-
-    abortControllerRef.current = new AbortController();
-
-    const assistantMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      role: "assistant",
-      content: "",
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, assistantMessage]);
-
-    try {
-      const response = await fetch(CODE_GEN_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          action: "interactive",
-          prompt: input,
-          language: "auto",
-          temperature: 0.7,
-          maxTokens: 4096,
-          model: "auto",
-        }),
-        signal: abortControllerRef.current.signal,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Request failed: ${response.status}`);
-      }
-
-      if (!response.body) {
-        throw new Error("No response body");
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let fullOutput = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
-          const line = buffer.slice(0, newlineIndex).trim();
-          buffer = buffer.slice(newlineIndex + 1);
-
-          if (line.startsWith(":") || line === "") continue;
-          if (!line.startsWith("data: ")) continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
-
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              fullOutput += content;
-              setMessages(prev => {
-                const updated = [...prev];
-                const lastIndex = updated.length - 1;
-                if (updated[lastIndex]?.role === "assistant") {
-                  updated[lastIndex] = { ...updated[lastIndex], content: fullOutput };
-                }
-                return updated;
-              });
-            }
-          } catch {
-            // Incomplete JSON
-          }
-        }
-      }
-
-      // Extract code blocks from response
-      const codeMatch = fullOutput.match(/```(\w+)?\n([\s\S]*?)```/);
-      if (codeMatch) {
-        setMessages(prev => {
-          const updated = [...prev];
-          const lastIndex = updated.length - 1;
-          if (updated[lastIndex]?.role === "assistant") {
-            updated[lastIndex] = {
-              ...updated[lastIndex],
-              code: codeMatch[2],
-              language: codeMatch[1] || "typescript"
-            };
-          }
-          return updated;
-        });
-      }
-    } catch (error) {
-      if ((error as Error).name === "AbortError") {
-        toast({ title: "Stopped", description: "Generation cancelled." });
-      } else {
-        console.error("Generation error:", error);
-        toast({ 
-          title: "Error", 
-          description: (error as Error).message || "Failed to generate response.", 
-          variant: "destructive" 
-        });
-        setMessages(prev => {
-          const updated = [...prev];
-          const lastIndex = updated.length - 1;
-          if (updated[lastIndex]?.role === "assistant") {
-            updated[lastIndex] = { 
-              ...updated[lastIndex], 
-              content: `Sorry, I encountered an error: ${(error as Error).message}` 
-            };
-          }
-          return updated;
-        });
-      }
-    } finally {
-      setIsLoading(false);
-      abortControllerRef.current = null;
-    }
-  };
-
-  const handleStop = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
-    }
-  };
-
-  const copyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-    toast({ title: "Copied!", description: "Code copied to clipboard." });
-  };
-
-  const downloadCode = (code: string, language: string) => {
-    const extensions: Record<string, string> = {
-      python: "py",
-      javascript: "js",
-      typescript: "ts",
-      java: "java",
-      rust: "rs",
-      go: "go",
-    };
-    const ext = extensions[language] || language || "txt";
-    const blob = new Blob([code], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `code.${ext}`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const renderMessage = (message: Message) => {
-    if (message.role === "user") {
-      return (
-        <div key={message.id} className="flex justify-end">
-          <div className="flex max-w-[80%] items-start gap-3">
-            <div className="rounded-2xl bg-primary px-4 py-3 text-primary-foreground">
-              <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-            </div>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-              <User className="h-4 w-4" />
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div key={message.id} className="flex justify-start">
-        <div className="flex max-w-[85%] items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
-            <Sparkles className="h-4 w-4 text-white" />
-          </div>
-          <div className="space-y-3">
-            <div className="rounded-2xl bg-muted px-4 py-3">
-              <p className="whitespace-pre-wrap text-sm text-foreground">
-                {message.content || (isLoading && messages[messages.length - 1]?.id === message.id ? (
-                  <span className="flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Thinking...
-                  </span>
-                ) : null)}
-              </p>
-            </div>
-            
-            {message.code && (
-              <div className="overflow-hidden rounded-xl border border-border bg-card">
-                <div className="flex items-center justify-between border-b border-border bg-muted/50 px-4 py-2">
-                  <div className="flex items-center gap-2">
-                    <Code2 className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {message.language || "code"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => copyCode(message.code!)}
-                    >
-                      <Copy className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => downloadCode(message.code!, message.language!)}
-                    >
-                      <Download className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="h-64">
-                  <Editor
-                    height="100%"
-                    language={message.language || "typescript"}
-                    theme="vs-dark"
-                    value={message.code}
-                    options={{
-                      readOnly: true,
-                      minimap: { enabled: false },
-                      fontSize: 13,
-                      lineNumbers: "on",
-                      scrollBeyondLastLine: false,
-                      padding: { top: 12 },
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
   };
 
   return (
     <div className="flex h-screen flex-col">
-      {/* Header */}
-      <header className="flex h-12 shrink-0 items-center border-b border-border bg-background px-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-violet-500 to-purple-600">
-            <Sparkles className="h-3.5 w-3.5 text-white" />
+      <header className="flex h-14 shrink-0 items-center border-b border-border bg-background px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600">
+            <Code2 className="h-4 w-4 text-white" />
           </div>
-          <span className="text-sm font-medium">LLM Dev Tools</span>
+          <span className="text-base font-semibold">LLM Dev Tools</span>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {messages.length === 0 ? (
-          /* Empty State */
-          <div className="flex flex-1 flex-col items-center justify-center px-4">
-            <div className="max-w-2xl text-center">
-              <h1 className="mb-2 text-3xl font-semibold">
-                <span className="bg-gradient-to-r from-violet-400 to-purple-500 bg-clip-text text-transparent">
-                  Train Faster.
-                </span>{" "}
-                Code Smarter.
-                <br />
-                Build Better.
-              </h1>
-              <p className="mb-8 text-muted-foreground">
-                Enter a coding task below to get started.
-              </p>
-              
-              {/* Quick Actions */}
-              <div className="mb-8 flex flex-wrap justify-center gap-2">
-                {quickPrompts.map((prompt) => (
-                  <Button
-                    key={prompt.label}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => navigate(prompt.path)}
-                  >
-                    <prompt.icon className="h-4 w-4" />
-                    {prompt.label}
-                  </Button>
-                ))}
-              </div>
-              
-              <div className="animate-pulse text-4xl text-muted-foreground">|</div>
+      <div className="flex-1 overflow-auto p-6">
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Left Panel - Workspace Overview */}
+          <div className="flex flex-col gap-6 lg:col-span-2">
+            {/* Header Stats */}
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {stats.map((stat) => (
+                <Card key={stat.label} className="border-border bg-card/50">
+                  <CardContent className="flex items-center gap-3 p-4">
+                    <div className={`rounded-lg p-2.5 ${stat.bg}`}>
+                      <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-foreground">{stat.label}</p>
+                      <p className="text-sm text-muted-foreground">{stat.subtitle}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </div>
-        ) : (
-          /* Messages */
-          <ScrollArea className="flex-1 px-4" ref={scrollRef}>
-            <div className="mx-auto max-w-4xl space-y-6 py-6">
-              {messages.map(renderMessage)}
-            </div>
-          </ScrollArea>
-        )}
 
-        {/* Input Area */}
-        <div className="shrink-0 border-t border-border bg-background p-4">
-          <div className="mx-auto max-w-3xl">
-            <div className="relative rounded-xl border border-border bg-muted/50 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Give me a task to work on..."
-                className="min-h-[56px] resize-none border-0 bg-transparent px-4 py-3 text-sm focus-visible:ring-0"
-                rows={1}
-                disabled={isLoading}
-              />
-              <div className="flex items-center justify-between px-3 pb-3">
-                <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                    <Paperclip className="h-4 w-4" />
+            {/* Quick Actions */}
+            <Card className="border-border bg-card/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <Play className="h-5 w-5 text-primary" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-3">
+                  {quickActions.map((action) => (
+                    <Button
+                      key={action.name}
+                      variant="outline"
+                      className="h-auto flex-col items-start gap-3 border-border bg-muted/30 p-5 hover:bg-muted/50"
+                      onClick={() => navigate(action.path)}
+                    >
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${action.bg}`}>
+                        <action.icon className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-base font-semibold">{action.name}</p>
+                        <p className="text-sm text-muted-foreground">{action.description}</p>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Terminal Panel */}
+            <Card className="border-border bg-card/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <Terminal className="h-5 w-5 text-emerald-500" />
+                  System Console
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    <Activity className="mr-1 h-3 w-3" />
+                    Live
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-52 rounded-lg bg-background/80 p-4 font-mono text-sm">
+                  {terminalLines.map((line, index) => (
+                    <div
+                      key={index}
+                      className={`mb-1.5 leading-relaxed ${
+                        line.type === "success"
+                          ? "text-emerald-500"
+                          : line.type === "warning"
+                          ? "text-yellow-500"
+                          : line.type === "error"
+                          ? "text-destructive"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {line.text}
+                    </div>
+                  ))}
+                  <div className="flex items-center text-muted-foreground">
+                    <span className="animate-pulse">▋</span>
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {/* Jobs List */}
+            <Card className="border-border bg-card/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center justify-between text-base font-semibold">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="h-5 w-5 text-blue-500" />
+                    Active Jobs
+                  </div>
+                  <Button variant="ghost" size="sm" className="h-8 text-sm">
+                    View All
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                    <Maximize2 className="h-4 w-4" />
-                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-border">
+                  {recentJobs.map((job, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between px-6 py-4 hover:bg-muted/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        {getStatusIcon(job.status)}
+                        <div>
+                          <p className="font-mono text-sm font-medium text-foreground">{job.name}</p>
+                          <p className="text-sm text-muted-foreground">{job.model}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {job.status === "running" && (
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-24 overflow-hidden rounded-full bg-muted">
+                              <div
+                                className="h-full bg-blue-500 transition-all"
+                                style={{ width: `${job.progress}%` }}
+                              />
+                            </div>
+                            <span className="text-sm text-muted-foreground">{job.progress}%</span>
+                          </div>
+                        )}
+                        <span className="text-sm text-muted-foreground">{job.time}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Panel - Workspace Files & Resources */}
+          <div className="flex flex-col gap-6">
+            {/* Workspace Explorer */}
+            <Card className="flex-1 border-border bg-card/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <FolderOpen className="h-5 w-5 text-yellow-500" />
+                  Workspace
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-1 font-mono text-sm">
+                  <div className="flex items-center gap-2 rounded px-2 py-2 text-foreground hover:bg-muted/50">
+                    <FolderOpen className="h-4 w-4 text-yellow-500" />
+                    <span>models/</span>
+                  </div>
+                  <div className="ml-4 space-y-1">
+                    <div className="flex items-center gap-2 rounded px-2 py-1.5 text-muted-foreground hover:bg-muted/50">
+                      <FileCode className="h-4 w-4 text-blue-500" />
+                      <span>llama-3.1-8b-finetuned.gguf</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded px-2 py-1.5 text-muted-foreground hover:bg-muted/50">
+                      <FileCode className="h-4 w-4 text-emerald-500" />
+                      <span>qwen2.5-coder-7b.safetensors</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 rounded px-2 py-2 text-foreground hover:bg-muted/50">
+                    <FolderOpen className="h-4 w-4 text-yellow-500" />
+                    <span>datasets/</span>
+                  </div>
+                  <div className="ml-4 space-y-1">
+                    <div className="flex items-center gap-2 rounded px-2 py-1.5 text-muted-foreground hover:bg-muted/50">
+                      <FileCode className="h-4 w-4 text-purple-500" />
+                      <span>training-data.jsonl</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 rounded px-2 py-2 text-foreground hover:bg-muted/50">
+                    <FolderOpen className="h-4 w-4 text-yellow-500" />
+                    <span>outputs/</span>
+                  </div>
+                  <div className="flex items-center gap-2 rounded px-2 py-2 text-foreground hover:bg-muted/50">
+                    <GitBranch className="h-4 w-4 text-orange-500" />
+                    <span>config.yaml</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* GPU Status */}
+            <Card className="border-border bg-card/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <Cpu className="h-5 w-5 text-emerald-500" />
+                  GPU Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Utilization</span>
+                    <span className="font-semibold text-foreground">85%</span>
+                  </div>
+                  <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full w-[85%] bg-emerald-500" />
+                  </div>
                 </div>
                 <div>
-                  {isLoading ? (
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={handleStop}
-                    >
-                      <Square className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={handleSubmit}
-                      disabled={!input.trim()}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">VRAM</span>
+                    <span className="font-semibold text-foreground">12.4 / 24 GB</span>
+                  </div>
+                  <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full w-[52%] bg-blue-500" />
+                  </div>
                 </div>
-              </div>
-            </div>
+                <div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Temperature</span>
+                    <span className="font-semibold text-foreground">68°C</span>
+                  </div>
+                  <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full w-[68%] bg-yellow-500" />
+                  </div>
+                </div>
+                <div className="rounded-lg bg-muted/50 p-4">
+                  <p className="text-sm font-semibold text-foreground">NVIDIA RTX 4090</p>
+                  <p className="text-sm text-muted-foreground">Driver 545.29.06 • CUDA 12.3</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
