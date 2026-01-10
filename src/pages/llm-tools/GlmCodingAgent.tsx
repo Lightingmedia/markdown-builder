@@ -1,21 +1,32 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import Editor from "@monaco-editor/react";
 import { 
   Bot, 
   Send, 
   Paperclip,
-  Maximize2,
+  Plus,
   Copy,
   Download,
   Loader2,
   Square,
   Code2,
-  User
+  User,
+  MessageSquare,
+  Trash2,
+  X,
+  FileText
 } from "lucide-react";
+
+interface Attachment {
+  name: string;
+  content: string;
+  type: string;
+}
 
 interface Message {
   id: string;
@@ -23,7 +34,14 @@ interface Message {
   content: string;
   code?: string;
   language?: string;
+  attachments?: Attachment[];
   timestamp: Date;
+}
+
+interface ChatSession {
+  id: string;
+  title: string;
+  updated_at: string;
 }
 
 const CODE_GEN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/llm-code-gen`;
@@ -33,9 +51,140 @@ const GlmCodingAgent = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check auth status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+      if (user) {
+        loadSessions(user.id);
+      }
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserId(session?.user?.id || null);
+      if (session?.user) {
+        loadSessions(session.user.id);
+      } else {
+        setSessions([]);
+        setCurrentSessionId(null);
+        setMessages([]);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load sessions
+  const loadSessions = async (uid: string) => {
+    const { data, error } = await supabase
+      .from("llm_chat_sessions")
+      .select("id, title, updated_at")
+      .eq("user_id", uid)
+      .order("updated_at", { ascending: false })
+      .limit(20);
+
+    if (!error && data) {
+      setSessions(data);
+    }
+  };
+
+  // Load messages for a session
+  const loadMessages = async (sessionId: string) => {
+    const { data, error } = await supabase
+      .from("llm_chat_messages")
+      .select("*")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: true });
+
+    if (!error && data) {
+      setMessages(data.map(m => ({
+        id: m.id,
+        role: m.role as "user" | "assistant",
+        content: m.content,
+        attachments: (Array.isArray(m.attachments) ? m.attachments : []) as unknown as Attachment[],
+        timestamp: new Date(m.created_at!),
+        code: extractCode(m.content)?.code,
+        language: extractCode(m.content)?.language
+      })));
+    }
+    setCurrentSessionId(sessionId);
+    setShowHistory(false);
+  };
+
+  const extractCode = (content: string): { code: string; language: string } | null => {
+    const match = content.match(/```(\w+)?\n([\s\S]*?)```/);
+    if (match) {
+      return { code: match[2], language: match[1] || "typescript" };
+    }
+    return null;
+  };
+
+  // Create new session
+  const createSession = async (firstMessage: string): Promise<string | null> => {
+    if (!userId) return null;
+
+    const title = firstMessage.slice(0, 50) + (firstMessage.length > 50 ? "..." : "");
+    const { data, error } = await supabase
+      .from("llm_chat_sessions")
+      .insert({ user_id: userId, title })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("Failed to create session:", error);
+      return null;
+    }
+
+    setSessions(prev => [{ id: data.id, title, updated_at: new Date().toISOString() }, ...prev]);
+    return data.id;
+  };
+
+  // Save message
+  const saveMessage = async (sessionId: string, role: "user" | "assistant", content: string, messageAttachments: Attachment[] = []) => {
+    await supabase.from("llm_chat_messages").insert([{
+      session_id: sessionId,
+      role,
+      content,
+      attachments: messageAttachments as unknown as null
+    }]);
+
+    // Update session timestamp
+    await supabase
+      .from("llm_chat_sessions")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", sessionId);
+  };
+
+  // Delete session
+  const deleteSession = async (sessionId: string) => {
+    await supabase.from("llm_chat_sessions").delete().eq("id", sessionId);
+    setSessions(prev => prev.filter(s => s.id !== sessionId));
+    if (currentSessionId === sessionId) {
+      setCurrentSessionId(null);
+      setMessages([]);
+    }
+    toast({ title: "Deleted", description: "Chat session removed." });
+  };
+
+  // New chat
+  const startNewChat = () => {
+    setCurrentSessionId(null);
+    setMessages([]);
+    setAttachments([]);
+    setShowHistory(false);
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -43,19 +192,72 @@ const GlmCodingAgent = () => {
     }
   }, [messages]);
 
+  // File upload handler
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      if (file.size > 1024 * 1024) { // 1MB limit
+        toast({ 
+          title: "File too large", 
+          description: `${file.name} exceeds 1MB limit.`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        setAttachments(prev => [...prev, {
+          name: file.name,
+          content,
+          type: file.type || "text/plain"
+        }]);
+      };
+      reader.readAsText(file);
+    });
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, [toast]);
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async () => {
     if (!input.trim() || isLoading) return;
 
+    let sessionId = currentSessionId;
+
+    // Create session if user is logged in and no current session
+    if (userId && !sessionId) {
+      sessionId = await createSession(input);
+      setCurrentSessionId(sessionId);
+    }
+
+    const currentAttachments = [...attachments];
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
       content: input,
+      attachments: currentAttachments,
       timestamp: new Date(),
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInput("");
+    setAttachments([]);
     setIsLoading(true);
+
+    // Save user message if logged in
+    if (sessionId) {
+      saveMessage(sessionId, "user", input, currentAttachments);
+    }
 
     abortControllerRef.current = new AbortController();
 
@@ -68,6 +270,15 @@ const GlmCodingAgent = () => {
 
     setMessages(prev => [...prev, assistantMessage]);
 
+    // Build prompt with attachments
+    let fullPrompt = input;
+    if (currentAttachments.length > 0) {
+      fullPrompt += "\n\n--- Attached Files ---\n";
+      currentAttachments.forEach(att => {
+        fullPrompt += `\n### ${att.name}\n\`\`\`\n${att.content}\n\`\`\`\n`;
+      });
+    }
+
     try {
       const response = await fetch(CODE_GEN_URL, {
         method: "POST",
@@ -77,11 +288,11 @@ const GlmCodingAgent = () => {
         },
         body: JSON.stringify({
           action: "interactive",
-          prompt: input,
+          prompt: fullPrompt,
           language: "auto",
           temperature: 0.7,
           maxTokens: 4096,
-          model: "glm-4",
+          model: "lightrail",
         }),
         signal: abortControllerRef.current.signal,
       });
@@ -153,6 +364,11 @@ const GlmCodingAgent = () => {
           return updated;
         });
       }
+
+      // Save assistant message if logged in
+      if (sessionId) {
+        saveMessage(sessionId, "assistant", fullOutput);
+      }
     } catch (error) {
       if ((error as Error).name === "AbortError") {
         toast({ title: "Stopped", description: "Generation cancelled." });
@@ -223,8 +439,20 @@ const GlmCodingAgent = () => {
       return (
         <div key={message.id} className="flex justify-end">
           <div className="flex max-w-[80%] items-start gap-3">
-            <div className="rounded-2xl bg-primary px-4 py-3 text-primary-foreground">
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+            <div className="space-y-2">
+              <div className="rounded-2xl bg-primary px-4 py-3 text-primary-foreground">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+              </div>
+              {message.attachments && message.attachments.length > 0 && (
+                <div className="flex flex-wrap justify-end gap-2">
+                  {message.attachments.map((att, i) => (
+                    <div key={i} className="flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1.5 text-xs">
+                      <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-muted-foreground">{att.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
               <User className="h-5 w-5" />
@@ -306,90 +534,195 @@ const GlmCodingAgent = () => {
 
   return (
     <div className="flex h-screen flex-col">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept=".js,.ts,.tsx,.jsx,.py,.java,.go,.rs,.c,.cpp,.h,.css,.html,.json,.md,.txt,.yaml,.yml,.sql,.sh,.bash"
+        className="hidden"
+        onChange={handleFileUpload}
+      />
+
       {/* Header */}
-      <header className="flex h-14 shrink-0 items-center border-b border-border bg-background px-6">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-6">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600">
             <Bot className="h-4 w-4 text-white" />
           </div>
           <span className="text-base font-semibold">LightRail AI</span>
         </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={startNewChat}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            New Chat
+          </Button>
+          {userId && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowHistory(!showHistory)}
+              className="gap-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              History
+            </Button>
+          )}
+        </div>
       </header>
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {messages.length === 0 ? (
-          /* Empty State */
-          <div className="flex flex-1 flex-col items-center justify-center px-6">
-            <div className="max-w-2xl text-center">
-              <h1 className="mb-3 text-4xl font-bold tracking-tight">
-                <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                  Hey there!
-                </span>{" "}
-                I'm LightRail AI and I'm a
-                <br />
-                software engineer.
-              </h1>
-              <p className="mb-10 text-lg text-muted-foreground">
-                Enter a coding task below to get started.
-              </p>
-              <div className="animate-pulse text-5xl text-muted-foreground/50">|</div>
-            </div>
-          </div>
-        ) : (
-          /* Messages */
-          <ScrollArea className="flex-1 px-6" ref={scrollRef}>
-            <div className="mx-auto max-w-4xl space-y-6 py-8">
-              {messages.map(renderMessage)}
-            </div>
-          </ScrollArea>
-        )}
-
-        {/* Input Area */}
-        <div className="shrink-0 border-t border-border bg-background p-6">
-          <div className="mx-auto max-w-3xl">
-            <div className="relative rounded-xl border border-border bg-muted/50 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20">
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Give LightRail AI a task to work on..."
-                className="min-h-[60px] resize-none border-0 bg-transparent px-4 py-4 text-base focus-visible:ring-0"
-                rows={1}
-                disabled={isLoading}
-              />
-              <div className="flex items-center justify-between px-4 pb-4">
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
-                    <Paperclip className="h-5 w-5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
-                    <Maximize2 className="h-5 w-5" />
-                  </Button>
-                </div>
-                <div>
-                  {isLoading ? (
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="h-9 w-9"
-                      onClick={handleStop}
-                    >
-                      <Square className="h-4 w-4" />
-                    </Button>
+      <div className="flex flex-1 overflow-hidden">
+        {/* Chat History Sidebar */}
+        {showHistory && userId && (
+          <div className="w-72 shrink-0 border-r border-border bg-muted/30">
+            <div className="p-4">
+              <h3 className="mb-3 text-sm font-medium text-muted-foreground">Recent Chats</h3>
+              <ScrollArea className="h-[calc(100vh-140px)]">
+                <div className="space-y-1 pr-3">
+                  {sessions.length === 0 ? (
+                    <p className="py-4 text-center text-sm text-muted-foreground">No chat history</p>
                   ) : (
-                    <Button
-                      size="icon"
-                      className="h-9 w-9"
-                      onClick={handleSubmit}
-                      disabled={!input.trim()}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
+                    sessions.map(session => (
+                      <div
+                        key={session.id}
+                        className={`group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted ${
+                          currentSessionId === session.id ? "bg-muted" : ""
+                        }`}
+                        onClick={() => loadMessages(session.id)}
+                      >
+                        <span className="line-clamp-1 flex-1">{session.title}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteSession(session.id);
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                      </div>
+                    ))
                   )}
                 </div>
+              </ScrollArea>
+            </div>
+          </div>
+        )}
+
+        {/* Chat Area */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {messages.length === 0 ? (
+            /* Empty State */
+            <div className="flex flex-1 flex-col items-center justify-center px-6">
+              <div className="max-w-2xl text-center">
+                <h1 className="mb-3 text-4xl font-bold tracking-tight">
+                  <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                    Hey there!
+                  </span>{" "}
+                  I'm LightRail AI and I'm a
+                  <br />
+                  software engineer.
+                </h1>
+                <p className="mb-10 text-lg text-muted-foreground">
+                  Enter a coding task below to get started. You can attach code files for analysis.
+                </p>
+                <div className="animate-pulse text-5xl text-muted-foreground/50">|</div>
               </div>
+            </div>
+          ) : (
+            /* Messages */
+            <ScrollArea className="flex-1 px-6" ref={scrollRef}>
+              <div className="mx-auto max-w-4xl space-y-6 py-8">
+                {messages.map(renderMessage)}
+              </div>
+            </ScrollArea>
+          )}
+
+          {/* Input Area */}
+          <div className="shrink-0 border-t border-border bg-background p-6">
+            <div className="mx-auto max-w-3xl">
+              {/* Attachment Preview */}
+              {attachments.length > 0 && (
+                <div className="mb-3 flex flex-wrap gap-2">
+                  {attachments.map((att, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm"
+                    >
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span className="max-w-[150px] truncate">{att.name}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5"
+                        onClick={() => removeAttachment(i)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="relative rounded-xl border border-border bg-muted/50 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20">
+                <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Give LightRail AI a task to work on..."
+                  className="min-h-[60px] resize-none border-0 bg-transparent px-4 py-4 text-base focus-visible:ring-0"
+                  rows={1}
+                  disabled={isLoading}
+                />
+                <div className="flex items-center justify-between px-4 pb-4">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isLoading}
+                    >
+                      <Paperclip className="h-5 w-5" />
+                    </Button>
+                  </div>
+                  <div>
+                    {isLoading ? (
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-9 w-9"
+                        onClick={handleStop}
+                      >
+                        <Square className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        size="icon"
+                        className="h-9 w-9"
+                        onClick={handleSubmit}
+                        disabled={!input.trim()}
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {!userId && (
+                <p className="mt-2 text-center text-xs text-muted-foreground">
+                  Sign in to save your chat history
+                </p>
+              )}
             </div>
           </div>
         </div>
