@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import Editor from "@monaco-editor/react";
 import { 
@@ -16,7 +16,6 @@ import {
   Play, 
   Copy, 
   Download, 
-  Settings,
   Sparkles,
   TestTube,
   Bug,
@@ -25,24 +24,29 @@ import {
   Loader2,
   Send,
   Trophy,
-  Star
+  Star,
+  Terminal,
+  Settings,
+  ChevronDown,
+  ChevronUp,
+  Wand2
 } from "lucide-react";
 
 const modelSizes = [
-  { id: "0.5b", name: "0.5B", description: "Ultra-fast, basic tasks" },
-  { id: "1.5b", name: "1.5B", description: "Quick responses" },
-  { id: "7b", name: "7B", description: "Best balance", recommended: true },
-  { id: "14b", name: "14B", description: "Higher accuracy" },
-  { id: "32b", name: "32B", description: "Maximum capability" },
+  { id: "0.5b", name: "0.5B", vram: "~0.5GB", speed: "Ultra Fast" },
+  { id: "1.5b", name: "1.5B", vram: "~1.2GB", speed: "Fast" },
+  { id: "7b", name: "7B", vram: "~4.5GB", speed: "Balanced", recommended: true },
+  { id: "14b", name: "14B", vram: "~9GB", speed: "Accurate" },
+  { id: "32b", name: "32B", vram: "~20GB", speed: "Maximum" },
 ];
 
 const testFrameworks = [
-  { id: "pytest", name: "pytest", language: "python" },
-  { id: "unittest", name: "unittest", language: "python" },
-  { id: "jest", name: "Jest", language: "javascript" },
-  { id: "mocha", name: "Mocha", language: "javascript" },
-  { id: "junit", name: "JUnit", language: "java" },
-  { id: "go-test", name: "go test", language: "go" },
+  { id: "pytest", name: "pytest" },
+  { id: "unittest", name: "unittest" },
+  { id: "jest", name: "Jest" },
+  { id: "mocha", name: "Mocha" },
+  { id: "junit", name: "JUnit" },
+  { id: "go-test", name: "go test" },
 ];
 
 const tabs = [
@@ -51,8 +55,346 @@ const tabs = [
   { id: "tests", label: "Tests", icon: TestTube },
   { id: "debug", label: "Debug", icon: Bug },
   { id: "refactor", label: "Refactor", icon: RefreshCw },
-  { id: "interactive", label: "Interactive", icon: MessageSquare },
+  { id: "interactive", label: "Chat", icon: MessageSquare },
 ];
+
+const mockOutputs: Record<string, string> = {
+  generate: `import asyncio
+from typing import AsyncIterator, Optional
+from dataclasses import dataclass, field
+from contextlib import asynccontextmanager
+import aiohttp
+
+@dataclass
+class StreamConfig:
+    """Configuration for streaming responses."""
+    chunk_size: int = 1024
+    timeout: float = 30.0
+    max_retries: int = 3
+    buffer_size: int = 4096
+
+class StreamingClient:
+    """
+    High-performance async streaming client for LLM APIs.
+    
+    Supports:
+    - Chunked transfer encoding
+    - Automatic reconnection
+    - Backpressure handling
+    - Token-by-token streaming
+    """
+    
+    def __init__(
+        self,
+        base_url: str,
+        api_key: str,
+        config: Optional[StreamConfig] = None
+    ):
+        self.base_url = base_url
+        self.api_key = api_key
+        self.config = config or StreamConfig()
+        self._session: Optional[aiohttp.ClientSession] = None
+    
+    @asynccontextmanager
+    async def _get_session(self):
+        """Manage aiohttp session lifecycle."""
+        if self._session is None or self._session.closed:
+            timeout = aiohttp.ClientTimeout(total=self.config.timeout)
+            self._session = aiohttp.ClientSession(timeout=timeout)
+        try:
+            yield self._session
+        except Exception:
+            await self._session.close()
+            raise
+    
+    async def stream_completion(
+        self,
+        prompt: str,
+        max_tokens: int = 2048,
+        temperature: float = 0.7
+    ) -> AsyncIterator[str]:
+        """
+        Stream completion tokens from the API.
+        
+        Yields tokens as they arrive, enabling real-time display.
+        """
+        payload = {
+            "prompt": prompt,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "stream": True
+        }
+        
+        async with self._get_session() as session:
+            async with session.post(
+                f"{self.base_url}/completions",
+                json=payload,
+                headers={"Authorization": f"Bearer {self.api_key}"}
+            ) as response:
+                response.raise_for_status()
+                
+                async for chunk in response.content.iter_chunks():
+                    data, _ = chunk
+                    if data:
+                        yield data.decode('utf-8')
+    
+    async def close(self) -> None:
+        """Clean up resources."""
+        if self._session and not self._session.closed:
+            await self._session.close()`,
+  complete: `    async def batch_complete(
+        self,
+        prompts: list[str],
+        **kwargs
+    ) -> list[str]:
+        """
+        Complete multiple prompts concurrently.
+        
+        Uses semaphore to limit concurrent requests.
+        """
+        semaphore = asyncio.Semaphore(self.config.max_concurrent)
+        
+        async def _complete_one(prompt: str) -> str:
+            async with semaphore:
+                tokens = []
+                async for token in self.stream_completion(prompt, **kwargs):
+                    tokens.append(token)
+                return ''.join(tokens)
+        
+        tasks = [_complete_one(p) for p in prompts]
+        return await asyncio.gather(*tasks)
+    
+    def _parse_sse_event(self, data: bytes) -> Optional[dict]:
+        """Parse Server-Sent Event data."""
+        try:
+            text = data.decode('utf-8').strip()
+            if text.startswith('data: '):
+                json_str = text[6:]
+                if json_str == '[DONE]':
+                    return None
+                return json.loads(json_str)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return None
+        return None
+    
+    async def health_check(self) -> bool:
+        """Check if the API is responsive."""
+        try:
+            async with self._get_session() as session:
+                async with session.get(f"{self.base_url}/health") as resp:
+                    return resp.status == 200
+        except Exception:
+            return False`,
+  tests: `import pytest
+from unittest.mock import AsyncMock, patch, MagicMock
+from streaming_client import StreamingClient, StreamConfig
+
+class TestStreamingClient:
+    """Comprehensive test suite for StreamingClient."""
+    
+    @pytest.fixture
+    def client(self):
+        return StreamingClient(
+            base_url="https://api.example.com",
+            api_key="test-key",
+            config=StreamConfig(timeout=10.0)
+        )
+    
+    @pytest.fixture
+    def mock_response(self):
+        """Create mock streaming response."""
+        async def mock_iter():
+            chunks = [b'Hello', b' ', b'World', b'!']
+            for chunk in chunks:
+                yield (chunk, False)
+        
+        mock = AsyncMock()
+        mock.status = 200
+        mock.content.iter_chunks = mock_iter
+        mock.__aenter__ = AsyncMock(return_value=mock)
+        mock.__aexit__ = AsyncMock(return_value=None)
+        return mock
+    
+    @pytest.mark.asyncio
+    async def test_stream_completion_success(self, client, mock_response):
+        """Test successful streaming completion."""
+        with patch('aiohttp.ClientSession.post', return_value=mock_response):
+            tokens = []
+            async for token in client.stream_completion("Hello"):
+                tokens.append(token)
+            
+            assert tokens == ['Hello', ' ', 'World', '!']
+    
+    @pytest.mark.asyncio
+    async def test_stream_completion_with_params(self, client, mock_response):
+        """Test completion with custom parameters."""
+        with patch('aiohttp.ClientSession.post', return_value=mock_response) as mock_post:
+            async for _ in client.stream_completion(
+                "Test",
+                max_tokens=100,
+                temperature=0.5
+            ):
+                pass
+            
+            call_args = mock_post.call_args
+            payload = call_args.kwargs['json']
+            assert payload['max_tokens'] == 100
+            assert payload['temperature'] == 0.5
+    
+    @pytest.mark.asyncio
+    async def test_batch_complete(self, client, mock_response):
+        """Test concurrent batch completion."""
+        with patch.object(client, 'stream_completion') as mock_stream:
+            async def mock_gen():
+                yield "result"
+            mock_stream.return_value = mock_gen()
+            
+            results = await client.batch_complete(["a", "b", "c"])
+            assert len(results) == 3
+    
+    @pytest.mark.asyncio
+    async def test_health_check_success(self, client):
+        """Test health check when API is healthy."""
+        mock_resp = AsyncMock()
+        mock_resp.status = 200
+        mock_resp.__aenter__ = AsyncMock(return_value=mock_resp)
+        mock_resp.__aexit__ = AsyncMock(return_value=None)
+        
+        with patch('aiohttp.ClientSession.get', return_value=mock_resp):
+            result = await client.health_check()
+            assert result is True
+    
+    @pytest.mark.asyncio
+    async def test_health_check_failure(self, client):
+        """Test health check when API is down."""
+        with patch('aiohttp.ClientSession.get', side_effect=Exception("Connection refused")):
+            result = await client.health_check()
+            assert result is False`,
+  debug: `# 🔍 Debug Analysis Report
+
+## Issues Detected: 3
+
+### Issue #1: Memory Leak in Session Management
+**Severity:** High | **Line:** 45
+
+\`\`\`python
+# PROBLEM: Session created but never closed on error
+async with self._get_session() as session:
+    # If exception here, session leaks
+    async with session.post(...) as response:
+        ...
+
+# SOLUTION: Add finally block
+try:
+    async with self._get_session() as session:
+        async with session.post(...) as response:
+            ...
+finally:
+    await self.close()  # Ensure cleanup
+\`\`\`
+
+### Issue #2: Race Condition in Concurrent Requests
+**Severity:** Medium | **Line:** 78
+
+\`\`\`python
+# PROBLEM: _session accessed without lock
+if self._session is None:  # Thread A checks
+    self._session = ...     # Thread B also creates!
+
+# SOLUTION: Use asyncio.Lock
+self._lock = asyncio.Lock()
+
+async with self._lock:
+    if self._session is None:
+        self._session = aiohttp.ClientSession()
+\`\`\`
+
+### Issue #3: Missing Timeout on Individual Chunks
+**Severity:** Low | **Line:** 92
+
+\`\`\`python
+# PROBLEM: No per-chunk timeout
+async for chunk in response.content.iter_chunks():
+    yield chunk  # Can hang indefinitely
+
+# SOLUTION: Add chunk timeout
+async for chunk in asyncio.wait_for(
+    response.content.iter_chunks().__anext__(),
+    timeout=5.0
+):
+    yield chunk
+\`\`\`
+
+## Recommendations
+1. ✅ Implement proper session lifecycle management
+2. ✅ Add locking for shared state access
+3. ✅ Consider circuit breaker for resilience`,
+  refactor: `# ✨ Refactored Code
+
+## Applied Patterns:
+- Strategy Pattern for retry logic
+- Builder Pattern for configuration
+- Dependency Injection for testability
+
+\`\`\`python
+from abc import ABC, abstractmethod
+from typing import Protocol, TypeVar
+from dataclasses import dataclass, field
+import asyncio
+
+# Type definitions
+T = TypeVar('T')
+
+class RetryStrategy(Protocol):
+    """Protocol for retry strategies."""
+    def should_retry(self, attempt: int, error: Exception) -> bool: ...
+    def get_delay(self, attempt: int) -> float: ...
+
+@dataclass
+class ExponentialBackoff:
+    """Exponential backoff with jitter."""
+    base_delay: float = 1.0
+    max_delay: float = 60.0
+    max_attempts: int = 3
+    
+    def should_retry(self, attempt: int, error: Exception) -> bool:
+        return attempt < self.max_attempts
+    
+    def get_delay(self, attempt: int) -> float:
+        import random
+        delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+        return delay + random.uniform(0, delay * 0.1)
+
+@dataclass
+class StreamConfigBuilder:
+    """Builder for StreamConfig."""
+    _config: dict = field(default_factory=dict)
+    
+    def chunk_size(self, size: int) -> 'StreamConfigBuilder':
+        self._config['chunk_size'] = size
+        return self
+    
+    def timeout(self, seconds: float) -> 'StreamConfigBuilder':
+        self._config['timeout'] = seconds
+        return self
+    
+    def retry_strategy(self, strategy: RetryStrategy) -> 'StreamConfigBuilder':
+        self._config['retry_strategy'] = strategy
+        return self
+    
+    def build(self) -> StreamConfig:
+        return StreamConfig(**self._config)
+
+# Usage:
+config = (
+    StreamConfigBuilder()
+    .chunk_size(2048)
+    .timeout(30.0)
+    .retry_strategy(ExponentialBackoff(max_attempts=5))
+    .build()
+)
+\`\`\``,
+};
 
 const QwenCoder = () => {
   const { toast } = useToast();
@@ -68,9 +410,18 @@ const QwenCoder = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [realTimeSuggestions, setRealTimeSuggestions] = useState(true);
   
-  // Interactive chat
-  const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
+  const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([
+    { role: "assistant", content: "Hey! I'm Qwen2.5-Coder. I can help you write, debug, and optimize code. What would you like to build?" }
+  ]);
   const [chatInput, setChatInput] = useState("");
+
+  const [logs, setLogs] = useState<string[]>([
+    "$ Qwen2.5-Coder initialized",
+    `$ Model: qwen2.5-coder-7b (4-bit)`,
+    "$ HumanEval: 74.5% | MBPP: 72.8%",
+    "$ Real-time suggestions: enabled",
+    "$ Ready for code generation..."
+  ]);
 
   const handleGenerate = async () => {
     if (!inputCode.trim()) {
@@ -80,312 +431,22 @@ const QwenCoder = () => {
 
     setIsLoading(true);
     setOutputCode("");
+    setLogs(l => [...l, `$ Processing ${activeTab} request...`]);
 
-    const mockResponses: Record<string, string> = {
-      generate: `from typing import List, Optional
-from dataclasses import dataclass
-import asyncio
-import aiohttp
-
-@dataclass
-class APIResponse:
-    """Represents an API response with status and data."""
-    status_code: int
-    data: dict
-    error: Optional[str] = None
-
-class AsyncAPIClient:
-    """
-    High-performance async API client with connection pooling,
-    retry logic, and comprehensive error handling.
-    """
-    
-    def __init__(
-        self,
-        base_url: str,
-        timeout: int = 30,
-        max_retries: int = 3
-    ):
-        self.base_url = base_url.rstrip('/')
-        self.timeout = aiohttp.ClientTimeout(total=timeout)
-        self.max_retries = max_retries
-        self._session: Optional[aiohttp.ClientSession] = None
-    
-    async def __aenter__(self) -> 'AsyncAPIClient':
-        self._session = aiohttp.ClientSession(timeout=self.timeout)
-        return self
-    
-    async def __aexit__(self, *args) -> None:
-        if self._session:
-            await self._session.close()
-    
-    async def get(self, endpoint: str, **kwargs) -> APIResponse:
-        return await self._request('GET', endpoint, **kwargs)
-    
-    async def post(self, endpoint: str, **kwargs) -> APIResponse:
-        return await self._request('POST', endpoint, **kwargs)
-    
-    async def _request(
-        self,
-        method: str,
-        endpoint: str,
-        **kwargs
-    ) -> APIResponse:
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        
-        for attempt in range(self.max_retries):
-            try:
-                async with self._session.request(method, url, **kwargs) as resp:
-                    data = await resp.json()
-                    return APIResponse(
-                        status_code=resp.status,
-                        data=data
-                    )
-            except aiohttp.ClientError as e:
-                if attempt == self.max_retries - 1:
-                    return APIResponse(
-                        status_code=500,
-                        data={},
-                        error=str(e)
-                    )
-                await asyncio.sleep(2 ** attempt)
-        
-        return APIResponse(status_code=500, data={}, error="Max retries exceeded")`,
-      complete: `    # Completing the function...
-    def process_batch(self, items: List[dict]) -> List[dict]:
-        """Process a batch of items with parallel execution."""
-        results = []
-        
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = {
-                executor.submit(self._process_single, item): item
-                for item in items
-            }
-            
-            for future in as_completed(futures):
-                original_item = futures[future]
-                try:
-                    result = future.result()
-                    results.append({
-                        'input': original_item,
-                        'output': result,
-                        'status': 'success'
-                    })
-                except Exception as e:
-                    results.append({
-                        'input': original_item,
-                        'error': str(e),
-                        'status': 'failed'
-                    })
-                    self.logger.error(f"Processing failed: {e}")
-        
-        return results
-    
-    def _process_single(self, item: dict) -> dict:
-        """Process a single item with validation and transformation."""
-        validated = self._validate(item)
-        transformed = self._transform(validated)
-        return self._enrich(transformed)`,
-      tests: `import pytest
-from unittest.mock import Mock, patch, AsyncMock
-from your_module import AsyncAPIClient, APIResponse
-
-class TestAsyncAPIClient:
-    """Comprehensive test suite for AsyncAPIClient."""
-    
-    @pytest.fixture
-    def client(self):
-        return AsyncAPIClient(
-            base_url="https://api.example.com",
-            timeout=10,
-            max_retries=3
-        )
-    
-    @pytest.mark.asyncio
-    async def test_get_success(self, client):
-        """Test successful GET request."""
-        mock_response = {"data": "test"}
-        
-        with patch.object(client, '_request', new_callable=AsyncMock) as mock_req:
-            mock_req.return_value = APIResponse(
-                status_code=200,
-                data=mock_response
-            )
-            
-            async with client:
-                result = await client.get("/users")
-            
-            assert result.status_code == 200
-            assert result.data == mock_response
-            mock_req.assert_called_once_with('GET', '/users')
-    
-    @pytest.mark.asyncio
-    async def test_post_with_data(self, client):
-        """Test POST request with JSON payload."""
-        payload = {"name": "test", "value": 42}
-        
-        with patch.object(client, '_request', new_callable=AsyncMock) as mock_req:
-            mock_req.return_value = APIResponse(status_code=201, data={"id": 1})
-            
-            async with client:
-                result = await client.post("/items", json=payload)
-            
-            assert result.status_code == 201
-            mock_req.assert_called_with('POST', '/items', json=payload)
-    
-    @pytest.mark.asyncio
-    async def test_retry_on_failure(self, client):
-        """Test retry logic on transient failures."""
-        with patch('aiohttp.ClientSession.request') as mock_req:
-            mock_req.side_effect = [
-                aiohttp.ClientError("Connection failed"),
-                aiohttp.ClientError("Timeout"),
-                Mock(status=200, json=AsyncMock(return_value={"success": True}))
-            ]
-            
-            async with client:
-                result = await client.get("/health")
-            
-            assert mock_req.call_count == 3
-    
-    @pytest.mark.asyncio
-    async def test_max_retries_exceeded(self, client):
-        """Test error handling when max retries exceeded."""
-        with patch('aiohttp.ClientSession.request') as mock_req:
-            mock_req.side_effect = aiohttp.ClientError("Persistent failure")
-            
-            async with client:
-                result = await client.get("/health")
-            
-            assert result.status_code == 500
-            assert "Max retries exceeded" in result.error`,
-      debug: `# 🐛 Debug Analysis
-
-## Issues Found:
-
-### 1. Race Condition (Line 45)
-\`\`\`python
-# BEFORE (Bug)
-self.data = shared_resource  # Not thread-safe
-
-# AFTER (Fixed)
-with self._lock:
-    self.data = shared_resource.copy()
-\`\`\`
-
-### 2. Memory Leak (Line 78)
-\`\`\`python
-# BEFORE (Bug)
-def process(self):
-    self.cache[key] = large_object  # Never cleaned up
-
-# AFTER (Fixed)
-def process(self):
-    self.cache[key] = large_object
-    if len(self.cache) > self.max_cache_size:
-        self._evict_oldest()
-\`\`\`
-
-### 3. Unhandled Exception (Line 112)
-\`\`\`python
-# BEFORE (Bug)
-result = external_api.call()  # Can raise NetworkError
-
-# AFTER (Fixed)
-try:
-    result = external_api.call()
-except NetworkError as e:
-    logger.error(f"API call failed: {e}")
-    result = self._get_fallback()
-\`\`\`
-
-## Recommendations:
-1. Add comprehensive logging throughout
-2. Implement circuit breaker pattern for external calls
-3. Add unit tests for edge cases
-4. Consider using asyncio for I/O-bound operations`,
-      refactor: `# ✨ Refactored Code
-
-## Changes Made:
-- Extracted magic numbers to constants
-- Applied Single Responsibility Principle
-- Added type hints throughout
-- Improved error handling
-- Enhanced documentation
-
-\`\`\`python
-from abc import ABC, abstractmethod
-from typing import Protocol, TypeVar, Generic
-from dataclasses import dataclass, field
-from functools import lru_cache
-import logging
-
-T = TypeVar('T')
-
-class Validator(Protocol[T]):
-    """Protocol for data validation."""
-    def validate(self, data: T) -> bool: ...
-    def get_errors(self) -> list[str]: ...
-
-@dataclass
-class ProcessingConfig:
-    """Configuration for data processing."""
-    max_batch_size: int = 100
-    timeout_seconds: int = 30
-    retry_count: int = 3
-    enable_caching: bool = True
-    log_level: str = "INFO"
-
-class DataProcessor(ABC, Generic[T]):
-    """Abstract base class for data processors."""
-    
-    def __init__(self, config: ProcessingConfig):
-        self.config = config
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self._setup_logging()
-    
-    def _setup_logging(self) -> None:
-        self.logger.setLevel(self.config.log_level)
-    
-    @abstractmethod
-    def process(self, data: T) -> T:
-        """Process data and return result."""
-        pass
-    
-    @lru_cache(maxsize=1000)
-    def _cached_operation(self, key: str) -> dict:
-        """Cached expensive operation."""
-        return self._fetch_data(key)
-
-class BatchProcessor(DataProcessor[list]):
-    """Processes data in configurable batches."""
-    
-    def process(self, data: list) -> list:
-        results = []
-        for batch in self._create_batches(data):
-            try:
-                batch_result = self._process_batch(batch)
-                results.extend(batch_result)
-            except ProcessingError as e:
-                self.logger.error(f"Batch failed: {e}")
-                results.extend(self._handle_failure(batch))
-        return results
-\`\`\``,
-    };
-
-    const response = mockResponses[activeTab] || mockResponses.generate;
+    const response = mockOutputs[activeTab] || mockOutputs.generate;
     let currentIndex = 0;
     
     const streamInterval = setInterval(() => {
       if (currentIndex < response.length) {
-        setOutputCode(response.slice(0, currentIndex + 15));
-        currentIndex += 15;
+        setOutputCode(response.slice(0, currentIndex + 25));
+        currentIndex += 25;
       } else {
         clearInterval(streamInterval);
         setIsLoading(false);
+        setLogs(l => [...l, `$ [✓] ${activeTab} completed (${response.length} chars)`]);
         toast({ title: "Complete", description: "Code generation finished." });
       }
-    }, 15);
+    }, 12);
   };
 
   const handleChat = () => {
@@ -394,14 +455,14 @@ class BatchProcessor(DataProcessor[list]):
     const userMessage = { role: "user", content: chatInput };
     setChatMessages(prev => [...prev, userMessage]);
     setChatInput("");
+    setLogs(l => [...l, `$ Chat: processing user query...`]);
     
-    // Simulate AI response
     setTimeout(() => {
       const responses = [
-        "I've analyzed your code. The main issue is the nested loops causing O(n²) complexity. I suggest using a hash map for O(n) lookup instead.",
-        "Good question! For this use case, I recommend using async/await with proper error boundaries. Here's a pattern that works well...",
-        "That's a common pitfall. The solution is to implement proper resource cleanup using context managers or try-finally blocks.",
-        "Based on your requirements, I'd suggest starting with a factory pattern here. It will make the code more maintainable as you add more types."
+        "I've analyzed your request. Here's an optimized solution using async/await with proper error handling. The key is to use a semaphore to limit concurrent requests.",
+        "Good question! For this use case, I recommend the Strategy pattern. It will make your code more testable and easier to extend. Want me to show you the implementation?",
+        "I see the issue - you're missing the `asynccontextmanager` decorator. This is causing the resource leak. Here's the fix with proper cleanup.",
+        "That's a great approach! To make it even better, consider adding type hints and docstrings. This will improve maintainability. Here's an enhanced version."
       ];
       
       const aiMessage = {
@@ -409,6 +470,7 @@ class BatchProcessor(DataProcessor[list]):
         content: responses[Math.floor(Math.random() * responses.length)]
       };
       setChatMessages(prev => [...prev, aiMessage]);
+      setLogs(l => [...l, `$ [✓] Chat response generated`]);
     }, 1000);
   };
 
@@ -428,284 +490,263 @@ class BatchProcessor(DataProcessor[list]):
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary/10 p-2">
-            <Code2 className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-foreground">Qwen2.5-Coder</h2>
-              <Badge className="bg-yellow-500/10 text-yellow-500">
+    <div className="grid h-[calc(100vh-8rem)] gap-4 lg:grid-cols-4">
+      {/* Left Sidebar */}
+      <div className="flex flex-col gap-4">
+        <Card className="border-border bg-card/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <Code2 className="h-4 w-4 text-emerald-500" />
+              Qwen2.5-Coder
+              <Badge className="ml-auto bg-yellow-500/10 text-yellow-500">
                 <Trophy className="mr-1 h-3 w-3" />
-                74.5% HumanEval
+                74.5%
               </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">State-of-the-art code model - Beats GPT-4</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          {/* Model Size Selector */}
-          <Select value={modelSize} onValueChange={setModelSize}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {modelSizes.map((size) => (
-                <SelectItem key={size.id} value={size.id}>
-                  <div className="flex items-center gap-2">
-                    <span>{size.name}</span>
-                    {size.recommended && <Star className="h-3 w-3 text-yellow-500" />}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowSettings(!showSettings)}
-          >
-            <Settings className="mr-2 h-4 w-4" />
-            Settings
-          </Button>
-        </div>
-      </div>
-
-      {/* Settings Panel */}
-      {showSettings && (
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle className="text-lg">Model Settings</CardTitle>
+            </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-6 md:grid-cols-4">
+          <CardContent className="space-y-4">
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Temperature</Label>
-                <span className="text-sm text-muted-foreground">{temperature[0]}</span>
-              </div>
-              <Slider
-                value={temperature}
-                onValueChange={setTemperature}
-                min={0}
-                max={1}
-                step={0.1}
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Max Tokens</Label>
-                <span className="text-sm text-muted-foreground">{maxTokens[0]}</span>
-              </div>
-              <Slider
-                value={maxTokens}
-                onValueChange={setMaxTokens}
-                min={512}
-                max={16384}
-                step={512}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Test Framework</Label>
-              <Select value={testFramework} onValueChange={setTestFramework}>
-                <SelectTrigger>
+              <Label className="text-xs text-muted-foreground">Model Size</Label>
+              <Select value={modelSize} onValueChange={setModelSize}>
+                <SelectTrigger className="h-8 bg-background/80 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {testFrameworks.map((fw) => (
-                    <SelectItem key={fw.id} value={fw.id}>{fw.name}</SelectItem>
+                  {modelSizes.map((size) => (
+                    <SelectItem key={size.id} value={size.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{size.name}</span>
+                        {size.recommended && <Star className="h-3 w-3 text-yellow-500" />}
+                        <span className="text-xs text-muted-foreground">{size.vram}</span>
+                      </div>
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center justify-between">
-              <Label>Real-time Suggestions</Label>
-              <Switch checked={realTimeSuggestions} onCheckedChange={setRealTimeSuggestions} />
-            </div>
+
+            {activeTab === "tests" && (
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Test Framework</Label>
+                <Select value={testFramework} onValueChange={setTestFramework}>
+                  <SelectTrigger className="h-8 bg-background/80 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {testFrameworks.map((fw) => (
+                      <SelectItem key={fw.id} value={fw.id}>{fw.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-between"
+              onClick={() => setShowSettings(!showSettings)}
+            >
+              <span className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Settings
+              </span>
+              {showSettings ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+
+            {showSettings && (
+              <div className="space-y-4 rounded-lg bg-muted/30 p-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Temperature</Label>
+                    <span className="font-mono text-xs">{temperature[0]}</span>
+                  </div>
+                  <Slider value={temperature} onValueChange={setTemperature} min={0} max={1} step={0.1} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Max Tokens</Label>
+                    <span className="font-mono text-xs">{maxTokens[0]}</span>
+                  </div>
+                  <Slider value={maxTokens} onValueChange={setMaxTokens} min={256} max={16384} step={256} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Real-time Suggestions</Label>
+                  <Switch checked={realTimeSuggestions} onCheckedChange={setRealTimeSuggestions} />
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
-      )}
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
-          {tabs.map((tab) => (
-            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-              <tab.icon className="h-4 w-4" />
-              <span className="hidden md:inline">{tab.label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {/* Interactive Tab */}
-        <TabsContent value="interactive" className="mt-6">
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle>Interactive Coding Assistant</CardTitle>
-              <CardDescription>Chat with Qwen2.5-Coder for real-time help</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ScrollArea className="h-[400px] rounded-lg border border-border p-4">
-                {chatMessages.length === 0 ? (
-                  <div className="flex h-full items-center justify-center text-muted-foreground">
-                    Start a conversation about your code...
+        {/* Console */}
+        <Card className="flex-1 border-border bg-card/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <Terminal className="h-4 w-4 text-emerald-500" />
+              Console
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="h-[calc(100%-4rem)]">
+            <ScrollArea className="h-full rounded-lg bg-background/80 p-3">
+              <div className="font-mono text-xs leading-relaxed">
+                {logs.map((log, i) => (
+                  <div 
+                    key={i} 
+                    className={`${
+                      log.includes('[✓]') ? 'text-emerald-500' :
+                      log.includes('[!]') ? 'text-yellow-500' :
+                      'text-muted-foreground'
+                    }`}
+                  >
+                    {log}
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {chatMessages.map((msg, i) => (
-                      <div
-                        key={i}
-                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                      >
-                        <div
-                          className={`max-w-[80%] rounded-lg p-3 ${
-                            msg.role === "user"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted"
-                          }`}
-                        >
-                          {msg.content}
-                        </div>
-                      </div>
-                    ))}
+                ))}
+                {isLoading && (
+                  <div className="flex items-center text-muted-foreground">
+                    <span className="animate-pulse">▋</span>
                   </div>
                 )}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex flex-col gap-4 lg:col-span-3">
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full justify-start bg-muted/30">
+            {tabs.map((tab) => (
+              <TabsTrigger 
+                key={tab.id} 
+                value={tab.id} 
+                className="flex items-center gap-2 data-[state=active]:bg-background"
+              >
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
+        {activeTab === "interactive" ? (
+          /* Chat Interface */
+          <Card className="flex flex-1 flex-col border-border bg-card/50">
+            <CardContent className="flex flex-1 flex-col p-4">
+              <ScrollArea className="flex-1 pr-4">
+                <div className="space-y-4">
+                  {chatMessages.map((msg, index) => (
+                    <div
+                      key={index}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[80%] rounded-lg p-3 text-sm ${
+                          msg.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted"
+                        }`}
+                      >
+                        {msg.content}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </ScrollArea>
-              
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Ask about code, debugging, best practices..."
+              <div className="mt-4 flex gap-2">
+                <Input
+                  placeholder="Ask me anything about code..."
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleChat();
-                    }
-                  }}
-                  className="min-h-[60px]"
+                  onKeyPress={(e) => e.key === "Enter" && handleChat()}
+                  className="bg-background/80"
                 />
-                <Button onClick={handleChat} size="icon" className="h-auto">
+                <Button onClick={handleChat} size="icon">
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        ) : (
+          /* Editor View */
+          <div className="grid flex-1 gap-4 lg:grid-cols-2">
+            {/* Input */}
+            <Card className="flex flex-col border-border bg-card/50">
+              <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-medium">Input</CardTitle>
+                <Button onClick={handleGenerate} disabled={isLoading} size="sm">
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                    </>
+                  )}
+                </Button>
+              </CardHeader>
+              <CardContent className="flex-1 p-0">
+                <div className="h-full overflow-hidden rounded-b-lg border-t border-border">
+                  <Editor
+                    height="100%"
+                    language={language}
+                    value={inputCode}
+                    onChange={(value) => setInputCode(value || "")}
+                    theme="vs-dark"
+                    options={{
+                      minimap: { enabled: false },
+                      fontSize: 13,
+                      lineNumbers: "on",
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                      padding: { top: 16, bottom: 16 },
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Other Tabs */}
-        {tabs.filter(t => t.id !== "interactive").map((tab) => (
-          <TabsContent key={tab.id} value={tab.id} className="mt-6">
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Input */}
-              <Card className="border-border">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Input</CardTitle>
-                    <Select value={language} onValueChange={setLanguage}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {["python", "javascript", "typescript", "go", "rust", "java"].map((lang) => (
-                          <SelectItem key={lang} value={lang}>
-                            {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[300px] overflow-hidden rounded-md border border-border">
-                    <Editor
-                      height="100%"
-                      language={language}
-                      value={inputCode}
-                      onChange={(value) => setInputCode(value || "")}
-                      theme="vs-dark"
-                      options={{
-                        minimap: { enabled: false },
-                        fontSize: 13,
-                        lineNumbers: "on",
-                        scrollBeyondLastLine: false,
-                        automaticLayout: true,
-                        suggestOnTriggerCharacters: realTimeSuggestions,
-                      }}
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleGenerate} 
-                    disabled={isLoading}
-                    className="mt-4 w-full"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Play className="mr-2 h-4 w-4" />
-                        {tab.label}
-                      </>
-                    )}
+            {/* Output */}
+            <Card className="flex flex-col border-border bg-card/50">
+              <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-medium">Output</CardTitle>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={copyToClipboard} disabled={!outputCode}>
+                    <Copy className="h-4 w-4" />
                   </Button>
-                </CardContent>
-              </Card>
-
-              {/* Output */}
-              <Card className="border-border">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Output</CardTitle>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={copyToClipboard}
-                        disabled={!outputCode}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={downloadCode}
-                        disabled={!outputCode}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[340px] overflow-hidden rounded-md border border-border">
-                    <Editor
-                      height="100%"
-                      language={language}
-                      value={outputCode}
-                      theme="vs-dark"
-                      options={{
-                        readOnly: true,
-                        minimap: { enabled: false },
-                        fontSize: 13,
-                        lineNumbers: "on",
-                        scrollBeyondLastLine: false,
-                        automaticLayout: true,
-                      }}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        ))}
-      </Tabs>
+                  <Button variant="outline" size="sm" onClick={downloadCode} disabled={!outputCode}>
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1 p-0">
+                <div className="h-full overflow-hidden rounded-b-lg border-t border-border">
+                  <Editor
+                    height="100%"
+                    language={activeTab === "debug" ? "markdown" : language}
+                    value={outputCode}
+                    theme="vs-dark"
+                    options={{
+                      readOnly: true,
+                      minimap: { enabled: false },
+                      fontSize: 13,
+                      lineNumbers: "on",
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                      padding: { top: 16, bottom: 16 },
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
