@@ -38,7 +38,7 @@ import LlmToolsLayout from "./components/llm-tools/LlmToolsLayout";
 import LlmDashboard from "./pages/llm-tools/Dashboard";
 import UnslothFineTuning from "./pages/llm-tools/UnslothFineTuning";
 import GlmCodingAgent from "./pages/llm-tools/GlmCodingAgent";
-import QwenCoder from "./pages/llm-tools/QwenCoder";
+
 import LlmDocumentation from "./pages/llm-tools/Documentation";
 
 const queryClient = new QueryClient();
@@ -88,7 +88,7 @@ const App = () => (
               <Route index element={<LlmDashboard />} />
               <Route path="unsloth" element={<UnslothFineTuning />} />
               <Route path="glm4" element={<GlmCodingAgent />} />
-              <Route path="qwen" element={<QwenCoder />} />
+              
               <Route path="docs" element={<LlmDocumentation />} />
             </Route>
             
