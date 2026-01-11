@@ -369,6 +369,54 @@ export type Database = {
           },
         ]
       }
+      lightos_projects: {
+        Row: {
+          build_time_seconds: number | null
+          created_at: string
+          description: string
+          files_count: number | null
+          generated_plan: Json | null
+          id: string
+          lines_of_code: number | null
+          mock_ui_type: string | null
+          name: string
+          stack: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          build_time_seconds?: number | null
+          created_at?: string
+          description: string
+          files_count?: number | null
+          generated_plan?: Json | null
+          id?: string
+          lines_of_code?: number | null
+          mock_ui_type?: string | null
+          name: string
+          stack?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          build_time_seconds?: number | null
+          created_at?: string
+          description?: string
+          files_count?: number | null
+          generated_plan?: Json | null
+          id?: string
+          lines_of_code?: number | null
+          mock_ui_type?: string | null
+          name?: string
+          stack?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       llm_chat_messages: {
         Row: {
           attachments: Json | null
