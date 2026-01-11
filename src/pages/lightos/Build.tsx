@@ -24,9 +24,13 @@ import {
   Loader2,
   ExternalLink,
   Sparkles,
-  Lightbulb
+  Lightbulb,
+  LogIn
 } from "lucide-react";
 import { useLightOSStore, BuildPlan, BuildLog } from "@/stores/lightosStore";
+import { useLightOSProjects } from "@/hooks/useLightOSProjects";
+import type { Json } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from 'canvas-confetti';
 
@@ -66,6 +70,10 @@ const Build = () => {
   const [stack, setStack] = useState<string>("react-fastapi");
   const [model, setModel] = useState<string>("glm-4");
   const [isBuilding, setIsBuilding] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
+
+  const { createProject } = useLightOSProjects();
   
   const { 
     currentBuild, 
@@ -75,10 +83,20 @@ const Build = () => {
     setBuildPlan,
     setFilesGenerated,
     setCurrentBuildId,
-    addProject,
     resetBuild,
-    updateStats
   } = useLightOSStore();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const detectPreviewType = (desc: string): 'todo' | 'dashboard' | 'blog' | 'ecommerce' | 'default' => {
     const lower = desc.toLowerCase();
@@ -135,15 +153,18 @@ const Build = () => {
   }, [addBuildLog]);
 
   const startBuild = async () => {
-    if (!description.trim()) return;
+    if (!description.trim() || !user) return;
     
     setIsBuilding(true);
     resetBuild();
     
-    const projectId = crypto.randomUUID();
-    setCurrentBuildId(projectId);
-    
     const previewType = detectPreviewType(description);
+    const plan = generatePlan(description);
+    
+    // Create project in database first
+    const projectName = description.slice(0, 50) + (description.length > 50 ? '...' : '');
+    
+    setCurrentBuildId('temp-' + Date.now());
     
     // Stage 1: Understanding (5s)
     setBuildStage('understanding');
@@ -158,7 +179,6 @@ const Build = () => {
     setBuildProgress(15);
     addLog('info', '📋 Generating architecture plan...');
     await new Promise(r => setTimeout(r, 3000));
-    const plan = generatePlan(description);
     setBuildPlan(plan);
     addLog('info', `Planning ${plan.pages.length} pages, ${plan.models.length} models, ${plan.apis.length} APIs...`);
     await new Promise(r => setTimeout(r, 4000));
@@ -221,28 +241,31 @@ const Build = () => {
     addLog('success', '✓ API running at http://localhost:8000');
     await new Promise(r => setTimeout(r, 3000));
     
-    // Complete
+    // Complete - Save to database
     setBuildStage('complete');
     setBuildProgress(100);
     addLog('success', '🎉 Build complete! Your app is ready.');
     
-    // Add project
-    addProject({
-      id: projectId,
-      name: description.slice(0, 50) + (description.length > 50 ? '...' : ''),
-      description,
-      stack: stack as any,
-      model,
-      status: 'success',
-      createdAt: new Date().toISOString(),
-      buildTime: 75,
-      filesCount: files.length,
-      linesOfCode: files.length * 45,
-      plan,
-      previewType
-    });
+    try {
+      const result = await createProject.mutateAsync({
+        name: projectName,
+        description,
+        stack,
+        status: 'success',
+        build_time_seconds: 75,
+        files_count: files.length,
+        lines_of_code: files.length * 45,
+        generated_plan: plan as unknown as Json,
+        mock_ui_type: previewType,
+      });
+      
+      setCreatedProjectId(result.id);
+      setCurrentBuildId(result.id);
+      addLog('success', '✓ Project saved to cloud');
+    } catch (error) {
+      addLog('warning', 'Project built locally (sign in to save)');
+    }
     
-    updateStats();
     setIsBuilding(false);
     
     // Confetti!
@@ -256,6 +279,29 @@ const Build = () => {
   const getCurrentStageIndex = () => {
     return buildStages.findIndex(s => s.key === currentBuild.stage);
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-6">
+        <Card className="bg-slate-900/50 border-slate-800/50 backdrop-blur-xl max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <LogIn className="h-16 w-16 mx-auto mb-4 text-indigo-400" />
+            <h2 className="text-2xl font-bold text-white mb-2">Sign in Required</h2>
+            <p className="text-slate-400 mb-6">
+              Please sign in to build and save your apps to the cloud.
+            </p>
+            <Button 
+              onClick={() => navigate('/monitor/auth')}
+              className="bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-500 hover:to-teal-500"
+            >
+              <LogIn className="h-4 w-4 mr-2" />
+              Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0f172a] p-6 overflow-auto">
@@ -410,7 +456,7 @@ const Build = () => {
                       <div className="text-sm text-slate-400">{currentBuild.filesGenerated} files generated</div>
                     </div>
                     <Button 
-                      onClick={() => navigate(`/lightos/preview/${currentBuild.id}`)}
+                      onClick={() => navigate(`/lightos/preview/${createdProjectId || currentBuild.id}`)}
                       className="bg-emerald-600 hover:bg-emerald-500"
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
@@ -447,7 +493,7 @@ const Build = () => {
                   ))}
                 </AnimatePresence>
                 {currentBuild.logs.length === 0 && (
-                  <div className="text-slate-600 text-center py-8">
+                  <div className="text-slate-600 text-center py-10">
                     Build logs will appear here...
                   </div>
                 )}
@@ -465,14 +511,14 @@ const Build = () => {
             <CardContent>
               {currentBuild.plan ? (
                 <ScrollArea className="h-[500px]">
-                  <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap">
+                  <pre className="text-xs text-slate-400 font-mono">
                     {JSON.stringify(currentBuild.plan, null, 2)}
                   </pre>
                 </ScrollArea>
               ) : (
-                <div className="text-center py-12 text-slate-600">
+                <div className="text-slate-600 text-center py-20">
                   <FileCode className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-sm">Architecture plan will appear here after analysis</p>
+                  <p>Architecture plan will appear here after the planning stage</p>
                 </div>
               )}
             </CardContent>

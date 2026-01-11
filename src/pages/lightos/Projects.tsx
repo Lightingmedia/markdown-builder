@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,9 +30,11 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  FolderKanban
+  FolderKanban,
+  LogIn
 } from "lucide-react";
-import { useLightOSStore } from "@/stores/lightosStore";
+import { useLightOSProjects } from "@/hooks/useLightOSProjects";
+import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 
@@ -59,10 +61,23 @@ const statusIcons: Record<string, React.ReactNode> = {
 
 const Projects = () => {
   const navigate = useNavigate();
-  const { projects, deleteProject } = useLightOSStore();
+  const [user, setUser] = useState<any>(null);
+  const { projects, isLoading, deleteProject } = useLightOSProjects();
   const [search, setSearch] = useState("");
   const [stackFilter, setStackFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const filteredProjects = projects
     .filter(p => {
@@ -71,11 +86,42 @@ const Projects = () => {
       return true;
     })
     .sort((a, b) => {
-      if (sortBy === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      if (sortBy === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sortBy === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (sortBy === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       if (sortBy === 'name') return a.name.localeCompare(b.name);
       return 0;
     });
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-6">
+        <Card className="bg-slate-900/50 border-slate-800/50 backdrop-blur-xl max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <LogIn className="h-16 w-16 mx-auto mb-4 text-indigo-400" />
+            <h2 className="text-2xl font-bold text-white mb-2">Sign in Required</h2>
+            <p className="text-slate-400 mb-6">
+              Please sign in to view your saved projects.
+            </p>
+            <Button 
+              onClick={() => navigate('/monitor/auth')}
+              className="bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-500 hover:to-teal-500"
+            >
+              <LogIn className="h-4 w-4 mr-2" />
+              Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 text-indigo-400 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0f172a] p-6 overflow-auto">
@@ -144,10 +190,10 @@ const Projects = () => {
                   {/* Thumbnail */}
                   <div className="h-32 bg-gradient-to-br from-indigo-500/10 to-teal-500/10 flex items-center justify-center">
                     <div className="text-4xl opacity-50">
-                      {project.previewType === 'todo' ? '✅' :
-                       project.previewType === 'dashboard' ? '📊' :
-                       project.previewType === 'blog' ? '📝' :
-                       project.previewType === 'ecommerce' ? '🛒' : '🚀'}
+                      {project.mock_ui_type === 'todo' ? '✅' :
+                       project.mock_ui_type === 'dashboard' ? '📊' :
+                       project.mock_ui_type === 'blog' ? '📝' :
+                       project.mock_ui_type === 'ecommerce' ? '🛒' : '🚀'}
                     </div>
                   </div>
                   
@@ -177,7 +223,7 @@ const Projects = () => {
                             <Pencil className="h-4 w-4 mr-2" /> Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => deleteProject(project.id)}
+                            onClick={() => deleteProject.mutate(project.id)}
                             className="text-red-400"
                           >
                             <Trash2 className="h-4 w-4 mr-2" /> Delete
@@ -195,20 +241,20 @@ const Projects = () => {
                     <div className="grid grid-cols-3 gap-2 text-xs text-slate-500 mb-4">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {project.buildTime}s
+                        {project.build_time_seconds || 0}s
                       </div>
                       <div className="flex items-center gap-1">
                         <FileCode className="h-3 w-3" />
-                        {project.filesCount} files
+                        {project.files_count || 0} files
                       </div>
                       <div className="flex items-center gap-1">
                         <Code2 className="h-3 w-3" />
-                        {project.linesOfCode} LOC
+                        {project.lines_of_code || 0} LOC
                       </div>
                     </div>
 
                     <div className="text-xs text-slate-600">
-                      Created {formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}
+                      Created {formatDistanceToNow(new Date(project.created_at), { addSuffix: true })}
                     </div>
 
                     <div className="flex gap-2 mt-4">

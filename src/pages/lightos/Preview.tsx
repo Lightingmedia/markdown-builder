@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -23,9 +23,12 @@ import {
   File,
   Folder,
   Save,
-  CheckCircle2
+  CheckCircle2,
+  Loader2,
+  LogIn
 } from "lucide-react";
-import { useLightOSStore } from "@/stores/lightosStore";
+import { useLightOSProjects } from "@/hooks/useLightOSProjects";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 
 // Mock preview components
@@ -170,7 +173,8 @@ const mockApiDocs = [
 const Preview = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { projects } = useLightOSStore();
+  const [user, setUser] = useState<any>(null);
+  const { projects, isLoading, getProjectById } = useLightOSProjects();
   const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [url, setUrl] = useState('http://localhost:5173');
   const [isRunning, setIsRunning] = useState(true);
@@ -178,7 +182,19 @@ const Preview = () => {
   const [selectedFile, setSelectedFile] = useState('src/App.tsx');
   const [isSaved, setIsSaved] = useState(true);
 
-  const project = projects.find(p => p.id === id);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const project = getProjectById(id || '');
 
   const deviceWidths = {
     desktop: '100%',
@@ -193,11 +209,10 @@ const Preview = () => {
 
   const handleSave = () => {
     setIsSaved(true);
-    // Simulate hot reload flash
   };
 
   const renderPreview = () => {
-    const type = project?.previewType || 'default';
+    const type = project?.mock_ui_type || 'default';
     switch (type) {
       case 'todo': return <TodoPreview />;
       case 'dashboard': return <DashboardPreview />;
@@ -233,6 +248,37 @@ const Preview = () => {
       </div>
     ));
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-6">
+        <Card className="bg-slate-900/50 border-slate-800/50 backdrop-blur-xl max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <LogIn className="h-16 w-16 mx-auto mb-4 text-indigo-400" />
+            <h2 className="text-2xl font-bold text-white mb-2">Sign in Required</h2>
+            <p className="text-slate-400 mb-6">
+              Please sign in to view project previews.
+            </p>
+            <Button 
+              onClick={() => navigate('/monitor/auth')}
+              className="bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-500 hover:to-teal-500"
+            >
+              <LogIn className="h-4 w-4 mr-2" />
+              Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 text-indigo-400 animate-spin" />
+      </div>
+    );
+  }
 
   if (!project) {
     return (
