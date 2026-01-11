@@ -42,6 +42,13 @@ import LightOSProjects from "./pages/lightos/Projects";
 import LightOSTemplates from "./pages/lightos/Templates";
 import LightOSDocs from "./pages/lightos/Docs";
 
+// LLM Tools
+import LlmToolsLayout from "./components/llm-tools/LlmToolsLayout";
+import LlmToolsDashboard from "./pages/llm-tools/Dashboard";
+import LlmToolsGlm4 from "./pages/llm-tools/GlmCodingAgent";
+import LlmToolsUnsloth from "./pages/llm-tools/UnslothFineTuning";
+import LlmToolsDocs from "./pages/llm-tools/Documentation";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -93,6 +100,14 @@ const App = () => (
               <Route path="projects" element={<LightOSProjects />} />
               <Route path="templates" element={<LightOSTemplates />} />
               <Route path="docs" element={<LightOSDocs />} />
+            </Route>
+
+            {/* LLM Tools Routes */}
+            <Route path="/llm-tools" element={<LlmToolsLayout />}>
+              <Route index element={<LlmToolsDashboard />} />
+              <Route path="glm4" element={<LlmToolsGlm4 />} />
+              <Route path="unsloth" element={<LlmToolsUnsloth />} />
+              <Route path="docs" element={<LlmToolsDocs />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
