@@ -33,13 +33,14 @@ import PcbVersions from "./pages/pcb/Versions";
 import PcbChat from "./pages/pcb/Chat";
 import PcbSettings from "./pages/pcb/Settings";
 
-// LLM Dev Tools
-import LlmToolsLayout from "./components/llm-tools/LlmToolsLayout";
-import LlmDashboard from "./pages/llm-tools/Dashboard";
-import UnslothFineTuning from "./pages/llm-tools/UnslothFineTuning";
-import GlmCodingAgent from "./pages/llm-tools/GlmCodingAgent";
-
-import LlmDocumentation from "./pages/llm-tools/Documentation";
+// LightOS Dev Environment
+import LightOSLayout from "./components/lightos/LightOSLayout";
+import LightOSHome from "./pages/lightos/Home";
+import LightOSBuild from "./pages/lightos/Build";
+import LightOSPreview from "./pages/lightos/Preview";
+import LightOSProjects from "./pages/lightos/Projects";
+import LightOSTemplates from "./pages/lightos/Templates";
+import LightOSDocs from "./pages/lightos/Docs";
 
 const queryClient = new QueryClient();
 
@@ -83,13 +84,15 @@ const App = () => (
               <Route path="settings" element={<PcbSettings />} />
             </Route>
 
-            {/* LLM Dev Tools Routes */}
-            <Route path="/llm-tools" element={<LlmToolsLayout />}>
-              <Route index element={<LlmDashboard />} />
-              <Route path="unsloth" element={<UnslothFineTuning />} />
-              <Route path="glm4" element={<GlmCodingAgent />} />
-              
-              <Route path="docs" element={<LlmDocumentation />} />
+            {/* LightOS Dev Environment Routes */}
+            <Route path="/lightos" element={<LightOSLayout />}>
+              <Route index element={<LightOSHome />} />
+              <Route path="build" element={<LightOSBuild />} />
+              <Route path="preview/:id" element={<LightOSPreview />} />
+              <Route path="preview" element={<LightOSProjects />} />
+              <Route path="projects" element={<LightOSProjects />} />
+              <Route path="templates" element={<LightOSTemplates />} />
+              <Route path="docs" element={<LightOSDocs />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
