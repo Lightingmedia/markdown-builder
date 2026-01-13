@@ -201,6 +201,921 @@ export type Database = {
           },
         ]
       }
+      dcim_accelerators: {
+        Row: {
+          accelerator_type: string
+          created_at: string
+          driver_version: string | null
+          firmware_version: string | null
+          id: string
+          manufacturer: string | null
+          memory_gb: number | null
+          model: string | null
+          node_id: string
+          serial_number: string | null
+          slot_position: number | null
+          status: string | null
+          tdp_w: number | null
+        }
+        Insert: {
+          accelerator_type: string
+          created_at?: string
+          driver_version?: string | null
+          firmware_version?: string | null
+          id?: string
+          manufacturer?: string | null
+          memory_gb?: number | null
+          model?: string | null
+          node_id: string
+          serial_number?: string | null
+          slot_position?: number | null
+          status?: string | null
+          tdp_w?: number | null
+        }
+        Update: {
+          accelerator_type?: string
+          created_at?: string
+          driver_version?: string | null
+          firmware_version?: string | null
+          id?: string
+          manufacturer?: string | null
+          memory_gb?: number | null
+          model?: string | null
+          node_id?: string
+          serial_number?: string | null
+          slot_position?: number | null
+          status?: string | null
+          tdp_w?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_accelerators_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_adapters: {
+        Row: {
+          adapter_type: string
+          auth_type: string | null
+          capabilities: Json | null
+          capability_tier: string | null
+          created_at: string
+          credentials_ref: string | null
+          endpoint_url: string | null
+          health_status: string | null
+          id: string
+          is_active: boolean | null
+          last_health_check: string | null
+          metadata: Json | null
+          name: string
+          provider: string | null
+          rate_limits: Json | null
+          site_id: string
+        }
+        Insert: {
+          adapter_type: string
+          auth_type?: string | null
+          capabilities?: Json | null
+          capability_tier?: string | null
+          created_at?: string
+          credentials_ref?: string | null
+          endpoint_url?: string | null
+          health_status?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_health_check?: string | null
+          metadata?: Json | null
+          name: string
+          provider?: string | null
+          rate_limits?: Json | null
+          site_id: string
+        }
+        Update: {
+          adapter_type?: string
+          auth_type?: string | null
+          capabilities?: Json | null
+          capability_tier?: string | null
+          created_at?: string
+          credentials_ref?: string | null
+          endpoint_url?: string | null
+          health_status?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_health_check?: string | null
+          metadata?: Json | null
+          name?: string
+          provider?: string | null
+          rate_limits?: Json | null
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_adapters_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_agent_recommendations: {
+        Row: {
+          action_payload: Json | null
+          action_type: string | null
+          affected_entities: string[] | null
+          agent_type: string
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          description: string | null
+          estimated_improvement: Json | null
+          evidence: Json | null
+          executed_at: string | null
+          id: string
+          impact_scope: string | null
+          priority: string | null
+          reasoning: string | null
+          rolled_back: boolean | null
+          rolled_back_at: string | null
+          site_id: string
+          status: string | null
+          title: string
+          verification_result: Json | null
+          verified_at: string | null
+        }
+        Insert: {
+          action_payload?: Json | null
+          action_type?: string | null
+          affected_entities?: string[] | null
+          agent_type: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_improvement?: Json | null
+          evidence?: Json | null
+          executed_at?: string | null
+          id?: string
+          impact_scope?: string | null
+          priority?: string | null
+          reasoning?: string | null
+          rolled_back?: boolean | null
+          rolled_back_at?: string | null
+          site_id: string
+          status?: string | null
+          title: string
+          verification_result?: Json | null
+          verified_at?: string | null
+        }
+        Update: {
+          action_payload?: Json | null
+          action_type?: string | null
+          affected_entities?: string[] | null
+          agent_type?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_improvement?: Json | null
+          evidence?: Json | null
+          executed_at?: string | null
+          id?: string
+          impact_scope?: string | null
+          priority?: string | null
+          reasoning?: string | null
+          rolled_back?: boolean | null
+          rolled_back_at?: string | null
+          site_id?: string
+          status?: string | null
+          title?: string
+          verification_result?: Json | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_agent_recommendations_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_cooling_equipment: {
+        Row: {
+          capacity_kw: number | null
+          created_at: string
+          equipment_type: string
+          id: string
+          manufacturer: string | null
+          model: string | null
+          name: string
+          room_id: string | null
+          setpoint_c: number | null
+          status: string | null
+        }
+        Insert: {
+          capacity_kw?: number | null
+          created_at?: string
+          equipment_type: string
+          id?: string
+          manufacturer?: string | null
+          model?: string | null
+          name: string
+          room_id?: string | null
+          setpoint_c?: number | null
+          status?: string | null
+        }
+        Update: {
+          capacity_kw?: number | null
+          created_at?: string
+          equipment_type?: string
+          id?: string
+          manufacturer?: string | null
+          model?: string | null
+          name?: string
+          room_id?: string | null
+          setpoint_c?: number | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_cooling_equipment_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_events: {
+        Row: {
+          acknowledged: boolean | null
+          acknowledged_by: string | null
+          created_at: string
+          description: string | null
+          entity_id: string | null
+          entity_type: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          resolved: boolean | null
+          resolved_at: string | null
+          severity: string | null
+          site_id: string
+          source: string | null
+          title: string
+        }
+        Insert: {
+          acknowledged?: boolean | null
+          acknowledged_by?: string | null
+          created_at?: string
+          description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          severity?: string | null
+          site_id: string
+          source?: string | null
+          title: string
+        }
+        Update: {
+          acknowledged?: boolean | null
+          acknowledged_by?: string | null
+          created_at?: string
+          description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          severity?: string | null
+          site_id?: string
+          source?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_events_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_network_links: {
+        Row: {
+          created_at: string
+          id: string
+          link_type: string | null
+          source_node_id: string | null
+          source_port: string | null
+          speed_gbps: number | null
+          status: string | null
+          target_node_id: string | null
+          target_port: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link_type?: string | null
+          source_node_id?: string | null
+          source_port?: string | null
+          speed_gbps?: number | null
+          status?: string | null
+          target_node_id?: string | null
+          target_port?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link_type?: string | null
+          source_node_id?: string | null
+          source_port?: string | null
+          speed_gbps?: number | null
+          status?: string | null
+          target_node_id?: string | null
+          target_port?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_network_links_source_node_id_fkey"
+            columns: ["source_node_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dcim_network_links_target_node_id_fkey"
+            columns: ["target_node_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_nodes: {
+        Row: {
+          created_at: string
+          driver_version: string | null
+          firmware_version: string | null
+          id: string
+          last_seen_at: string | null
+          manufacturer: string | null
+          metadata: Json | null
+          model: string | null
+          name: string
+          node_type: string
+          power_rating_w: number | null
+          rack_id: string
+          serial_number: string | null
+          status: string | null
+          u_height: number | null
+          u_position: number | null
+        }
+        Insert: {
+          created_at?: string
+          driver_version?: string | null
+          firmware_version?: string | null
+          id?: string
+          last_seen_at?: string | null
+          manufacturer?: string | null
+          metadata?: Json | null
+          model?: string | null
+          name: string
+          node_type: string
+          power_rating_w?: number | null
+          rack_id: string
+          serial_number?: string | null
+          status?: string | null
+          u_height?: number | null
+          u_position?: number | null
+        }
+        Update: {
+          created_at?: string
+          driver_version?: string | null
+          firmware_version?: string | null
+          id?: string
+          last_seen_at?: string | null
+          manufacturer?: string | null
+          metadata?: Json | null
+          model?: string | null
+          name?: string
+          node_type?: string
+          power_rating_w?: number | null
+          rack_id?: string
+          serial_number?: string | null
+          status?: string | null
+          u_height?: number | null
+          u_position?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_nodes_rack_id_fkey"
+            columns: ["rack_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_racks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_power_equipment: {
+        Row: {
+          capacity_kw: number | null
+          created_at: string
+          equipment_type: string
+          id: string
+          manufacturer: string | null
+          model: string | null
+          name: string
+          phases: number | null
+          rack_id: string | null
+          redundancy_type: string | null
+          room_id: string | null
+          status: string | null
+          voltage: number | null
+        }
+        Insert: {
+          capacity_kw?: number | null
+          created_at?: string
+          equipment_type: string
+          id?: string
+          manufacturer?: string | null
+          model?: string | null
+          name: string
+          phases?: number | null
+          rack_id?: string | null
+          redundancy_type?: string | null
+          room_id?: string | null
+          status?: string | null
+          voltage?: number | null
+        }
+        Update: {
+          capacity_kw?: number | null
+          created_at?: string
+          equipment_type?: string
+          id?: string
+          manufacturer?: string | null
+          model?: string | null
+          name?: string
+          phases?: number | null
+          rack_id?: string | null
+          redundancy_type?: string | null
+          room_id?: string | null
+          status?: string | null
+          voltage?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_power_equipment_rack_id_fkey"
+            columns: ["rack_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_racks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dcim_power_equipment_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_racks: {
+        Row: {
+          cooling_capacity_kw: number | null
+          created_at: string
+          id: string
+          name: string
+          position: number | null
+          power_budget_kw: number | null
+          row_id: string
+          u_capacity: number | null
+        }
+        Insert: {
+          cooling_capacity_kw?: number | null
+          created_at?: string
+          id?: string
+          name: string
+          position?: number | null
+          power_budget_kw?: number | null
+          row_id: string
+          u_capacity?: number | null
+        }
+        Update: {
+          cooling_capacity_kw?: number | null
+          created_at?: string
+          id?: string
+          name?: string
+          position?: number | null
+          power_budget_kw?: number | null
+          row_id?: string
+          u_capacity?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_racks_row_id_fkey"
+            columns: ["row_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_rows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_rooms: {
+        Row: {
+          cooling_type: string | null
+          created_at: string
+          floor: string | null
+          id: string
+          name: string
+          power_capacity_kw: number | null
+          site_id: string
+        }
+        Insert: {
+          cooling_type?: string | null
+          created_at?: string
+          floor?: string | null
+          id?: string
+          name: string
+          power_capacity_kw?: number | null
+          site_id: string
+        }
+        Update: {
+          cooling_type?: string | null
+          created_at?: string
+          floor?: string | null
+          id?: string
+          name?: string
+          power_capacity_kw?: number | null
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_rooms_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_rows: {
+        Row: {
+          aisle_type: string | null
+          created_at: string
+          id: string
+          name: string
+          room_id: string
+        }
+        Insert: {
+          aisle_type?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          room_id: string
+        }
+        Update: {
+          aisle_type?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          room_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_rows_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_runbook_executions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          executed_by: string | null
+          execution_log: Json | null
+          id: string
+          metrics_after: Json | null
+          metrics_before: Json | null
+          recommendation_id: string | null
+          runbook_id: string
+          started_at: string | null
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          executed_by?: string | null
+          execution_log?: Json | null
+          id?: string
+          metrics_after?: Json | null
+          metrics_before?: Json | null
+          recommendation_id?: string | null
+          runbook_id: string
+          started_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          executed_by?: string | null
+          execution_log?: Json | null
+          id?: string
+          metrics_after?: Json | null
+          metrics_before?: Json | null
+          recommendation_id?: string | null
+          runbook_id?: string
+          started_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_runbook_executions_recommendation_id_fkey"
+            columns: ["recommendation_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_agent_recommendations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dcim_runbook_executions_runbook_id_fkey"
+            columns: ["runbook_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_runbooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_runbooks: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_automated: boolean | null
+          name: string
+          prechecks: Json | null
+          requires_approval: boolean | null
+          rollback_steps: Json | null
+          site_id: string
+          steps: Json
+          trigger_conditions: Json | null
+          updated_at: string
+          verification: Json | null
+          version: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_automated?: boolean | null
+          name: string
+          prechecks?: Json | null
+          requires_approval?: boolean | null
+          rollback_steps?: Json | null
+          site_id: string
+          steps: Json
+          trigger_conditions?: Json | null
+          updated_at?: string
+          verification?: Json | null
+          version?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_automated?: boolean | null
+          name?: string
+          prechecks?: Json | null
+          requires_approval?: boolean | null
+          rollback_steps?: Json | null
+          site_id?: string
+          steps?: Json
+          trigger_conditions?: Json | null
+          updated_at?: string
+          verification?: Json | null
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_runbooks_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_sites: {
+        Row: {
+          capacity_mw: number | null
+          created_at: string
+          id: string
+          location: string | null
+          name: string
+          pue_target: number | null
+          region: string | null
+          timezone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          capacity_mw?: number | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          name: string
+          pue_target?: number | null
+          region?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          capacity_mw?: number | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          name?: string
+          pue_target?: number | null
+          region?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dcim_telemetry: {
+        Row: {
+          entity_id: string
+          entity_type: string
+          id: string
+          metadata: Json | null
+          metric_type: string
+          site_id: string
+          timestamp: string
+          unit: string | null
+          value: number
+        }
+        Insert: {
+          entity_id: string
+          entity_type: string
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          site_id: string
+          timestamp?: string
+          unit?: string | null
+          value: number
+        }
+        Update: {
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          site_id?: string
+          timestamp?: string
+          unit?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_telemetry_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_workload_allocations: {
+        Row: {
+          accelerator_ids: string[] | null
+          allocated_at: string | null
+          id: string
+          node_id: string
+          released_at: string | null
+          workload_id: string
+        }
+        Insert: {
+          accelerator_ids?: string[] | null
+          allocated_at?: string | null
+          id?: string
+          node_id: string
+          released_at?: string | null
+          workload_id: string
+        }
+        Update: {
+          accelerator_ids?: string[] | null
+          allocated_at?: string | null
+          id?: string
+          node_id?: string
+          released_at?: string | null
+          workload_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_workload_allocations_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dcim_workload_allocations_workload_id_fkey"
+            columns: ["workload_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_workloads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dcim_workloads: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          gpu_count: number | null
+          id: string
+          job_id: string
+          job_name: string | null
+          metadata: Json | null
+          model_signature: string | null
+          node_count: number | null
+          priority: number | null
+          scheduler_type: string | null
+          signature_type: string | null
+          site_id: string
+          started_at: string | null
+          status: string | null
+          submitted_at: string | null
+          workload_class: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          gpu_count?: number | null
+          id?: string
+          job_id: string
+          job_name?: string | null
+          metadata?: Json | null
+          model_signature?: string | null
+          node_count?: number | null
+          priority?: number | null
+          scheduler_type?: string | null
+          signature_type?: string | null
+          site_id: string
+          started_at?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          workload_class?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          gpu_count?: number | null
+          id?: string
+          job_id?: string
+          job_name?: string | null
+          metadata?: Json | null
+          model_signature?: string | null
+          node_count?: number | null
+          priority?: number | null
+          scheduler_type?: string | null
+          signature_type?: string | null
+          site_id?: string
+          started_at?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          workload_class?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dcim_workloads_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "dcim_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       facility_coefficients: {
         Row: {
           created_at: string | null

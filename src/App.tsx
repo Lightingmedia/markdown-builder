@@ -49,6 +49,19 @@ import LlmToolsGlm4 from "./pages/llm-tools/GlmCodingAgent";
 import LlmToolsUnsloth from "./pages/llm-tools/UnslothFineTuning";
 import LlmToolsDocs from "./pages/llm-tools/Documentation";
 
+// DCIM+ Platform
+import DcimLayout from "./components/dcim/DcimLayout";
+import DcimDashboard from "./pages/dcim/Dashboard";
+import DcimInventory from "./pages/dcim/Inventory";
+import DcimTelemetry from "./pages/dcim/Telemetry";
+import DcimTopology from "./pages/dcim/Topology";
+import DcimAdapters from "./pages/dcim/Adapters";
+import DcimRunbooks from "./pages/dcim/Runbooks";
+import CongestionAgent from "./pages/dcim/agents/CongestionAgent";
+import ThermalAgent from "./pages/dcim/agents/ThermalAgent";
+import IncidentCopilot from "./pages/dcim/agents/IncidentCopilot";
+import CapacityPlanner from "./pages/dcim/agents/CapacityPlanner";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -108,6 +121,20 @@ const App = () => (
               <Route path="glm4" element={<LlmToolsGlm4 />} />
               <Route path="unsloth" element={<LlmToolsUnsloth />} />
               <Route path="docs" element={<LlmToolsDocs />} />
+            </Route>
+
+            {/* DCIM+ Platform Routes */}
+            <Route path="/dcim" element={<DcimLayout />}>
+              <Route index element={<DcimDashboard />} />
+              <Route path="inventory" element={<DcimInventory />} />
+              <Route path="telemetry" element={<DcimTelemetry />} />
+              <Route path="topology" element={<DcimTopology />} />
+              <Route path="agents/congestion" element={<CongestionAgent />} />
+              <Route path="agents/thermal" element={<ThermalAgent />} />
+              <Route path="agents/incident" element={<IncidentCopilot />} />
+              <Route path="agents/capacity" element={<CapacityPlanner />} />
+              <Route path="adapters" element={<DcimAdapters />} />
+              <Route path="runbooks" element={<DcimRunbooks />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
