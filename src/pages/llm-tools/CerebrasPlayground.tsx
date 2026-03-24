@@ -16,15 +16,15 @@ import {
 } from "lucide-react";
 
 const CODE_EXAMPLES = {
-  python: `# Install the Cerebras Cloud SDK
-# !pip install cerebras-cloud-sdk
+  python: `# Install the LightRail AI SDK
+# !pip install lightrail-ai-sdk
 
 import os
-from cerebras.cloud.sdk import Cerebras
+from lightrail.ai.sdk import LightRailAI
 
-# Initialize LightRail AI client with Cerebras backend
-client = Cerebras(
-    api_key=os.environ.get("CEREBRAS_API_KEY")
+# Initialize LightRail AI client
+client = LightRailAI(
+    api_key=os.environ.get("LIGHTRAIL_API_KEY")
 )
 
 # Create a chat completion
@@ -42,11 +42,11 @@ completion = client.chat.completions.create(
 
 # Print the response
 print(completion.choices[0].message.content)`,
-  typescript: `import Cerebras from 'cerebras-cloud-sdk';
+  typescript: `import { LightRailAI } from 'lightrail-ai-sdk';
 
 // Initialize LightRail AI client
-const client = new Cerebras({
-  apiKey: process.env.CEREBRAS_API_KEY!
+const client = new LightRailAI({
+  apiKey: process.env.LIGHTRAIL_API_KEY!
 });
 
 async function main() {
@@ -66,9 +66,9 @@ async function main() {
 }
 
 main();`,
-  curl: `curl --location 'https://api.cerebras.ai/v1/chat/completions' \\
+  curl: `curl --location 'https://api.lightrail.ink/v1/chat/completions' \\
   --header 'Content-Type: application/json' \\
-  --header 'Authorization: Bearer $CEREBRAS_API_KEY' \\
+  --header 'Authorization: Bearer $LIGHTRAIL_API_KEY' \\
   --data '{
     "model": "llama3.1-8b",
     "max_completion_tokens": 1024,
@@ -163,7 +163,7 @@ export default function CerebrasPlayground() {
           <div>
             <h1 className="text-xl font-bold text-foreground">Get started with LightRail AI</h1>
             <p className="text-sm text-muted-foreground">
-              Ultra-fast inference powered by Cerebras — grab your API key and start building
+              Ultra-fast inference powered by LightRail AI — grab your API key and start building
             </p>
           </div>
         </div>
@@ -238,8 +238,8 @@ export default function CerebrasPlayground() {
                   </div>
                 </div>
 
-                <div className="bg-[#0d0d12] rounded-lg p-3 font-mono text-sm text-muted-foreground border border-border/20">
-                  csk-9nfh•••••••••••j9hkr
+                 <div className="bg-[#0d0d12] rounded-lg p-3 font-mono text-sm text-muted-foreground border border-border/20">
+                  lrai-9nfh•••••••••••j9hkr
                 </div>
 
                 <p className="text-xs text-muted-foreground">
