@@ -48,6 +48,7 @@ import LlmToolsDashboard from "./pages/llm-tools/Dashboard";
 import LlmToolsGlm4 from "./pages/llm-tools/GlmCodingAgent";
 import LlmToolsUnsloth from "./pages/llm-tools/UnslothFineTuning";
 import LlmToolsDocs from "./pages/llm-tools/Documentation";
+import CerebrasPlayground from "./pages/llm-tools/CerebrasPlayground";
 
 // DCIM+ Platform
 import DcimLayout from "./components/dcim/DcimLayout";
