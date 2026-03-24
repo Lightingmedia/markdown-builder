@@ -7,7 +7,7 @@ import { ArrowRight, Zap, TrendingDown, Gauge, Activity, Cpu, Server, Layers, Th
 import { useInView } from "react-intersection-observer";
 import { useState, useEffect } from "react";
 import heroChipset from "@/assets/LightRail_form_factor.png";
-import serverRack from "@/assets/photonic-ai-rack.png";
+
 import chipsetCrossSection from "@/assets/lightrail_ai_pcb.png";
 import dataCenter from "@/assets/data-center.jpg";
 import logoTechscale from "@/assets/logo-techscale.png";
