@@ -48,6 +48,7 @@ import LlmToolsDashboard from "./pages/llm-tools/Dashboard";
 import LlmToolsGlm4 from "./pages/llm-tools/GlmCodingAgent";
 import LlmToolsUnsloth from "./pages/llm-tools/UnslothFineTuning";
 import LlmToolsDocs from "./pages/llm-tools/Documentation";
+import CerebrasPlayground from "./pages/llm-tools/CerebrasPlayground";
 
 // DCIM+ Platform
 import DcimLayout from "./components/dcim/DcimLayout";
@@ -120,6 +121,7 @@ const App = () => (
               <Route index element={<LlmToolsDashboard />} />
               <Route path="glm4" element={<LlmToolsGlm4 />} />
               <Route path="unsloth" element={<LlmToolsUnsloth />} />
+              <Route path="cerebras" element={<CerebrasPlayground />} />
               <Route path="docs" element={<LlmToolsDocs />} />
             </Route>
 
