@@ -42,11 +42,11 @@ completion = client.chat.completions.create(
 
 # Print the response
 print(completion.choices[0].message.content)`,
-  typescript: `import Cerebras from 'cerebras-cloud-sdk';
+  typescript: `import { LightRailAI } from 'lightrail-ai-sdk';
 
 // Initialize LightRail AI client
-const client = new Cerebras({
-  apiKey: process.env.CEREBRAS_API_KEY!
+const client = new LightRailAI({
+  apiKey: process.env.LIGHTRAIL_API_KEY!
 });
 
 async function main() {
