@@ -280,9 +280,6 @@ const Index = () => {
                 </Card>)}
             </div>
 
-            <div ref={serverRef} className="relative order-1 lg:order-2">
-              <img src={serverRack} alt="Full-stack TPU server rack with photonic interconnects" className={`w-full rounded-lg shadow-2xl shadow-secondary/10 hover-scale transition-all duration-700 ${serverInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} />
-            </div>
           </div>
         </div>
       </section>
