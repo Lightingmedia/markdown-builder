@@ -7,7 +7,7 @@ import { ArrowRight, Zap, TrendingDown, Gauge, Activity, Cpu, Server, Layers, Th
 import { useInView } from "react-intersection-observer";
 import { useState, useEffect } from "react";
 import heroChipset from "@/assets/LightRail_form_factor.png";
-import serverRack from "@/assets/photonic-ai-rack.png";
+
 import chipsetCrossSection from "@/assets/lightrail_ai_pcb.png";
 import dataCenter from "@/assets/data-center.jpg";
 import logoTechscale from "@/assets/logo-techscale.png";
@@ -43,13 +43,6 @@ const Index = () => {
   const {
     ref: chipsetRef,
     inView: chipsetInView
-  } = useInView({
-    triggerOnce: true,
-    threshold: 0.2
-  });
-  const {
-    ref: serverRef,
-    inView: serverInView
   } = useInView({
     triggerOnce: true,
     threshold: 0.2
@@ -252,8 +245,8 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6 order-2 lg:order-1">
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="contents">
               {[{
               title: "Compact Rack",
               subtitle: "For edge deployment",
@@ -280,9 +273,6 @@ const Index = () => {
                 </Card>)}
             </div>
 
-            <div ref={serverRef} className="relative order-1 lg:order-2">
-              <img src={serverRack} alt="Full-stack TPU server rack with photonic interconnects" className={`w-full rounded-lg shadow-2xl shadow-secondary/10 hover-scale transition-all duration-700 ${serverInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} />
-            </div>
           </div>
         </div>
       </section>
