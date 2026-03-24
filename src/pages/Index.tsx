@@ -48,13 +48,6 @@ const Index = () => {
     threshold: 0.2
   });
   const {
-    ref: serverRef,
-    inView: serverInView
-  } = useInView({
-    triggerOnce: true,
-    threshold: 0.2
-  });
-  const {
     ref: dataCenterRef,
     inView: dataCenterInView
   } = useInView({
