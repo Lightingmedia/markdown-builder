@@ -238,8 +238,8 @@ export default function CerebrasPlayground() {
                   </div>
                 </div>
 
-                <div className="bg-[#0d0d12] rounded-lg p-3 font-mono text-sm text-muted-foreground border border-border/20">
-                  csk-9nfh•••••••••••j9hkr
+                 <div className="bg-[#0d0d12] rounded-lg p-3 font-mono text-sm text-muted-foreground border border-border/20">
+                  lrai-9nfh•••••••••••j9hkr
                 </div>
 
                 <p className="text-xs text-muted-foreground">
