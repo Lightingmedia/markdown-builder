@@ -66,9 +66,9 @@ async function main() {
 }
 
 main();`,
-  curl: `curl --location 'https://api.cerebras.ai/v1/chat/completions' \\
+  curl: `curl --location 'https://api.lightrail.ink/v1/chat/completions' \\
   --header 'Content-Type: application/json' \\
-  --header 'Authorization: Bearer $CEREBRAS_API_KEY' \\
+  --header 'Authorization: Bearer $LIGHTRAIL_API_KEY' \\
   --data '{
     "model": "llama3.1-8b",
     "max_completion_tokens": 1024,
