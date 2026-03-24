@@ -16,15 +16,15 @@ import {
 } from "lucide-react";
 
 const CODE_EXAMPLES = {
-  python: `# Install the Cerebras Cloud SDK
-# !pip install cerebras-cloud-sdk
+  python: `# Install the LightRail AI SDK
+# !pip install lightrail-ai-sdk
 
 import os
-from cerebras.cloud.sdk import Cerebras
+from lightrail.ai.sdk import LightRailAI
 
-# Initialize LightRail AI client with Cerebras backend
-client = Cerebras(
-    api_key=os.environ.get("CEREBRAS_API_KEY")
+# Initialize LightRail AI client
+client = LightRailAI(
+    api_key=os.environ.get("LIGHTRAIL_API_KEY")
 )
 
 # Create a chat completion
