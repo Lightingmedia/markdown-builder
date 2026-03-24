@@ -121,6 +121,7 @@ const App = () => (
               <Route index element={<LlmToolsDashboard />} />
               <Route path="glm4" element={<LlmToolsGlm4 />} />
               <Route path="unsloth" element={<LlmToolsUnsloth />} />
+              <Route path="cerebras" element={<CerebrasPlayground />} />
               <Route path="docs" element={<LlmToolsDocs />} />
             </Route>
 

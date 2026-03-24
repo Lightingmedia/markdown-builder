@@ -27,7 +27,8 @@ import { Button } from "@/components/ui/button";
 
 const menuItems = [
   { title: "LightRail AI", icon: Bot, path: "/llm-tools/glm4" },
-  { title: "Unsloth Fine-Tuning", icon: Zap, path: "/llm-tools/unsloth" },
+  { title: "Cerebras Inference", icon: Zap, path: "/llm-tools/cerebras" },
+  { title: "Unsloth Fine-Tuning", icon: Code2, path: "/llm-tools/unsloth" },
 ];
 
 const bottomMenuItems = [
