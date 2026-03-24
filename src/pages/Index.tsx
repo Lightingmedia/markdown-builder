@@ -252,8 +252,8 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6 order-2 lg:order-1">
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="contents">
               {[{
               title: "Compact Rack",
               subtitle: "For edge deployment",
