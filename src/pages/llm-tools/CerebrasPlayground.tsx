@@ -163,7 +163,7 @@ export default function CerebrasPlayground() {
           <div>
             <h1 className="text-xl font-bold text-foreground">Get started with LightRail AI</h1>
             <p className="text-sm text-muted-foreground">
-              Ultra-fast inference powered by Cerebras — grab your API key and start building
+              Ultra-fast inference powered by LightRail AI — grab your API key and start building
             </p>
           </div>
         </div>
