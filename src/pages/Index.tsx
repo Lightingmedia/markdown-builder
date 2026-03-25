@@ -228,7 +228,38 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-            </div>
+              {/* Value Proposition Boxes */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="relative group px-6 py-5 rounded-xl border border-primary/30 bg-primary/5 backdrop-blur-sm hover:border-primary/60 transition-all duration-300 cursor-default">
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Zap className="h-5 w-5 text-primary" />
+                      <span className="text-sm font-semibold text-foreground">Slashing AI Power Usage</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Gauge className="h-4 w-4 text-primary/70" />
+                      <span className="text-2xl font-bold text-primary">40%</span>
+                      <span className="text-xs text-muted-foreground">Lower Power per Token</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative group px-6 py-5 rounded-xl border border-secondary/30 bg-secondary/5 backdrop-blur-sm hover:border-secondary/60 transition-all duration-300 cursor-default">
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-3">
+                      <TrendingDown className="h-5 w-5 text-secondary" />
+                      <span className="text-sm font-semibold text-foreground">Increasing TCO</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-secondary/70" />
+                      <span className="text-2xl font-bold text-secondary">85%</span>
+                      <span className="text-xs text-muted-foreground">System Utilization</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
           </div>
         </div>
       </section>
