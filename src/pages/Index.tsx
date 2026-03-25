@@ -130,8 +130,8 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div ref={chipsetRef} className="relative group overflow-hidden rounded-xl">
+          <div className="grid lg:grid-cols-2 gap-12 items-stretch">
+            <div ref={chipsetRef} className="relative group overflow-hidden rounded-xl flex items-center justify-center">
               {/* Animated light beams overlay */}
               <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
                 <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse opacity-60" style={{
@@ -146,7 +146,6 @@ const Index = () => {
                 top: '75%',
                 animation: 'slideRight 3.5s ease-in-out infinite 1s'
               }} />
-                {/* Vertical beams */}
                 <div className="absolute h-full w-0.5 bg-gradient-to-b from-transparent via-primary to-transparent opacity-50" style={{
                 left: '30%',
                 animation: 'slideDown 4s ease-in-out infinite'
@@ -155,7 +154,6 @@ const Index = () => {
                 left: '70%',
                 animation: 'slideDown 3s ease-in-out infinite 0.7s'
               }} />
-                {/* Glowing particles */}
                 <div className="absolute w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" style={{
                 animation: 'floatParticle1 5s ease-in-out infinite'
               }} />
@@ -166,8 +164,7 @@ const Index = () => {
                 animation: 'floatParticle3 6s ease-in-out infinite 2s'
               }} />
               </div>
-              <img alt="The Photonic AI Rack - Architecture of the Next-Gen Data Center" className="rounded-xl shadow-2xl shadow-primary/20 transition-transform duration-500 group-hover:scale-105 w-full h-auto object-contain" src={chipsetCrossSection} />
-              {/* Glow effect */}
+              <img alt="The Photonic AI Rack - Architecture of the Next-Gen Data Center" className="rounded-xl shadow-2xl shadow-primary/20 transition-transform duration-500 group-hover:scale-105 max-h-full w-auto mx-auto object-contain" src={chipsetCrossSection} />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-secondary/10 rounded-xl pointer-events-none" />
             </div>
 
