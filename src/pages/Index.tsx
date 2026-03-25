@@ -112,9 +112,26 @@ const Index = () => {
               Request Demo
             </Button>
           </div>
+
+          {/* Value Proposition Boxes */}
+          <div className="flex gap-6 justify-center flex-wrap mt-12">
+            <div className="relative group px-8 py-6 rounded-xl border border-primary/30 bg-primary/5 backdrop-blur-sm hover:border-primary/60 transition-all duration-300 cursor-default">
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex items-center gap-3">
+                <Zap className="h-6 w-6 text-primary" />
+                <span className="text-lg font-semibold text-foreground">Slashing AI Power Usage</span>
+              </div>
+            </div>
+            <div className="relative group px-8 py-6 rounded-xl border border-secondary/30 bg-secondary/5 backdrop-blur-sm hover:border-secondary/60 transition-all duration-300 cursor-default">
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex items-center gap-3">
+                <TrendingDown className="h-6 w-6 text-secondary" />
+                <span className="text-lg font-semibold text-foreground">Increasing TCO (Total Cost of Ownership)</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-
 
 
 
