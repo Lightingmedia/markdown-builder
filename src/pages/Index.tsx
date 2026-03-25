@@ -8,7 +8,7 @@ import { useInView } from "react-intersection-observer";
 import { useState, useEffect } from "react";
 import heroChipset from "@/assets/LightRail_form_factor.png";
 
-import chipsetCrossSection from "@/assets/lightrail_ai_pcb.png";
+import chipsetCrossSection from "@/assets/photonic-ai-rack.png";
 import dataCenter from "@/assets/data-center.jpg";
 import logoTechscale from "@/assets/logo-techscale.png";
 import logoDataflow from "@/assets/logo-dataflow.png";
@@ -199,7 +199,7 @@ const Index = () => {
                 animation: 'floatParticle3 6s ease-in-out infinite 2s'
               }} />
               </div>
-              <img alt="Detailed cross-section of silicon photonic chipset architecture" className="rounded-xl shadow-2xl shadow-primary/20 transition-transform duration-500 group-hover:scale-105" src={chipsetCrossSection} />
+              <img alt="The Photonic AI Rack - Architecture of the Next-Gen Data Center" className="rounded-xl shadow-2xl shadow-primary/20 transition-transform duration-500 group-hover:scale-105 w-full h-auto object-contain" src={chipsetCrossSection} />
               {/* Glow effect */}
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-secondary/10 rounded-xl pointer-events-none" />
             </div>
