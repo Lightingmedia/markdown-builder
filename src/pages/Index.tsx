@@ -177,29 +177,80 @@ const Index = () => {
             </div>
 
             <div className="space-y-6">
-              {[{
-              icon: Cpu,
-              title: "Photonic Linear Algebra Engine",
-              description: "Hardware-accelerated matrix operations using light, delivering unprecedented computational efficiency for AI workloads."
-            }, {
-              icon: Layers,
-              title: "Integrated Photonic Mesh",
-              description: "Revolutionary interconnect technology reducing latency and power consumption while increasing bandwidth by orders of magnitude."
-            }, {
-              icon: Thermometer,
-              title: "Thermal Efficient Design",
-              description: "Optical signal processing generates minimal heat compared to electronic alternatives, dramatically reducing cooling requirements."
-            }].map((feature, i) => <Card key={i} className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3">
-                      <feature.icon className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
-                      {feature.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">{feature.description}</CardDescription>
+              {/* Stats: 2-3x Performance per Watt & 60% CO₂ Reduction */}
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
+                  <CardContent className="pt-5 pb-4 text-center">
+                    <Zap className="h-8 w-8 text-primary mb-2 mx-auto" />
+                    <div className="text-3xl font-bold text-primary">2-3x</div>
+                    <div className="text-sm text-muted-foreground">Performance per Watt</div>
                   </CardContent>
-                </Card>)}
+                </Card>
+                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
+                  <CardContent className="pt-5 pb-4 text-center">
+                    <TrendingDown className="h-8 w-8 text-primary mb-2 mx-auto" />
+                    <div className="text-3xl font-bold text-primary">60%</div>
+                    <div className="text-sm text-muted-foreground">CO₂ Reduction</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Photonic Linear Algebra Engine */}
+              <Card className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Cpu className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
+                    Photonic Linear Algebra Engine
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">Hardware-accelerated matrix operations using light, delivering unprecedented computational efficiency for AI workloads.</CardDescription>
+                </CardContent>
+              </Card>
+
+              {/* Integrated Photonic Mesh */}
+              <Card className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Layers className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
+                    Integrated Photonic Mesh
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">Revolutionary interconnect technology reducing latency and power consumption while increasing bandwidth by orders of magnitude.</CardDescription>
+                </CardContent>
+              </Card>
+
+              {/* Thermal Efficient Design */}
+              <Card className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Thermometer className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
+                    Thermal Efficient Design
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">Optical signal processing generates minimal heat compared to electronic alternatives, dramatically reducing cooling requirements.</CardDescription>
+                </CardContent>
+              </Card>
+
+              {/* Stats: 40% Lower Power per Token & 85% System Utilization */}
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
+                  <CardContent className="pt-5 pb-4 text-center">
+                    <Gauge className="h-8 w-8 text-primary mb-2 mx-auto" />
+                    <div className="text-3xl font-bold text-primary">40%</div>
+                    <div className="text-sm text-muted-foreground">Lower Power per Token</div>
+                  </CardContent>
+                </Card>
+                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
+                  <CardContent className="pt-5 pb-4 text-center">
+                    <Activity className="h-8 w-8 text-primary mb-2 mx-auto" />
+                    <div className="text-3xl font-bold text-primary">85%</div>
+                    <div className="text-sm text-muted-foreground">System Utilization</div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
