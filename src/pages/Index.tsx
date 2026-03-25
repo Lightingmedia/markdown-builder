@@ -229,33 +229,29 @@ const Index = () => {
               </Card>
 
               {/* Value Proposition Boxes */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="relative group px-6 py-5 rounded-xl border border-primary/30 bg-primary/5 backdrop-blur-sm hover:border-primary/60 transition-all duration-300 cursor-default">
+              <div className="grid grid-cols-2 gap-4 min-h-[220px]">
+                <div className="relative group h-full px-6 py-6 rounded-xl border border-primary/30 bg-primary/5 backdrop-blur-sm hover:border-primary/60 transition-all duration-300 cursor-default flex flex-col justify-between">
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Zap className="h-5 w-5 text-primary" />
-                      <span className="text-sm font-semibold text-foreground">Slashing AI Power Usage</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Gauge className="h-4 w-4 text-primary/70" />
-                      <span className="text-2xl font-bold text-primary">40%</span>
-                      <span className="text-xs text-muted-foreground">Lower Power per Token</span>
-                    </div>
+                  <div className="relative flex items-center gap-2 mb-6">
+                    <Zap className="h-5 w-5 text-primary shrink-0" />
+                    <span className="text-sm md:text-base font-semibold text-foreground">Slashing AI Power Usage</span>
+                  </div>
+                  <div className="relative flex items-end gap-3">
+                    <Gauge className="h-5 w-5 text-primary/70 mb-1 shrink-0" />
+                    <span className="text-4xl font-bold text-primary leading-none">40%</span>
+                    <span className="text-sm text-muted-foreground leading-snug">Lower Power per Token</span>
                   </div>
                 </div>
-                <div className="relative group px-6 py-5 rounded-xl border border-secondary/30 bg-secondary/5 backdrop-blur-sm hover:border-secondary/60 transition-all duration-300 cursor-default">
+                <div className="relative group h-full px-6 py-6 rounded-xl border border-secondary/30 bg-secondary/5 backdrop-blur-sm hover:border-secondary/60 transition-all duration-300 cursor-default flex flex-col justify-between">
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative">
-                    <div className="flex items-center gap-2 mb-3">
-                      <TrendingDown className="h-5 w-5 text-secondary" />
-                      <span className="text-sm font-semibold text-foreground">Increasing TCO</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Activity className="h-4 w-4 text-secondary/70" />
-                      <span className="text-2xl font-bold text-secondary">85%</span>
-                      <span className="text-xs text-muted-foreground">System Utilization</span>
-                    </div>
+                  <div className="relative flex items-center gap-2 mb-6">
+                    <TrendingDown className="h-5 w-5 text-secondary shrink-0" />
+                    <span className="text-sm md:text-base font-semibold text-foreground">Increasing TCO</span>
+                  </div>
+                  <div className="relative flex items-end gap-3">
+                    <Activity className="h-5 w-5 text-secondary/70 mb-1 shrink-0" />
+                    <span className="text-4xl font-bold text-secondary leading-none">85%</span>
+                    <span className="text-sm text-muted-foreground leading-snug">System Utilization</span>
                   </div>
                 </div>
               </div>
