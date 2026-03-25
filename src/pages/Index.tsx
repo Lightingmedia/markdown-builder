@@ -246,7 +246,7 @@ const Index = () => {
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative flex items-center gap-2 mb-6">
                     <TrendingDown className="h-5 w-5 text-secondary shrink-0" />
-                    <span className="text-sm md:text-base font-semibold text-foreground">Increasing TCO</span>
+                    <span className="text-sm md:text-base font-semibold text-foreground">Decreasing TCO</span>
                   </div>
                   <div className="relative flex items-end gap-3">
                     <Activity className="h-5 w-5 text-secondary/70 mb-1 shrink-0" />
