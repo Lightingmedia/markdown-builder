@@ -114,7 +114,25 @@ const Index = () => {
           </div>
 
           {/* Value Proposition Boxes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 max-w-3xl mx-auto">
+        </div>
+      </section>
+
+
+
+      {/* Chipset Technology Section */}
+      <section id="features" className="py-24 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Silicon Photonic Chipset Architecture
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Breakthrough integration of photonic technology with traditional silicon processing
+            </p>
+          </div>
+
+          {/* Value Proposition Boxes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-16">
             <div className="relative group px-8 py-6 rounded-xl border border-primary/30 bg-primary/5 backdrop-blur-sm hover:border-primary/60 transition-all duration-300 cursor-default">
               <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative">
@@ -143,22 +161,6 @@ const Index = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-
-
-      {/* Chipset Technology Section */}
-      <section id="features" className="py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Silicon Photonic Chipset Architecture
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Breakthrough integration of photonic technology with traditional silicon processing
-            </p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-stretch">
