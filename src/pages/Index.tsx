@@ -54,13 +54,8 @@ const Index = () => {
     triggerOnce: true,
     threshold: 0.2
   });
-  const {
-    ref: statsRef,
-    inView: statsInView
-  } = useInView({
-    triggerOnce: true,
-    threshold: 0.3
-  });
+
+
   const [scrollY, setScrollY] = useState(0);
   useEffect(() => {
     const handleScroll = () => {
@@ -120,36 +115,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Key Statistics Section */}
-      <section ref={statsRef} className="py-24 container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[{
-          icon: Zap,
-          stat: "2-3x",
-          label: "Performance per Watt"
-        }, {
-          icon: TrendingDown,
-          stat: "60%",
-          label: "CO₂ Reduction"
-        }, {
-          icon: Gauge,
-          stat: "40%",
-          label: "Lower Power per Token"
-        }, {
-          icon: Activity,
-          stat: "85%",
-          label: "System Utilization"
-        }].map((item, i) => <Card key={i} className={`group hover:shadow-lg hover:shadow-primary/20 transition-all duration-500 border-2 hover:border-primary/50 ${statsInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{
-          transitionDelay: statsInView ? `${i * 150}ms` : '0ms'
-        }}>
-              <CardContent className="pt-6">
-                <item.icon className="h-12 w-12 text-primary mb-4 group-hover:scale-110 transition-transform" />
-                <div className="text-4xl font-bold mb-2 text-primary">{item.stat}</div>
-                <div className="text-sm text-muted-foreground">{item.label}</div>
-              </CardContent>
-            </Card>)}
-        </div>
-      </section>
+
+
 
       {/* Chipset Technology Section */}
       <section id="features" className="py-24 bg-muted/30">
@@ -205,29 +172,80 @@ const Index = () => {
             </div>
 
             <div className="space-y-6">
-              {[{
-              icon: Cpu,
-              title: "Photonic Linear Algebra Engine",
-              description: "Hardware-accelerated matrix operations using light, delivering unprecedented computational efficiency for AI workloads."
-            }, {
-              icon: Layers,
-              title: "Integrated Photonic Mesh",
-              description: "Revolutionary interconnect technology reducing latency and power consumption while increasing bandwidth by orders of magnitude."
-            }, {
-              icon: Thermometer,
-              title: "Thermal Efficient Design",
-              description: "Optical signal processing generates minimal heat compared to electronic alternatives, dramatically reducing cooling requirements."
-            }].map((feature, i) => <Card key={i} className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3">
-                      <feature.icon className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
-                      {feature.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">{feature.description}</CardDescription>
+              {/* Stats: 2-3x Performance per Watt & 60% CO₂ Reduction */}
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
+                  <CardContent className="pt-5 pb-4 text-center">
+                    <Zap className="h-8 w-8 text-primary mb-2 mx-auto" />
+                    <div className="text-3xl font-bold text-primary">2-3x</div>
+                    <div className="text-sm text-muted-foreground">Performance per Watt</div>
                   </CardContent>
-                </Card>)}
+                </Card>
+                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
+                  <CardContent className="pt-5 pb-4 text-center">
+                    <TrendingDown className="h-8 w-8 text-primary mb-2 mx-auto" />
+                    <div className="text-3xl font-bold text-primary">60%</div>
+                    <div className="text-sm text-muted-foreground">CO₂ Reduction</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Photonic Linear Algebra Engine */}
+              <Card className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Cpu className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
+                    Photonic Linear Algebra Engine
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">Hardware-accelerated matrix operations using light, delivering unprecedented computational efficiency for AI workloads.</CardDescription>
+                </CardContent>
+              </Card>
+
+              {/* Integrated Photonic Mesh */}
+              <Card className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Layers className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
+                    Integrated Photonic Mesh
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">Revolutionary interconnect technology reducing latency and power consumption while increasing bandwidth by orders of magnitude.</CardDescription>
+                </CardContent>
+              </Card>
+
+              {/* Thermal Efficient Design */}
+              <Card className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Thermometer className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
+                    Thermal Efficient Design
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">Optical signal processing generates minimal heat compared to electronic alternatives, dramatically reducing cooling requirements.</CardDescription>
+                </CardContent>
+              </Card>
+
+              {/* Stats: 40% Lower Power per Token & 85% System Utilization */}
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
+                  <CardContent className="pt-5 pb-4 text-center">
+                    <Gauge className="h-8 w-8 text-primary mb-2 mx-auto" />
+                    <div className="text-3xl font-bold text-primary">40%</div>
+                    <div className="text-sm text-muted-foreground">Lower Power per Token</div>
+                  </CardContent>
+                </Card>
+                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
+                  <CardContent className="pt-5 pb-4 text-center">
+                    <Activity className="h-8 w-8 text-primary mb-2 mx-auto" />
+                    <div className="text-3xl font-bold text-primary">85%</div>
+                    <div className="text-sm text-muted-foreground">System Utilization</div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
