@@ -131,37 +131,6 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Value Proposition Boxes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-16">
-            <div className="relative group px-8 py-6 rounded-xl border border-primary/30 bg-primary/5 backdrop-blur-sm hover:border-primary/60 transition-all duration-300 cursor-default">
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="flex items-center gap-3 mb-4">
-                  <Zap className="h-6 w-6 text-primary" />
-                  <span className="text-lg font-semibold text-foreground">Slashing AI Power Usage</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Gauge className="h-5 w-5 text-primary/70" />
-                  <span className="text-3xl font-bold text-primary">40%</span>
-                  <span className="text-sm text-muted-foreground">Lower Power per Token</span>
-                </div>
-              </div>
-            </div>
-            <div className="relative group px-8 py-6 rounded-xl border border-secondary/30 bg-secondary/5 backdrop-blur-sm hover:border-secondary/60 transition-all duration-300 cursor-default">
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="flex items-center gap-3 mb-4">
-                  <TrendingDown className="h-6 w-6 text-secondary" />
-                  <span className="text-lg font-semibold text-foreground">Increasing TCO (Total Cost of Ownership)</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Activity className="h-5 w-5 text-secondary/70" />
-                  <span className="text-3xl font-bold text-secondary">85%</span>
-                  <span className="text-sm text-muted-foreground">System Utilization</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-stretch">
             <div ref={chipsetRef} className="relative group overflow-hidden rounded-xl flex items-center justify-center">
