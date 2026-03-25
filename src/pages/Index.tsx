@@ -120,36 +120,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Key Statistics Section */}
-      <section ref={statsRef} className="py-24 container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[{
-          icon: Zap,
-          stat: "2-3x",
-          label: "Performance per Watt"
-        }, {
-          icon: TrendingDown,
-          stat: "60%",
-          label: "CO₂ Reduction"
-        }, {
-          icon: Gauge,
-          stat: "40%",
-          label: "Lower Power per Token"
-        }, {
-          icon: Activity,
-          stat: "85%",
-          label: "System Utilization"
-        }].map((item, i) => <Card key={i} className={`group hover:shadow-lg hover:shadow-primary/20 transition-all duration-500 border-2 hover:border-primary/50 ${statsInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{
-          transitionDelay: statsInView ? `${i * 150}ms` : '0ms'
-        }}>
-              <CardContent className="pt-6">
-                <item.icon className="h-12 w-12 text-primary mb-4 group-hover:scale-110 transition-transform" />
-                <div className="text-4xl font-bold mb-2 text-primary">{item.stat}</div>
-                <div className="text-sm text-muted-foreground">{item.label}</div>
-              </CardContent>
-            </Card>)}
-        </div>
-      </section>
+
+
 
       {/* Chipset Technology Section */}
       <section id="features" className="py-24 bg-muted/30">
