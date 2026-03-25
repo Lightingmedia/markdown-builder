@@ -8,7 +8,7 @@ import { useInView } from "react-intersection-observer";
 import { useState, useEffect } from "react";
 import heroChipset from "@/assets/LightRail_form_factor.png";
 
-import chipsetCrossSection from "@/assets/lightrail_ai_pcb.png";
+import chipsetCrossSection from "@/assets/photonic-ai-rack.png";
 import dataCenter from "@/assets/data-center.jpg";
 import logoTechscale from "@/assets/logo-techscale.png";
 import logoDataflow from "@/assets/logo-dataflow.png";
