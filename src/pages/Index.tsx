@@ -54,13 +54,8 @@ const Index = () => {
     triggerOnce: true,
     threshold: 0.2
   });
-  const {
-    ref: statsRef,
-    inView: statsInView
-  } = useInView({
-    triggerOnce: true,
-    threshold: 0.3
-  });
+
+
   const [scrollY, setScrollY] = useState(0);
   useEffect(() => {
     const handleScroll = () => {
