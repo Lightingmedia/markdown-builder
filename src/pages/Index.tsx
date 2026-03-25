@@ -257,23 +257,6 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              {/* Stats: 40% Lower Power per Token & 85% System Utilization */}
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
-                  <CardContent className="pt-5 pb-4 text-center">
-                    <Gauge className="h-8 w-8 text-primary mb-2 mx-auto" />
-                    <div className="text-3xl font-bold text-primary">40%</div>
-                    <div className="text-sm text-muted-foreground">Lower Power per Token</div>
-                  </CardContent>
-                </Card>
-                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
-                  <CardContent className="pt-5 pb-4 text-center">
-                    <Activity className="h-8 w-8 text-primary mb-2 mx-auto" />
-                    <div className="text-3xl font-bold text-primary">85%</div>
-                    <div className="text-sm text-muted-foreground">System Utilization</div>
-                  </CardContent>
-                </Card>
-              </div>
             </div>
           </div>
         </div>
