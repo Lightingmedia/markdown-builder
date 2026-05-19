@@ -303,10 +303,50 @@ serve(async (req) => {
   }
 
   try {
-    const payload: TelemetryPayload = await req.json();
-    console.log("Received telemetry payload:", JSON.stringify(payload));
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
-    // Basic validation
+    // Require authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const token = authHeader.substring(7);
+    const { data: { user } } = await supabase.auth.getUser(token);
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const userId = user.id;
+    const userEmail = user.email || null;
+
+    // Payload size limit
+    const contentLength = parseInt(req.headers.get("content-length") || "0", 10);
+    if (contentLength > 1_000_000) {
+      return new Response(
+        JSON.stringify({ error: "Payload too large" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    let payload: TelemetryPayload;
+    try {
+      payload = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (!payload || typeof payload !== "object") {
       return new Response(
         JSON.stringify({ error: "Invalid payload structure" }),
@@ -314,36 +354,36 @@ serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Initialize Resend if API key exists
-    const resend = resendApiKey ? new Resend(resendApiKey) : null;
-
-    const authHeader = req.headers.get("Authorization");
-    let userId: string | null = null;
-    let userEmail: string | null = null;
-
-    if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
-      const { data: { user } } = await supabase.auth.getUser(token);
-      userId = user?.id || null;
-      userEmail = user?.email || null;
-    }
-
-    if (!userId) {
-      console.log("Webhook received without authentication - data logged but not stored");
+    // Range + type validation
+    const inRange = (v: unknown, min: number, max: number) =>
+      v === undefined || v === null || (typeof v === "number" && Number.isFinite(v) && v >= min && v <= max);
+    const isStr = (v: unknown, max: number) =>
+      v === undefined || v === null || (typeof v === "string" && v.length <= max);
+    const ALLOWED_HVAC = ["ON", "OFF", "AUTO", "STANDBY", undefined, null];
+    const ALLOWED_VENDOR = ["nvidia", "google_tpu", "amd", undefined, null];
+    if (
+      !isStr(payload.facility_id, 64) ||
+      !isStr(payload.model_id, 128) ||
+      !isStr(payload.timestamp, 64) ||
+      !inRange(payload.temp_c, -50, 100) ||
+      !inRange(payload.humidity_pct, 0, 100) ||
+      !inRange(payload.gpu_wattage, 0, 10000) ||
+      !inRange(payload.tpu_wattage, 0, 10000) ||
+      !inRange(payload.amd_gpu_wattage, 0, 10000) ||
+      !inRange(payload.tokens_generated, 0, 1e9) ||
+      !inRange(payload.tpu_utilization, 0, 100) ||
+      !inRange(payload.amd_utilization, 0, 100) ||
+      !inRange(payload.nvidia_utilization, 0, 100) ||
+      !ALLOWED_HVAC.includes(payload.hvac_status as never) ||
+      !ALLOWED_VENDOR.includes(payload.accelerator_vendor as never)
+    ) {
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Payload received (authentication required to store data)",
-          received: payload 
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Invalid payload values" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log("Telemetry payload accepted for user:", userId);
 
     // Detect anomalies BEFORE storing data
     const anomalies = detectAnomalies(payload);
@@ -488,9 +528,8 @@ serve(async (req) => {
     );
   } catch (error: unknown) {
     console.error("Error in energy-webhook-handler:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: "An internal error occurred. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

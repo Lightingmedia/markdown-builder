@@ -41,18 +41,57 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Require authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { message, projectId, sessionId } = await req.json();
-    console.log(`PCB Copilot request - Project: ${projectId}, Session: ${sessionId}`);
-    console.log(`User message: ${message}`);
+    if (typeof message !== "string" || message.length === 0 || message.length > 8000) {
+      return new Response(
+        JSON.stringify({ error: "Invalid message" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    // Create Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch design context if project exists
+    // User-scoped client to verify identity & enforce RLS for ownership checks
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !user) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log(`PCB Copilot request - User: ${user.id}, Project: ${projectId}, Session: ${sessionId}`);
+
+    // Fetch design context if project exists - verify access via RLS on user client
     let designContext = "";
     if (projectId) {
+      const { data: accessCheck, error: accessErr } = await userClient
+        .from("pcb_design_objects")
+        .select("id")
+        .eq("project_id", projectId)
+        .limit(1);
+      if (accessErr) {
+        return new Response(
+          JSON.stringify({ error: "Project not found or access denied" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const { data: objects } = await supabase
         .from("pcb_design_objects")
         .select("type, name, metadata")
@@ -112,7 +151,7 @@ Current Design Context:
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI Gateway error:", response.status, errorText);
-      
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
@@ -125,7 +164,10 @@ Current Design Context:
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      throw new Error(`AI Gateway error: ${response.status}`);
+      return new Response(
+        JSON.stringify({ error: "AI service unavailable. Please try again." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const data = await response.json();
@@ -139,7 +181,7 @@ Current Design Context:
   } catch (error) {
     console.error("PCB Copilot error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "An internal error occurred. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
