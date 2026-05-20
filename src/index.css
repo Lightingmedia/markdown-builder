@@ -20,7 +20,7 @@ All colors MUST be HSL.
     --popover: 216 65% 8%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 192 80% 45%;
+    --primary: 170 75% 45%;
     --primary-foreground: 216 100% 5%;
 
     --secondary: 189 100% 50%;
@@ -37,20 +37,20 @@ All colors MUST be HSL.
 
     --border: 216 45% 20%;
     --input: 216 45% 20%;
-    --ring: 192 80% 45%;
+    --ring: 170 75% 45%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 216 65% 8%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 192 80% 45%;
+    --sidebar-primary: 170 75% 45%;
     --sidebar-primary-foreground: 216 100% 5%;
     --sidebar-accent: 216 45% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 216 45% 20%;
-    --sidebar-ring: 192 80% 45%;
+    --sidebar-ring: 170 75% 45%;
 
-    --chart-1: 192 80% 45%;
+    --chart-1: 170 75% 45%;
     --chart-2: 189 100% 50%;
     --chart-3: 216 65% 60%;
     --chart-4: 150 80% 50%;
@@ -95,7 +95,7 @@ All colors MUST be HSL.
     --popover: 216 65% 6%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 192 80% 45%;
+    --primary: 170 75% 45%;
     --primary-foreground: 216 100% 3%;
 
     --secondary: 189 100% 50%;
@@ -112,30 +112,30 @@ All colors MUST be HSL.
 
     --border: 216 45% 18%;
     --input: 216 45% 18%;
-    --ring: 192 80% 45%;
+    --ring: 170 75% 45%;
     --sidebar-background: 216 65% 6%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 192 80% 45%;
+    --sidebar-primary: 170 75% 45%;
     --sidebar-primary-foreground: 216 100% 3%;
     --sidebar-accent: 216 45% 12%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 216 45% 18%;
-    --sidebar-ring: 192 80% 45%;
-    --chart-1: 192 80% 45%;
+    --sidebar-ring: 170 75% 45%;
+    --chart-1: 170 75% 45%;
     --chart-2: 189 100% 50%;
     --chart-3: 216 65% 50%;
     --chart-4: 150 80% 45%;
     --chart-5: 200 90% 45%;
     --sidebar: 216 65% 6%;
     --radius: 0.5rem;
-    --shadow-2xs: 1px 1px 0px 0px rgba(27, 163, 198, 0.3);
-    --shadow-xs: 2px 2px 0px 0px rgba(27, 163, 198, 0.3);
-    --shadow-sm: 3px 3px 0px 0px rgba(27, 163, 198, 0.3);
-    --shadow: 5px 5px 0px 0px rgba(27, 163, 198, 0.3);
-    --shadow-md: 8px 8px 0px 0px rgba(27, 163, 198, 0.3);
-    --shadow-lg: 12px 12px 0px 0px rgba(27, 163, 198, 0.3);
-    --shadow-xl: 16px 16px 0px 0px rgba(27, 163, 198, 0.3);
-    --shadow-2xl: 24px 24px 0px 0px rgba(27, 163, 198, 0.3);
+    --shadow-2xs: 1px 1px 0px 0px rgba(29, 201, 168, 0.3);
+    --shadow-xs: 2px 2px 0px 0px rgba(29, 201, 168, 0.3);
+    --shadow-sm: 3px 3px 0px 0px rgba(29, 201, 168, 0.3);
+    --shadow: 5px 5px 0px 0px rgba(29, 201, 168, 0.3);
+    --shadow-md: 8px 8px 0px 0px rgba(29, 201, 168, 0.3);
+    --shadow-lg: 12px 12px 0px 0px rgba(29, 201, 168, 0.3);
+    --shadow-xl: 16px 16px 0px 0px rgba(29, 201, 168, 0.3);
+    --shadow-2xl: 24px 24px 0px 0px rgba(29, 201, 168, 0.3);
   }
 }
 
