@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Cpu, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import logo from "@/assets/lightrail-logo.png";
 
 interface NavigationProps {
   onGetStarted: () => void;
@@ -30,9 +31,8 @@ export default function Navigation({ onGetStarted }: NavigationProps) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <Cpu className="h-7 w-7 text-primary" aria-hidden="true" />
-          <span className="text-xl font-bold text-primary">LightRail AI</span>
+        <Link to="/" className="flex items-center">
+          <img src={logo} alt="LightRail AI" className="h-9 w-auto" />
         </Link>
         
         {/* Desktop Navigation */}
