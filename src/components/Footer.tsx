@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Cpu, Linkedin, Twitter, Github, Mail, MapPin } from "lucide-react";
+import { Linkedin, Twitter, Github, Mail, MapPin } from "lucide-react";
+import logo from "@/assets/lightrail-logo.png";
 
 const footerLinks = {
   product: [
@@ -59,9 +60,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <Cpu className="h-7 w-7 text-primary" />
-              <span className="text-xl font-bold text-primary">LightRail AI</span>
+            <Link to="/" className="flex items-center mb-4">
+              <img src={logo} alt="LightRail AI" className="h-9 w-auto" />
             </Link>
             <p className="text-muted-foreground text-sm mb-4 max-w-xs">
               Next-generation photonic computing infrastructure delivering 100x energy efficiency for AI workloads.
