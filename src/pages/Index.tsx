@@ -459,47 +459,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Roadmap Section */}
-      <section className="py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Go-To-Market Timeline
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Phased deployment strategy for enterprise adoption
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
-            {[{
-            year: "2025",
-            title: "Fabric OS & Compiler",
-            description: "Software-first approach enabling integration with existing GPU infrastructure"
-          }, {
-            year: "2026",
-            title: "Photonic Interposer Blades",
-            description: "Hardware launch with drop-in compatible accelerator modules"
-          }, {
-            year: "2027",
-            title: "Full TPU Server Production",
-            description: "Complete rack-scale systems for hyperscale deployments"
-          }].map((phase, i) => <Card key={i} className="relative group hover:shadow-xl hover:shadow-primary/20 transition-all duration-300">
-                <div className="absolute -top-4 left-6">
-                  <Badge variant="default" className="text-lg px-4 py-1">
-                    {phase.year}
-                  </Badge>
-                </div>
-                <CardHeader className="pt-8">
-                  <CardTitle className="text-xl">{phase.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">{phase.description}</CardDescription>
-                </CardContent>
-              </Card>)}
-          </div>
-        </div>
-      </section>
 
       {/* Partners Logo Strip */}
       <section className="py-16 border-y border-border">
