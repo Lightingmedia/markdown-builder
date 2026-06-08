@@ -75,7 +75,7 @@ serve(async (req) => {
           `${KAGGLE_API_BASE}/datasets/list?search=${encodeURIComponent(searchQuery)}`,
           {
             headers: {
-              Authorization: `Basic ${authHeader}`,
+              Authorization: `Basic ${authHeaderKaggle}`,
             },
           }
         );
@@ -111,7 +111,7 @@ serve(async (req) => {
           `${KAGGLE_API_BASE}/datasets/download/${datasetOwner}/${datasetName}`,
           {
             headers: {
-              Authorization: `Basic ${authHeader}`,
+              Authorization: `Basic ${authHeaderKaggle}`,
             },
           }
         );
