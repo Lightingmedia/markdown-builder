@@ -18,18 +18,47 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const url = new URL(req.url);
     const pathParts = url.pathname.split('/').filter(Boolean);
-    
+
     // Extract resource type from path: /dc-api/v1/{resource}
     const version = pathParts.find(p => p.startsWith('v')) || 'v1';
     const resourceIndex = pathParts.indexOf(version) + 1;
     const resource = pathParts[resourceIndex] || '';
     const resourceId = pathParts[resourceIndex + 1];
-    
+
     console.log(`[DC-API] ${req.method} /${version}/${resource}${resourceId ? '/' + resourceId : ''}`);
+
+    // Auth gate: telemetry POST (webhook ingest) is public — everything else requires admin.
+    const isTelemetryIngest = resource === 'telemetry' && req.method === 'POST';
+    if (!isTelemetryIngest) {
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader?.startsWith('Bearer ')) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
+      });
+      const { data: claims } = await userClient.auth.getClaims(authHeader.replace('Bearer ', ''));
+      if (!claims?.claims?.sub) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      const { data: isAdmin } = await supabase.rpc('has_role', {
+        _user_id: claims.claims.sub, _role: 'admin'
+      });
+      if (!isAdmin) {
+        return new Response(JSON.stringify({ error: 'Forbidden: admin required' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
 
     // Route: GET /dc-api - API root
     if (!resource || resource === 'dc-api') {
