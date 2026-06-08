@@ -93,7 +93,8 @@ serve(async (req) => {
       }
 
       case "get_job_runs": {
-        const { user_id, status, limit: queryLimit } = params || {};
+        // SECURITY: ignore any caller-supplied user_id; always scope to authenticated user.
+        const { status, limit: queryLimit } = params || {};
         let query = supabase
           .from("job_runs")
           .select(`
@@ -101,8 +102,8 @@ serve(async (req) => {
             accelerator:accelerator_specs(vendor, model, tdp_w),
             facility:facility_coefficients(region_code, region_name, pue, wue_l_per_kwh, grid_co2_kg_per_kwh)
           `)
-          .order("created_at", { ascending: false });
-        if (user_id) query = query.eq("user_id", user_id);
+          .order("created_at", { ascending: false })
+          .eq("user_id", callerUserId!);
         if (status) query = query.eq("status", status);
         if (queryLimit) query = query.limit(queryLimit);
         const { data, error } = await query;
