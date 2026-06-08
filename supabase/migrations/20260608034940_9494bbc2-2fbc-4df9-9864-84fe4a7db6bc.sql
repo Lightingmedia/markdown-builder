@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "Authenticated users can read dc_telemetry" ON public.dc_telemetry;
+CREATE POLICY "Admins can read dc_telemetry" ON public.dc_telemetry FOR SELECT TO authenticated USING (public.is_admin());

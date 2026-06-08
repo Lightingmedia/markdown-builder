@@ -21,12 +21,42 @@ serve(async (req) => {
   }
 
   try {
+    // Require admin auth — these actions overwrite shared reference tables.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    const { data: claims } = await userClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+    if (!claims?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { data: isAdmin } = await supabase.rpc("has_role", {
+      _user_id: claims.claims.sub, _role: "admin"
+    });
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden: admin required" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     const { action, datasetOwner, datasetName, fileName } = await req.json();
-    
+
     // Get Kaggle credentials from secrets
     const kaggleUsername = Deno.env.get("KAGGLE_USERNAME");
     const kaggleKey = Deno.env.get("KAGGLE_KEY");
-    
+
     if (!kaggleUsername || !kaggleKey) {
       return new Response(
         JSON.stringify({ error: "Kaggle credentials not configured" }),
@@ -35,12 +65,7 @@ serve(async (req) => {
     }
 
     // Create basic auth header
-    const authHeader = btoa(`${kaggleUsername}:${kaggleKey}`);
-    
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const authHeaderKaggle = btoa(`${kaggleUsername}:${kaggleKey}`);
 
     switch (action) {
       case "list_datasets": {
@@ -50,7 +75,7 @@ serve(async (req) => {
           `${KAGGLE_API_BASE}/datasets/list?search=${encodeURIComponent(searchQuery)}`,
           {
             headers: {
-              Authorization: `Basic ${authHeader}`,
+              Authorization: `Basic ${authHeaderKaggle}`,
             },
           }
         );
@@ -86,7 +111,7 @@ serve(async (req) => {
           `${KAGGLE_API_BASE}/datasets/download/${datasetOwner}/${datasetName}`,
           {
             headers: {
-              Authorization: `Basic ${authHeader}`,
+              Authorization: `Basic ${authHeaderKaggle}`,
             },
           }
         );
