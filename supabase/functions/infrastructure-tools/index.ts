@@ -44,6 +44,7 @@ serve(async (req) => {
       callerUserId = claims.claims.sub as string;
     }
 
+    let result: unknown;
     switch (tool) {
       case "lookup_accelerator_specs": {
         const { vendor, model } = params || {};
