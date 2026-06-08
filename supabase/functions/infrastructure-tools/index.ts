@@ -14,12 +14,35 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { tool, params } = await req.json();
-    console.log(`Infrastructure tool called: ${tool}`, params);
+    console.log(`Infrastructure tool called: ${tool}`);
 
-    let result: unknown;
+    // Tools that read user-scoped data require authentication.
+    const USER_SCOPED_TOOLS = new Set(["get_job_runs"]);
+    let callerUserId: string | null = null;
+    if (USER_SCOPED_TOOLS.has(tool)) {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Authentication required" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
+      });
+      const { data: claims } = await userClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+      if (!claims?.claims?.sub) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      callerUserId = claims.claims.sub as string;
+    }
 
     switch (tool) {
       case "lookup_accelerator_specs": {
