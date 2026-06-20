@@ -5,7 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Zap, TrendingDown, Gauge, Activity, Cpu, Server, Layers, Thermometer, CheckCircle2, Users, Download, Calendar, Cloud } from "lucide-react";
 import { useInView } from "react-intersection-observer";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 
 import chipsetCrossSection from "@/assets/photonic-ai-rack.png";
