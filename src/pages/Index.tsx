@@ -14,7 +14,6 @@ import logoTechscale from "@/assets/logo-techscale.png";
 import logoDataflow from "@/assets/logo-dataflow.png";
 import logoGreentech from "@/assets/logo-greentech.png";
 import logoNexus from "@/assets/logo-nexus.png";
-import AnimatedBackground from "@/components/AnimatedBackground";
 import ContactFormDialog from "@/components/ContactFormDialog";
 import SEO from "@/components/SEO";
 import Navigation from "@/components/Navigation";
@@ -55,17 +54,6 @@ const Index = () => {
     threshold: 0.2
   });
 
-
-  const [scrollY, setScrollY] = useState(0);
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-    window.addEventListener('scroll', handleScroll, {
-      passive: true
-    });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
   return <div className="min-h-screen bg-background">
       <SEO 
         title="Photonic Computing Infrastructure for AI - 100x Energy Efficiency"
@@ -77,16 +65,6 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-        <div className="absolute inset-0 z-0">
-          <img src={heroChipset} alt="Silicon photonic chipset with glowing light paths" className="w-full h-full object-cover opacity-40" style={{
-          transform: `translateY(${scrollY * 0.5}px)`
-        }} />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
-        </div>
-        
-        {/* Animated particles overlay */}
-        <AnimatedBackground />
-        
         <div className="relative z-10 container mx-auto px-4 py-32 text-center">
           <Badge variant="default" className="mb-6 px-4 py-2 text-sm">
             Next-Generation Infrastructure
