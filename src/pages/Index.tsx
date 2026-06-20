@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowRight, Zap, TrendingDown, Gauge, Activity, Cpu, Server, Layers, Thermometer, CheckCircle2, Users, Download, Calendar, Cloud } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import { useState, useEffect } from "react";
-import heroChipset from "@/assets/LightRail_form_factor.png";
+
 
 import chipsetCrossSection from "@/assets/photonic-ai-rack.png";
 import dataCenter from "@/assets/data-center.jpg";
