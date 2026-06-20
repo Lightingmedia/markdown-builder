@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowRight, Zap, TrendingDown, Gauge, Activity, Cpu, Server, Layers, Thermometer, CheckCircle2, Users, Download, Calendar, Cloud } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import { useState } from "react";
-
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 import chipsetCrossSection from "@/assets/photonic-ai-rack.png";
 import dataCenter from "@/assets/data-center.jpg";
@@ -65,6 +65,7 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+        <AnimatedBackground />
         <div className="relative z-10 container mx-auto px-4 py-32 text-center">
           <Badge variant="default" className="mb-6 px-4 py-2 text-sm">
             Next-Generation Infrastructure
