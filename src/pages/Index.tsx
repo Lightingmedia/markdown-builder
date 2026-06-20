@@ -65,6 +65,7 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+        <AnimatedBackground />
         <div className="relative z-10 container mx-auto px-4 py-32 text-center">
           <Badge variant="default" className="mb-6 px-4 py-2 text-sm">
             Next-Generation Infrastructure
