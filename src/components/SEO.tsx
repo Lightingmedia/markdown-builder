@@ -16,7 +16,7 @@ export default function SEO({
   structuredData,
 }: SEOProps) {
   const fullTitle = `${title} | LightRail AI`;
-  const baseUrl = "https://lightrail.ai";
+  const baseUrl = "https://lightrailabs.ai";
 
   return (
     <Helmet>
