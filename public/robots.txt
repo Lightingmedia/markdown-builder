@@ -12,3 +12,10 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /monitor
+Disallow: /pcb-copilot
+Disallow: /lightos
+Disallow: /dcim
+Disallow: /llm-tools
+
+Sitemap: https://lightrailabs.ai/sitemap.xml
