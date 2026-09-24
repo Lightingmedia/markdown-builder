@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Linkedin, Twitter, Github, Mail, MapPin } from "lucide-react";
+import { Linkedin, Twitter, Github, Instagram, Mail, MapPin } from "lucide-react";
 import logo from "@/assets/lightrail-logo.png";
 
 const footerLinks = {
@@ -22,8 +22,9 @@ const footerLinks = {
 };
 
 const socialLinks = [
+  { icon: Linkedin, href: "https://www.linkedin.com/company/110890668", label: "LinkedIn" },
+  { icon: Instagram, href: "https://www.instagram.com/lightrail.ai/", label: "Instagram" },
   { icon: Twitter, href: "https://twitter.com/lightrailai", label: "Twitter" },
-  { icon: Linkedin, href: "https://linkedin.com/company/lightrailai", label: "LinkedIn" },
   { icon: Github, href: "https://github.com/lightrailai", label: "GitHub" },
 ];
 
