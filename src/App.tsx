@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import BenchmarkPublic from "./pages/BenchmarkPublic";
 import CaseStudies from "./pages/CaseStudies";
+import LaunchEvent from "./pages/LaunchEvent";
 import FeoaAuth from "./pages/feoa/Auth";
 import FeoaLayout from "./components/feoa/FeoaLayout";
 import FeoaDashboard from "./pages/feoa/Dashboard";
@@ -77,7 +78,8 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/benchmark" element={<BenchmarkPublic />} />
             <Route path="/case-studies" element={<CaseStudies />} />
-            
+            <Route path="/launch" element={<LaunchEvent />} />
+
             {/* FEOA Routes */}
             <Route path="/monitor/auth" element={<FeoaAuth />} />
             <Route path="/monitor" element={<FeoaLayout />}>
