@@ -19,7 +19,7 @@ import {
 
 const REGISTER_URL = "https://luma.com/rtlnnxg4";
 const WEBSITE_URL = "https://lightrailabs.ai";
-const LINKEDIN_URL = "https://www.linkedin.com/company/lightrail-ai";
+const LINKEDIN_URL = "https://www.linkedin.com/company/110890668";
 const INSTAGRAM_URL = "https://www.instagram.com/lightrail.ai/";
 
 const launchStructuredData = {
