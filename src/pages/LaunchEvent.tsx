@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import formFactor from "@/assets/LightRail_form_factor.png";
 import {
   MapPin,
   Calendar,
@@ -391,7 +392,7 @@ function About() {
           <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-primary/25 via-transparent to-secondary/25 blur-2xl" />
           <figure className="relative overflow-hidden rounded-2xl border border-primary/30 shadow-[0_0_32px_rgba(29,201,168,0.3)]">
             <img
-              src="/LightRail_form_factor.png"
+              src={formFactor}
               alt="LightRail AI photonic computing form factor"
               className="w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
               loading="lazy"
