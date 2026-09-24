@@ -11,6 +11,7 @@ import Pricing from "./pages/Pricing";
 import BenchmarkPublic from "./pages/BenchmarkPublic";
 import CaseStudies from "./pages/CaseStudies";
 import LaunchEvent from "./pages/LaunchEvent";
+import Events from "./pages/Events";
 import FeoaAuth from "./pages/feoa/Auth";
 import FeoaLayout from "./components/feoa/FeoaLayout";
 import FeoaDashboard from "./pages/feoa/Dashboard";
