@@ -12,6 +12,7 @@ interface NavigationProps {
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/case-studies", label: "Case Studies" },
+  { href: "/launch", label: "Launch Event" },
   { href: "/monitor", label: "Portal" },
   { href: "/benchmark", label: "Benchmark" },
   { href: "/pricing", label: "Pricing" },
