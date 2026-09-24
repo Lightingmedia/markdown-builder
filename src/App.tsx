@@ -80,6 +80,7 @@ const App = () => (
             <Route path="/benchmark" element={<BenchmarkPublic />} />
             <Route path="/case-studies" element={<CaseStudies />} />
             <Route path="/launch" element={<LaunchEvent />} />
+            <Route path="/events" element={<Events />} />
 
             {/* FEOA Routes */}
             <Route path="/monitor/auth" element={<FeoaAuth />} />
