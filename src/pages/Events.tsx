@@ -5,22 +5,9 @@ const REGISTER_URL = "https://luma.com/rtlnnxg4";
 export default function Events() {
   return (
     <main style={{ paddingTop: "4rem" }} className="bg-background">
-      <div className="flex flex-wrap items-center justify-center gap-3 border-b border-border bg-card px-4 py-3 text-center">
-        <span className="text-foreground font-medium">
-          Photonic Computing — LightRail AI Pre-Launch Event · Oct 2, 2026 · Oakland
-        </span>
-        <a
-          href={REGISTER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground hover:opacity-90"
-        >
-          Register on Luma <ExternalLink className="h-4 w-4" />
-        </a>
-      </div>
       <iframe
         src="https://lightrail-visionary-glow.lovable.app"
-        style={{ width: "100%", height: "calc(100vh - 8rem)", border: 0, display: "block" }}
+        style={{ width: "100%", height: "calc(100vh - 4rem)", border: 0, display: "block" }}
         title="LightRail AI Event"
         loading="lazy"
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation allow-forms"
@@ -51,7 +38,7 @@ export default function Events() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground hover:opacity-90"
             >
-              Register <ExternalLink className="h-4 w-4" />
+              Register on Luma <ExternalLink className="h-4 w-4" />
             </a>
           </div>
         </div>
