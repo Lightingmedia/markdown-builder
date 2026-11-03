@@ -341,7 +341,6 @@ const Index = () => {
           }, {
             q: "How do I start a pilot?",
             a: "Request a demo or email hello@lightrailabs.ai. We will scope a pilot on one of your clusters and agree the measurement plan up front."
-          }].map((faq, i) =>
           }].map((faq, i) => <AccordionItem key={i} value={`item-${i}`} className="border-2 border-border rounded-lg px-6">
                 <AccordionTrigger className="text-left text-lg font-semibold hover:no-underline">
                   {faq.q}
