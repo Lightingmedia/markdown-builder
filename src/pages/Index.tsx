@@ -126,7 +126,7 @@ const Index = () => {
               <div className="font-bold">Coherent Optical Blade</div>
               <div className={`${mono} text-muted-foreground mt-1`}>3D monolithic transceiver array bonded to compute cores</div>
             </div>
-            <img src={blade} alt="LightRail AI coherent optical blade" className="w-full h-[460px] object-contain p-8" />
+            <img src={blade} alt="LightRail AI coherent optical blade" className="w-full h-[520px] object-contain px-8 pb-8 pt-36 md:pt-8 md:pl-80" />
             <div className="grid grid-cols-2 md:grid-cols-4 border-t border-border/60">
               {[
                 ["Node Bandwidth", "12.8", "Tbps Full Duplex"],
