@@ -1,405 +1,193 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Input } from "@/components/ui/input";
-import { ArrowRight, Zap, TrendingDown, Gauge, Activity, Cpu, Server, Layers, Thermometer, CheckCircle2, Users, Download, Calendar, Cloud } from "lucide-react";
-import { useInView } from "react-intersection-observer";
 import { useState } from "react";
-import AnimatedBackground from "@/components/AnimatedBackground";
-
-import chipsetCrossSection from "@/assets/photonic-ai-rack.png";
-import dataCenter from "@/assets/data-center.jpg";
-import logoTechscale from "@/assets/logo-techscale.png";
-import logoDataflow from "@/assets/logo-dataflow.png";
-import logoGreentech from "@/assets/logo-greentech.png";
-import logoNexus from "@/assets/logo-nexus.png";
-import ContactFormDialog from "@/components/ContactFormDialog";
+import { Link } from "react-router-dom";
+import { Menu, X, Zap, Gauge, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import SEO from "@/components/SEO";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import ContactFormDialog from "@/components/ContactFormDialog";
 import BackToTop from "@/components/BackToTop";
-import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 import PhotonicShowcase from "@/components/home/PhotonicShowcase";
+import blade from "@/assets/LightRail_form_factor.png";
+import campus from "@/assets/data-center.jpg";
+import logo from "@/assets/lightrail-logo.png";
 
-const homeStructuredData = {
+const navLinks = [
+  { href: "/case-studies", label: "Case Studies" },
+  { href: "/launch", label: "Launch Event" },
+  { href: "/monitor", label: "Portal" },
+  { href: "/benchmark", label: "Benchmark" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/llm-tools", label: "LLM Dev Tools" },
+  { href: "/events", label: "Events" },
+];
+
+const mono = "font-mono text-[10px] uppercase tracking-[0.2em]";
+
+const structuredData = {
   "@context": "https://schema.org",
-  "@type": "Product",
-  "name": "LightRail AI Photonic Computing Infrastructure",
-  "description": "Silicon photonic chipsets and TPU server racks delivering 100x energy efficiency for AI workloads with zero water usage.",
-  "brand": {
-    "@type": "Brand",
-    "name": "LightRail AI"
-  },
-  "offers": {
-    "@type": "AggregateOffer",
-    "priceCurrency": "USD",
-    "availability": "https://schema.org/InStock"
-  }
+  "@type": "Organization",
+  name: "LightRail AI",
+  url: "https://lightrailabs.ai",
+  email: "hello@lightrailabs.ai",
 };
 
 const Index = () => {
-  const [contactDialogOpen, setContactDialogOpen] = useState(false);
-  const {
-    ref: chipsetRef,
-    inView: chipsetInView
-  } = useInView({
-    triggerOnce: true,
-    threshold: 0.2
-  });
-  const {
-    ref: dataCenterRef,
-    inView: dataCenterInView
-  } = useInView({
-    triggerOnce: true,
-    threshold: 0.2
-  });
+  const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const contact = () => setOpen(true);
 
-  return <div className="min-h-screen bg-background">
-      <SEO 
+  const campusSection = (
+    <section className="py-24">
+      <div className="container mx-auto px-4">
+        <div className={`${mono} text-primary mb-4 flex items-center gap-2`}><span className="h-2 w-2 bg-primary" />Campus Validation & High-Density Deployment</div>
+        <h2 className="text-4xl md:text-5xl font-bold uppercase tracking-tight mb-4">Facility A-01: 120MW Photonic Campus</h2>
+        <p className="text-lg text-muted-foreground max-w-2xl mb-10">
+          Purpose-built hyperscale facility running production optical clusters. Zero electrical interconnect bottlenecks delivering unprecedented MW-to-FLOPS density.
+        </p>
+        <div className="relative border border-border/60 overflow-hidden">
+          <img src={campus} alt="LightRail AI photonic campus" className="w-full h-[420px] object-cover opacity-60" loading="lazy" />
+          <div className={`absolute top-4 right-4 ${mono} border border-primary/60 bg-background/80 px-3 py-1 text-primary`}>LightRail Hyperscale North Campus // PH-1</div>
+          <div className="absolute inset-x-0 bottom-0 grid md:grid-cols-3 gap-4 p-4">
+            {[
+              { icon: Zap, tag: "Co-located Power", v: "120 MW", t: "Dedicated on-site optical substations feeding high-density modular data halls." },
+              { icon: Gauge, tag: "Cooling Efficiency", v: "PUE 1.08", t: "Direct photonic die liquid cooling minimising chiller pump parasitic overhead." },
+              { icon: Activity, tag: "Multi-Hall Latency", v: "< 0.8 µs", t: "Rack-to-rack optical link delays equivalent to single-motherboard PCIe distances." },
+            ].map((c) => (
+              <div key={c.tag} className="bg-background/85 backdrop-blur border border-border/60 p-5">
+                <div className="flex justify-between mb-2"><span className={`${mono} text-muted-foreground`}>{c.tag}</span><c.icon className="h-4 w-4 text-primary" /></div>
+                <div className="text-3xl font-bold text-primary mb-2">{c.v}</div>
+                <p className="text-sm text-muted-foreground">{c.t}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <SEO
         title="LightRail AI | AI workload placement and interconnect efficiency"
         description="Fabric OS runs on GPU clusters you already have. It intercepts All-Reduce and reroutes it across the cluster fabric. Efficiency is measured per cluster during the pilot."
         canonical="/"
-        structuredData={homeStructuredData}
+        structuredData={structuredData}
       />
-      <Navigation onGetStarted={() => setContactDialogOpen(true)} />
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-        <AnimatedBackground />
-        <div className="relative z-10 container mx-auto px-4 py-32 text-center">
-          <Badge variant="default" className="mb-6 px-4 py-2 text-sm">
-            Next-Generation Infrastructure
-          </Badge>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
-            Photonic Computing
-            <br />
-            <span className="text-primary">Infrastructure for AI</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-            Fabric OS runs on GPU clusters you already have. It intercepts All-Reduce and reroutes it across the cluster fabric. Efficiency is measured per cluster during the pilot.
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <Button size="lg" className="group" onClick={() => setContactDialogOpen(true)}>
-              Get Started
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => setContactDialogOpen(true)}>
-              Request Demo
-            </Button>
+      {/* Header */}
+      <header className="fixed top-0 inset-x-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur">
+        <div className="container mx-auto px-4 h-14 flex items-center justify-between gap-4">
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logo} alt="LightRail AI" className="h-7" />
+          </Link>
+          <nav className="hidden lg:flex items-center gap-6">
+            {navLinks.map((l) => (
+              <Link key={l.href} to={l.href} className={`${mono} text-muted-foreground hover:text-primary transition-colors`}>{l.label}</Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-3">
+            <span className={`hidden md:flex items-center gap-2 ${mono} text-muted-foreground`}><span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />Sys Online</span>
+            <Button size="sm" className={mono} onClick={contact}>Request Specs</Button>
+            <button className="lg:hidden" onClick={() => setMenu(!menu)} aria-label="Toggle menu">{menu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</button>
           </div>
-
-          {/* Value Proposition Boxes */}
         </div>
-      </section>
+        {menu && (
+          <nav className="lg:hidden border-t border-border/60 px-4 py-3 flex flex-col gap-3 bg-background">
+            {navLinks.map((l) => (
+              <Link key={l.href} to={l.href} onClick={() => setMenu(false)} className={`${mono} text-muted-foreground`}>{l.label}</Link>
+            ))}
+          </nav>
+        )}
+      </header>
 
-
-      <PhotonicShowcase onContact={() => setContactDialogOpen(true)} />
-
-      {/* Chipset Technology Section */}
-      <section id="features" className="py-24 bg-muted/30">
+      {/* Hero */}
+      <section className="pt-28 pb-16">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Silicon Photonic Chipset Architecture
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Breakthrough integration of photonic technology with traditional silicon processing
-            </p>
+          <div className={`inline-flex items-center gap-2 ${mono} border border-primary/50 text-primary px-3 py-1 mb-8`}>
+            <span className="h-1.5 w-1.5 bg-primary" />Silicon Photonics Architecture Live // Rev 3.1
+          </div>
+          <div className="grid lg:grid-cols-[3fr_2fr] gap-10 items-end mb-12">
+            <div>
+              <h1 className="text-5xl md:text-7xl font-bold uppercase tracking-tight leading-[0.95] mb-6">
+                Photonic-speed AI compute built for <span className="text-primary">next-gen models</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
+                Fabric OS runs on GPU clusters you already have. It intercepts All-Reduce and reroutes it across the cluster fabric. Efficiency is measured per cluster during the pilot.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3">
+              <Button size="lg" className={mono} onClick={contact}>Explore Architecture →</Button>
+              <Button size="lg" variant="outline" className={mono} asChild><Link to="/benchmark">View Benchmarks</Link></Button>
+            </div>
           </div>
 
-
-          <div className="grid lg:grid-cols-2 gap-12 items-stretch">
-            <div ref={chipsetRef} className="relative group overflow-hidden rounded-xl flex items-center justify-center">
-              {/* Animated light beams overlay */}
-              <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-                <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse opacity-60" style={{
-                top: '20%',
-                animation: 'slideRight 3s ease-in-out infinite'
-              }} />
-                <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-50" style={{
-                top: '50%',
-                animation: 'slideRight 4s ease-in-out infinite 0.5s'
-              }} />
-                <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse opacity-40" style={{
-                top: '75%',
-                animation: 'slideRight 3.5s ease-in-out infinite 1s'
-              }} />
-                <div className="absolute h-full w-0.5 bg-gradient-to-b from-transparent via-primary to-transparent opacity-50" style={{
-                left: '30%',
-                animation: 'slideDown 4s ease-in-out infinite'
-              }} />
-                <div className="absolute h-full w-1 bg-gradient-to-b from-transparent via-secondary to-transparent opacity-40" style={{
-                left: '70%',
-                animation: 'slideDown 3s ease-in-out infinite 0.7s'
-              }} />
-                <div className="absolute w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" style={{
-                animation: 'floatParticle1 5s ease-in-out infinite'
-              }} />
-                <div className="absolute w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_8px_hsl(var(--secondary))]" style={{
-                animation: 'floatParticle2 4s ease-in-out infinite 1s'
-              }} />
-                <div className="absolute w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_12px_hsl(var(--primary))]" style={{
-                animation: 'floatParticle3 6s ease-in-out infinite 2s'
-              }} />
-              </div>
-              <img alt="The Photonic AI Rack - Architecture of the Next-Gen Data Center" className="rounded-xl shadow-2xl shadow-primary/20 transition-transform duration-500 group-hover:scale-105 max-h-full w-auto mx-auto object-contain" src={chipsetCrossSection} />
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-secondary/10 rounded-xl pointer-events-none" />
+          <div className="relative border border-border/60 bg-card/40 overflow-hidden">
+            <div className="absolute top-4 left-4 z-10 bg-background/85 border border-border/60 p-4 max-w-xs">
+              <div className={`${mono} text-muted-foreground mb-1`}>LR1 Reticle // X-003 <span className="text-primary ml-2">● Online</span></div>
+              <div className="font-bold">Coherent Optical Blade</div>
+              <div className={`${mono} text-muted-foreground mt-1`}>3D monolithic transceiver array bonded to compute cores</div>
             </div>
-
-            <div className="space-y-6">
-
-              {/* Photonic Linear Algebra Engine */}
-              <Card className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <Cpu className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
-                    Photonic Linear Algebra Engine
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">Hardware-accelerated matrix operations using light, delivering computational efficiency for AI workloads.</CardDescription>
-                </CardContent>
-              </Card>
-
-              {/* Integrated Photonic Mesh */}
-              <Card className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <Layers className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
-                    Integrated Photonic Mesh
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">Revolutionary interconnect technology reducing latency and power consumption while increasing bandwidth.</CardDescription>
-                </CardContent>
-              </Card>
-
-              {/* Thermal Efficient Design */}
-              <Card className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <Thermometer className="h-6 w-6 text-primary group-hover:text-secondary transition-colors" />
-                    Thermal Efficient Design
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">Optical signal processing generates minimal heat compared to electronic alternatives, dramatically reducing cooling requirements.</CardDescription>
-                </CardContent>
-              </Card>
-
-              {/* Value Proposition Boxes */}
-              <div className="grid grid-cols-2 gap-4 min-h-[220px]">
-                <div className="relative group h-full px-6 py-6 rounded-xl border border-primary/30 bg-primary/5 backdrop-blur-sm hover:border-primary/60 transition-all duration-300 cursor-default flex flex-col justify-between">
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative flex items-center gap-2 mb-6">
-                    <Zap className="h-5 w-5 text-primary shrink-0" />
-                    <span className="text-sm md:text-base font-semibold text-foreground">Slashing AI Power Usage</span>
-                  </div>
+            <img src={blade} alt="LightRail AI coherent optical blade" className="w-full h-[520px] object-contain px-8 pb-8 pt-36 md:pt-8 md:pl-80" />
+            <div className="grid grid-cols-2 md:grid-cols-4 border-t border-border/60">
+              {[
+                ["Node Bandwidth", "12.8", "Tbps Full Duplex"],
+                ["Thermal Flux", "-75%", "vs Copper Base"],
+                ["Optical Link", "ACTIVE", "0.1µs Latency"],
+                ["Fabric Integrity", "99.999%", "BER < 10⁻¹⁵"],
+              ].map(([t, v, s]) => (
+                <div key={t} className="p-5 border-r border-border/60 last:border-r-0">
+                  <div className={`${mono} text-muted-foreground mb-2`}>{t}</div>
+                  <div className="text-3xl font-bold text-primary">{v}</div>
+                  <div className={`${mono} text-muted-foreground mt-1`}>{s}</div>
                 </div>
-                <div className="relative group h-full px-6 py-6 rounded-xl border border-secondary/30 bg-secondary/5 backdrop-blur-sm hover:border-secondary/60 transition-all duration-300 cursor-default flex flex-col justify-between">
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative flex items-center gap-2 mb-6">
-                    <TrendingDown className="h-5 w-5 text-secondary shrink-0" />
-                    <span className="text-sm md:text-base font-semibold text-foreground">Decreasing TCO</span>
-                  </div>
-                </div>
-              </div>
-
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Server Rack Solution Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Full-Stack <span className="text-primary">NCE Server Racks</span>
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Hardware roadmap. Specifications in qualification.
-            </p>
+      <PhotonicShowcase onContact={contact} middle={campusSection} />
+
+      {/* Footer */}
+      <footer className="border-t border-border/60 py-14">
+        <div className="container mx-auto px-4 grid md:grid-cols-5 gap-8">
+          <div className="md:col-span-1">
+            <img src={logo} alt="LightRail AI" className="h-7 mb-4" />
+            <p className="text-sm text-muted-foreground mb-3">High-throughput electro-photonic neural accelerators and silicon-substrate optical interconnect fabrics.</p>
+            <a href="mailto:hello@lightrailabs.ai" className="text-sm text-primary">hello@lightrailabs.ai</a>
+            <p className="text-sm text-muted-foreground mt-2">LightRail AI Labs, pre-seed, raising $15M.</p>
           </div>
-        </div>
-      </section>
-
-
-      {/* Use Cases Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Powering the Future of <span className="text-primary">AI</span>
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Deployed across industries and applications
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[{
-            title: "Large Language Models",
-            description: "Training and inference at unprecedented efficiency",
-            icon: Cpu
-          }, {
-            title: "Data Center Optimization",
-            description: "Upgrade existing infrastructure with photonic acceleration",
-            icon: Server
-          }, {
-            title: "Edge AI Deployment",
-            description: "Distributed computing with minimal power footprint",
-            icon: Activity
-          }, {
-            title: "Climate-Conscious Computing",
-            description: "Sustainable AI infrastructure for the future",
-            icon: TrendingDown
-          }].map((useCase, i) => <Card key={i} className="group hover:shadow-xl hover:shadow-secondary/20 transition-all duration-300 hover:-translate-y-1 border-2 hover:border-secondary/50">
-                <CardHeader>
-                  <useCase.icon className="h-12 w-12 text-secondary mb-2 group-hover:scale-110 transition-transform" />
-                  <CardTitle className="text-xl">{useCase.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base mb-3">{useCase.description}</CardDescription>
-                  <Button variant="link" className="p-0 h-auto text-primary">
-                    Learn More <ArrowRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </CardContent>
-              </Card>)}
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose LightRail Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Why Choose <span className="text-primary">LightRail AI</span>?
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {["Enterprise-grade reliability", "Expert support team"].map((feature, i) => <div key={i} className="flex items-start gap-3 p-6 rounded-lg border-2 border-border hover:border-primary/50 transition-colors">
-                <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
-                <span className="text-lg">{feature}</span>
-              </div>)}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Flexible Deployment Options
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Software license, tiered monthly
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {[{ title: "Free", price: "$0", note: "1 GPU" }, { title: "Starter", price: "$49", note: "per month" }, { title: "Pro", price: "$149", note: "per month", featured: true }, { title: "Enterprise", price: "$499", note: "per month" }].map((tier, i) => <Card key={i} className={`${tier.featured ? 'border-primary border-4 shadow-xl shadow-primary/20' : 'border-2'} transition-all duration-300`}>
-                <CardHeader>
-                  <CardTitle className="text-2xl">{tier.title}</CardTitle>
-                  <CardDescription className="text-base">Software license</CardDescription>
-                  <div className="text-3xl font-bold mt-4">{tier.price}<span className="text-base font-normal text-muted-foreground ml-2">{tier.note}</span></div>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full" variant={tier.featured ? "default" : "outline"} onClick={() => setContactDialogOpen(true)}>
-                    Get Started
-                  </Button>
-                </CardContent>
-              </Card>)}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Frequently Asked Questions
-            </h2>
-          </div>
-
-          <Accordion type="single" collapsible className="space-y-4">
-            {[{
-            q: "What is Fabric OS?",
-            a: "Fabric OS is a software layer that runs on GPU clusters you already have. It intercepts All-Reduce collective operations and reroutes them across the cluster fabric."
-          }, {
-            q: "Do I need new hardware?",
-            a: "No. Fabric OS runs on your existing GPU clusters. Our photonic hardware is on the roadmap, with specifications in qualification."
-          }, {
-            q: "How is efficiency measured?",
-            a: "Efficiency is measured per cluster during the pilot, against your own baseline workloads. We do not quote generic figures before measurement."
-          }, {
-            q: "How is Fabric OS priced?",
-            a: "Fabric OS is a software license, tiered monthly: Free (1 GPU), Starter $49, Pro $149 and Enterprise $499."
-          }, {
-            q: "How do I start a pilot?",
-            a: "Request a demo or email hello@lightrailabs.ai. We will scope a pilot on one of your clusters and agree the measurement plan up front."
-          }].map((faq, i) => <AccordionItem key={i} value={`item-${i}`} className="border-2 border-border rounded-lg px-6">
-                <AccordionTrigger className="text-left text-lg font-semibold hover:no-underline">
-                  {faq.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-base text-muted-foreground">
-                  {faq.a}
-                </AccordionContent>
-              </AccordionItem>)}
-          </Accordion>
-        </div>
-      </section>
-
-      {/* Contact CTA Section */}
-      <section id="contact" className="py-24 bg-muted/30 relative overflow-hidden">
-        <div ref={dataCenterRef} className="absolute inset-0 opacity-20">
-          <img src={dataCenter} alt="Data center infrastructure" className={`w-full h-full object-cover transition-all duration-1000 ${dataCenterInView ? 'opacity-20 scale-100' : 'opacity-0 scale-110'}`} />
-        </div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Transform Your AI Infrastructure?
-            </h2>
-            <p className="text-xl text-muted-foreground mb-8">
-              Join leading organizations leveraging photonic computing for next-generation AI workloads
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button size="lg" className="text-lg" onClick={() => setContactDialogOpen(true)}>
-                <Calendar className="mr-2 h-5 w-5" />
-                Schedule a Demo
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg" onClick={() => setContactDialogOpen(true)}>
-                <Download className="mr-2 h-5 w-5" />
-                Get Started
-              </Button>
+          {[
+            ["Product", [["Pricing", "/pricing"], ["Benchmark", "/benchmark"], ["LLM Dev Tools", "/llm-tools"]]],
+            ["Company", [["Case Studies", "/case-studies"], ["Launch Event", "/launch"], ["Events", "/events"]]],
+            ["Platform", [["Portal", "/monitor"]]],
+            ["Connect", [["LinkedIn", "https://www.linkedin.com/company/110890668"], ["Instagram", "https://www.instagram.com/lightrail.ai/"]]],
+          ].map(([h, items]) => (
+            <div key={h as string}>
+              <div className={`${mono} text-primary mb-4`}>{h as string}</div>
+              <ul className="space-y-2">
+                {(items as string[][]).map(([l, href]) => (
+                  <li key={l}>
+                    {href.startsWith("http") ? (
+                      <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary">{l}</a>
+                    ) : (
+                      <Link to={href} className="text-sm text-muted-foreground hover:text-primary">{l}</Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
             </div>
-
-            <Card className="max-w-md mx-auto">
-              <CardHeader>
-                <CardTitle>Stay Updated</CardTitle>
-                <CardDescription>Get the latest news on photonic computing</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2">
-                  <Input type="email" placeholder="Enter your email" />
-                  <Button>Subscribe</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          ))}
         </div>
-      </section>
+        <div className={`container mx-auto px-4 mt-10 pt-6 border-t border-border/60 flex flex-wrap justify-between gap-2 ${mono} text-muted-foreground`}>
+          <span>Photonic Cluster 0.4 // Latency: 0.1µs/hop</span>
+          <span>© 2026 LightRail AI Labs. All rights reserved.</span>
+        </div>
+      </footer>
 
-      <Footer />
+      <ContactFormDialog open={open} onOpenChange={setOpen} />
       <BackToTop />
-
-      <ContactFormDialog open={contactDialogOpen} onOpenChange={setContactDialogOpen} />
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

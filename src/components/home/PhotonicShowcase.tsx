@@ -31,7 +31,7 @@ const rows = [
   { metric: "Scaling Bottleneck", legacy: "Parasitic Capacitance & Attenuation", lr: "Zero Dispersion Optical Routing", delta: "Linear O(1)" },
 ];
 
-const PhotonicShowcase = ({ onContact }: { onContact: () => void }) => {
+const PhotonicShowcase = ({ onContact, middle }: { onContact: () => void; middle?: React.ReactNode }) => {
   const [active, setActive] = useState(0);
   const [email, setEmail] = useState("");
 
@@ -112,6 +112,8 @@ const PhotonicShowcase = ({ onContact }: { onContact: () => void }) => {
           </div>
         </div>
       </section>
+
+      {middle}
 
       {/* Comparison */}
       <section className="py-24 bg-muted/20">
