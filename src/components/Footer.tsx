@@ -125,8 +125,8 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4 text-primary" />
-                <a href="mailto:contact@lightrail.ai" className="hover:text-primary transition-colors">
-                  contact@lightrail.ai
+                <a href="mailto:hello@lightrailabs.ai" className="hover:text-primary transition-colors">
+                  hello@lightrailabs.ai
                 </a>
               </li>
               <li className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -141,6 +141,7 @@ export default function Footer() {
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} LightRail AI. All rights reserved.
+            <span className="block mt-1">LightRail AI Labs, pre-seed, raising $15M.</span>
           </p>
           <div className="flex items-center gap-6">
             <a
