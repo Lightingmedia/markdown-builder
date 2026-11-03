@@ -15,7 +15,7 @@ export default function SEO({
   type = "website",
   structuredData,
 }: SEOProps) {
-  const fullTitle = `${title} | LightRail AI`;
+  const fullTitle = title.includes("LightRail AI") ? title : `${title} | LightRail AI`;
   const baseUrl = "https://lightrailabs.ai";
 
   return (

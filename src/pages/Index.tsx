@@ -56,8 +56,8 @@ const Index = () => {
 
   return <div className="min-h-screen bg-background">
       <SEO 
-        title="Photonic Computing Infrastructure for AI - 100x Energy Efficiency"
-        description="LightRail AI delivers next-generation photonic computing infrastructure with 100x energy efficiency and zero water usage. Transform AI data centers with silicon photonics technology."
+        title="LightRail AI | AI workload placement and interconnect efficiency"
+        description="Fabric OS runs on GPU clusters you already have. It intercepts All-Reduce and reroutes it across the cluster fabric. Efficiency is measured per cluster during the pilot."
         canonical="/"
         structuredData={homeStructuredData}
       />
@@ -76,11 +76,7 @@ const Index = () => {
             <span className="text-primary">Infrastructure for AI</span>
           </h1>
           <p className="text-xl md:text-2xl text-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-            Traditional AI data centers consume massive amounts of electricity and water for cooling—
-            a single ChatGPT query uses enough energy to power a home for hours and requires bottles of water. 
-            <span className="block mt-4 text-primary font-semibold">
-              Our photonic computing eliminates these issues with 100x energy efficiency and zero water usage.
-            </span>
+            Fabric OS runs on GPU clusters you already have. It intercepts All-Reduce and reroutes it across the cluster fabric. Efficiency is measured per cluster during the pilot.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Button size="lg" className="group" onClick={() => setContactDialogOpen(true)}>
@@ -150,23 +146,6 @@ const Index = () => {
             </div>
 
             <div className="space-y-6">
-              {/* Stats: 2-3x Performance per Watt & 60% CO₂ Reduction */}
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
-                  <CardContent className="pt-5 pb-4 text-center">
-                    <Zap className="h-8 w-8 text-primary mb-2 mx-auto" />
-                    <div className="text-3xl font-bold text-primary">2-3x</div>
-                    <div className="text-sm text-muted-foreground">Performance per Watt</div>
-                  </CardContent>
-                </Card>
-                <Card className="group hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 border-2 hover:border-primary/50">
-                  <CardContent className="pt-5 pb-4 text-center">
-                    <TrendingDown className="h-8 w-8 text-primary mb-2 mx-auto" />
-                    <div className="text-3xl font-bold text-primary">60%</div>
-                    <div className="text-sm text-muted-foreground">CO₂ Reduction</div>
-                  </CardContent>
-                </Card>
-              </div>
 
               {/* Photonic Linear Algebra Engine */}
               <Card className="group hover:shadow-md hover:shadow-secondary/20 transition-all duration-300 border-l-4 border-l-primary hover:border-l-secondary">
@@ -177,7 +156,7 @@ const Index = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-base">Hardware-accelerated matrix operations using light, delivering unprecedented computational efficiency for AI workloads.</CardDescription>
+                  <CardDescription className="text-base">Hardware-accelerated matrix operations using light, delivering computational efficiency for AI workloads.</CardDescription>
                 </CardContent>
               </Card>
 
@@ -190,7 +169,7 @@ const Index = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-base">Revolutionary interconnect technology reducing latency and power consumption while increasing bandwidth by orders of magnitude.</CardDescription>
+                  <CardDescription className="text-base">Revolutionary interconnect technology reducing latency and power consumption while increasing bandwidth.</CardDescription>
                 </CardContent>
               </Card>
 
@@ -215,22 +194,12 @@ const Index = () => {
                     <Zap className="h-5 w-5 text-primary shrink-0" />
                     <span className="text-sm md:text-base font-semibold text-foreground">Slashing AI Power Usage</span>
                   </div>
-                  <div className="relative flex items-end gap-3">
-                    <Gauge className="h-5 w-5 text-primary/70 mb-1 shrink-0" />
-                    <span className="text-4xl font-bold text-primary leading-none">40%</span>
-                    <span className="text-sm text-muted-foreground leading-snug">Lower Power per Token</span>
-                  </div>
                 </div>
                 <div className="relative group h-full px-6 py-6 rounded-xl border border-secondary/30 bg-secondary/5 backdrop-blur-sm hover:border-secondary/60 transition-all duration-300 cursor-default flex flex-col justify-between">
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative flex items-center gap-2 mb-6">
                     <TrendingDown className="h-5 w-5 text-secondary shrink-0" />
                     <span className="text-sm md:text-base font-semibold text-foreground">Decreasing TCO</span>
-                  </div>
-                  <div className="relative flex items-end gap-3">
-                    <Activity className="h-5 w-5 text-secondary/70 mb-1 shrink-0" />
-                    <span className="text-4xl font-bold text-secondary leading-none">85%</span>
-                    <span className="text-sm text-muted-foreground leading-snug">System Utilization</span>
                   </div>
                 </div>
               </div>
@@ -248,150 +217,12 @@ const Index = () => {
               Full-Stack <span className="text-primary">NCE Server Racks</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Complete infrastructure solution from edge to hyperscale
+              Hardware roadmap. Specifications in qualification.
             </p>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            <div className="contents">
-              {[{
-              title: "Compact Rack",
-              subtitle: "For edge deployment",
-              specs: "2U Form Factor • 100 TFLOPS • 1.2kW Power"
-            }, {
-              title: "Standard Rack",
-              subtitle: "For enterprise data centers",
-              specs: "42U Standard • 2.1 PFLOPS • 35kW Power"
-            }, {
-              title: "Cluster Configuration",
-              subtitle: "For hyperscale operations",
-              specs: "Multi-Rack • 10+ PFLOPS • Modular Scaling"
-            }].map((config, i) => <Card key={i} className="group hover:shadow-lg hover:shadow-secondary/20 transition-all duration-300 border-2 hover:border-secondary/50">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">{config.title}</CardTitle>
-                    <CardDescription className="text-base">{config.subtitle}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm font-mono text-muted-foreground">{config.specs}</p>
-                    <Button variant="link" className="mt-2 p-0 h-auto text-primary">
-                      Learn more <ArrowRight className="ml-1 h-4 w-4" />
-                    </Button>
-                  </CardContent>
-                </Card>)}
-            </div>
-
-          </div>
         </div>
       </section>
 
-      {/* Performance Comparison Section */}
-      <section className="py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              LightRail AI vs Traditional GPU Infrastructure
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Quantifiable advantages across critical metrics
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {[{
-            metric: "Power Consumption",
-            improvement: "60% Lower",
-            icon: Zap
-          }, {
-            metric: "Thermal Output",
-            improvement: "70% Reduction",
-            icon: Thermometer
-          }, {
-            metric: "Performance/Watt",
-            improvement: "3x Better",
-            icon: Gauge
-          }, {
-            metric: "Scalability",
-            improvement: "Linear Scaling",
-            icon: TrendingDown
-          }, {
-            metric: "Cost per TFLOP",
-            improvement: "45% Lower",
-            icon: Activity
-          }, {
-            metric: "Latency",
-            improvement: "50% Faster",
-            icon: Cpu
-          }].map((item, i) => <Card key={i} className="text-center hover:shadow-lg hover:shadow-primary/20 transition-all duration-300">
-                <CardContent className="pt-6">
-                  <item.icon className="h-10 w-10 text-primary mx-auto mb-3" />
-                  <div className="font-semibold text-lg mb-1">{item.metric}</div>
-                  <div className="text-2xl font-bold text-primary">{item.improvement}</div>
-                </CardContent>
-              </Card>)}
-          </div>
-        </div>
-      </section>
-
-      {/* Industry Validation Section */}
-      <section id="about" className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <Badge variant="outline" className="mb-4 px-4 py-2">
-                Industry Insight
-              </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">
-                The <span className="text-primary">$8 Trillion Problem</span>
-              </h2>
-            </div>
-
-            <Card className="border-2 border-primary/30 bg-gradient-to-br from-card to-muted/50">
-              <CardContent className="pt-8 pb-8">
-                <blockquote className="text-xl md:text-2xl leading-relaxed mb-6 italic text-foreground/90">
-                  "To service $8 trillion at a 10% hurdle rate, the industry must generate $800 billion in net profit every year. The entire semiconductor sector does not make that. Microsoft, Google, and Nvidia combined do not make that."
-                </blockquote>
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-primary font-bold text-lg">AK</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-lg">Arvind Krishna</div>
-                    <div className="text-muted-foreground">CEO, IBM</div>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-6 pt-6 border-t border-border">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-destructive mb-1">$8T</div>
-                    <div className="text-sm text-muted-foreground">Required CapEx for 100 AI data centers</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-destructive mb-1">3-5 yrs</div>
-                    <div className="text-sm text-muted-foreground">GPU obsolescence cycle</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-primary mb-1">Unit Economics</div>
-                    <div className="text-sm text-muted-foreground">The real competitive advantage</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="mt-8 text-center">
-              <p className="text-lg text-muted-foreground mb-6">
-                The winners will not have the biggest clusters. They will have the best unit economics.
-                <span className="block mt-2 text-primary font-semibold">
-                  LightRail AI delivers 100x energy efficiency—solving the impossible equation.
-                </span>
-              </p>
-              <Button size="lg" onClick={() => setContactDialogOpen(true)}>
-                Learn How We Solve This
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Use Cases Section */}
       <section className="py-24">
@@ -438,54 +269,6 @@ const Index = () => {
         </div>
       </section>
 
-
-      {/* Partners Logo Strip */}
-      <section className="py-16 border-y border-border">
-        <div className="container mx-auto px-4">
-          <p className="text-center text-sm text-muted-foreground uppercase tracking-wider mb-8">
-            Trusted by Industry Leaders
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-            {[
-              { logo: logoTechscale, name: "TechScale AI" },
-              { logo: logoDataflow, name: "DataFlow Systems" },
-              { logo: logoGreentech, name: "GreenTech Ventures" },
-              { logo: logoNexus, name: "Nexus Computing" },
-            ].map((partner, i) => (
-              <div 
-                key={i} 
-                className="h-12 w-24 flex items-center justify-center grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all duration-300"
-              >
-                <img 
-                  src={partner.logo} 
-                  alt={partner.name} 
-                  className="h-10 w-auto object-contain"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-4 px-4 py-2">
-              Customer Success Stories
-            </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              What Our Partners Say
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Leading organisations are already transforming their AI infrastructure with LightRail
-            </p>
-          </div>
-
-          <TestimonialsCarousel />
-        </div>
-      </section>
-
       {/* Why Choose LightRail Section */}
       <section className="py-24">
         <div className="container mx-auto px-4">
@@ -496,7 +279,7 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {["Mathematical optimization foundation", "Proven photonic technology", "Enterprise-grade reliability", "Sustainability commitment", "Expert support team", "Seamless integration"].map((feature, i) => <div key={i} className="flex items-start gap-3 p-6 rounded-lg border-2 border-border hover:border-primary/50 transition-colors">
+            {["Enterprise-grade reliability", "Expert support team"].map((feature, i) => <div key={i} className="flex items-start gap-3 p-6 rounded-lg border-2 border-border hover:border-primary/50 transition-colors">
                 <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
                 <span className="text-lg">{feature}</span>
               </div>)}
@@ -512,42 +295,19 @@ const Index = () => {
               Flexible Deployment Options
             </h2>
             <p className="text-xl text-muted-foreground">
-              Choose the solution that fits your infrastructure needs
+              Software license, tiered monthly
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {[{
-            title: "Software License",
-            subtitle: "Fabric OS & Compiler",
-            price: "Custom",
-            features: ["Fabric OS platform", "Compiler toolchain", "Integration support", "Quarterly updates"]
-          }, {
-            title: "Blade Solution",
-            subtitle: "Interposer + Accelerators",
-            price: "Contact Sales",
-            features: ["All software features", "Photonic interposer blades", "Installation support", "Priority support", "Performance optimization"],
-            featured: true
-          }, {
-            title: "Full System",
-            subtitle: "Complete TPU Servers",
-            price: "Enterprise",
-            features: ["Complete solution", "Full rack systems", "Dedicated support team", "Custom configurations", "On-site training"]
-          }].map((tier, i) => <Card key={i} className={`${tier.featured ? 'border-primary border-4 shadow-xl shadow-primary/20 scale-105' : 'border-2'} transition-all duration-300`}>
-                {tier.featured && <div className="bg-primary text-primary-foreground text-center py-2 font-semibold">
-                    Most Popular
-                  </div>}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {[{ title: "Free", price: "$0", note: "1 GPU" }, { title: "Starter", price: "$49", note: "per month" }, { title: "Pro", price: "$149", note: "per month", featured: true }, { title: "Enterprise", price: "$499", note: "per month" }].map((tier, i) => <Card key={i} className={`${tier.featured ? 'border-primary border-4 shadow-xl shadow-primary/20' : 'border-2'} transition-all duration-300`}>
                 <CardHeader>
                   <CardTitle className="text-2xl">{tier.title}</CardTitle>
-                  <CardDescription className="text-base">{tier.subtitle}</CardDescription>
-                  <div className="text-3xl font-bold mt-4">{tier.price}</div>
+                  <CardDescription className="text-base">Software license</CardDescription>
+                  <div className="text-3xl font-bold mt-4">{tier.price}<span className="text-base font-normal text-muted-foreground ml-2">{tier.note}</span></div>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {tier.features.map((feature, j) => <div key={j} className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
-                    </div>)}
-                  <Button className="w-full mt-6" variant={tier.featured ? "default" : "outline"} onClick={() => setContactDialogOpen(true)}>
+                <CardContent>
+                  <Button className="w-full" variant={tier.featured ? "default" : "outline"} onClick={() => setContactDialogOpen(true)}>
                     Get Started
                   </Button>
                 </CardContent>
@@ -567,20 +327,20 @@ const Index = () => {
 
           <Accordion type="single" collapsible className="space-y-4">
             {[{
-            q: "How does photonic computing differ from traditional GPUs?",
-            a: "Photonic computing uses light instead of electricity for data transmission and processing, resulting in dramatically lower power consumption, reduced heat generation, and higher bandwidth capabilities. Our silicon photonic chipsets integrate seamlessly with existing infrastructure while delivering 2-3x better performance per watt."
+            q: "What is Fabric OS?",
+            a: "Fabric OS is a software layer that runs on GPU clusters you already have. It intercepts All-Reduce collective operations and reroutes them across the cluster fabric."
           }, {
-            q: "What is the typical deployment timeline?",
-            a: "Deployment varies by solution tier. Software licenses can be deployed in weeks, blade solutions typically require 2-3 months including integration, and full rack systems are deployed over 3-6 months depending on configuration and site requirements."
+            q: "Do I need new hardware?",
+            a: "No. Fabric OS runs on your existing GPU clusters. Our photonic hardware is on the roadmap, with specifications in qualification."
           }, {
-            q: "Is LightRail compatible with existing AI frameworks?",
-            a: "Yes, our Fabric OS and compiler support standard ML frameworks including TensorFlow, PyTorch, and JAX. We provide seamless integration with existing GPU workflows, allowing gradual migration to photonic acceleration."
+            q: "How is efficiency measured?",
+            a: "Efficiency is measured per cluster during the pilot, against your own baseline workloads. We do not quote generic figures before measurement."
           }, {
-            q: "What kind of sustainability benefits can we expect?",
-            a: "LightRail systems deliver up to 60% CO₂ reduction compared to traditional GPU clusters through reduced power consumption and cooling requirements. This translates to significant operational cost savings and progress toward sustainability goals."
+            q: "How is Fabric OS priced?",
+            a: "Fabric OS is a software license, tiered monthly: Free (1 GPU), Starter $49, Pro $149 and Enterprise $499."
           }, {
-            q: "What support and maintenance is included?",
-            a: "All tiers include our standard support package with quarterly software updates. Enterprise customers receive dedicated support teams, custom configurations, and on-site training. We offer 24/7 critical support for production deployments."
+            q: "How do I start a pilot?",
+            a: "Request a demo or email hello@lightrailabs.ai. We will scope a pilot on one of your clusters and agree the measurement plan up front."
           }].map((faq, i) => <AccordionItem key={i} value={`item-${i}`} className="border-2 border-border rounded-lg px-6">
                 <AccordionTrigger className="text-left text-lg font-semibold hover:no-underline">
                   {faq.q}
