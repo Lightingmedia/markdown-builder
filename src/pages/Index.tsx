@@ -8,7 +8,7 @@ const Index = () => (
       canonical="/"
     />
     <iframe
-      src="/home.html"
+      src={`/home.html?v=${Date.now()}`}
       title="LightRail AI"
       style={{ position: "fixed", inset: 0, width: "100vw", height: "100vh", border: 0, display: "block" }}
     />
