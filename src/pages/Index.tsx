@@ -20,6 +20,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
+import PhotonicShowcase from "@/components/home/PhotonicShowcase";
 
 const homeStructuredData = {
   "@context": "https://schema.org",
@@ -93,6 +94,7 @@ const Index = () => {
       </section>
 
 
+      <PhotonicShowcase onContact={() => setContactDialogOpen(true)} />
 
       {/* Chipset Technology Section */}
       <section id="features" className="py-24 bg-muted/30">
